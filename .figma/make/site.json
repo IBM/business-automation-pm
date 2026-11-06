@@ -1,0 +1,14 @@
+{
+  "title": "IBM Business Automation",
+  "description": "Browse and retrieve sessions from IBM TechXchange event, helping attendees quickly find relevant sessions for Business Automation.",
+  "robots": {
+    "index": false
+  },
+  "icons": {
+    "icon": "/favicon.svg"
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
