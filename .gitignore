@@ -1,3 +1,6 @@
 node_modules
 dist
 .DS_Store
+
+# Local site export (includes password-gated content)
+docs/site-export.md
