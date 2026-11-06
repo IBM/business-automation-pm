@@ -1,6 +1,9 @@
 {
   "title": "IBM Business Automation",
   "description": "Put AI agents to work inside the content, decisions, and processes that run your business — under your policies, on the models and agents you choose.",
+  "openGraph": {
+    "image": "https://ibm.github.io/business-automation-pm/social-preview.png"
+  },
   "robots": {
     "index": false
   },
