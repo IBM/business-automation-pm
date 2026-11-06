@@ -1,10 +1,11 @@
-import { Fragment, useEffect, useRef, useState, type FormEvent } from 'react'
+import { Fragment, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import enablementData from './enablement.json'
 
 // Resolve files in /public against the deploy base path (e.g. /<repo>/ on GitHub Pages)
 const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`
 
 type SessionType = 'Lab' | 'Meet the Expert' | 'Meetup' | 'Tech Talk' | 'Breakout' | 'Client Advisory Board'
-type Page = 'overview' | 'capabilities' | 'process-automation' | 'content-services' | 'decision-intelligence' | 'cp4ba' | 'conference' | 'think' | 'sessions' | 'techxchange' | 'schedule' | 'maps' | 'ibm' | 'insights' | 'review' | 'info' | 'product' | 'community' | 'ug' | 'surveys' | 'speaker'
+type Page = 'overview' | 'capabilities' | 'process-automation' | 'content-services' | 'decision-intelligence' | 'cp4ba' | 'conference' | 'think' | 'sessions' | 'techxchange' | 'schedule' | 'maps' | 'ibm' | 'insights' | 'review' | 'info' | 'product' | 'community' | 'enablement' | 'ug' | 'surveys' | 'speaker'
 
 const pageAnchors: Record<Page, string> = {
   overview: 'main',
@@ -25,6 +26,7 @@ const pageAnchors: Record<Page, string> = {
   info: 'info-top',
   product: 'product-top',
   community: 'community-top',
+  enablement: 'enablement-top',
   ug: 'ug-top',
   surveys: 'surveys',
   speaker: 'av-top',
@@ -49,6 +51,7 @@ const breadcrumbLabels: Record<Page, string> = {
   info: 'Info',
   product: 'Product Resources',
   community: 'Community',
+  enablement: 'Enablement',
   ug: 'User Groups',
   surveys: 'Surveys',
   speaker: 'Audio/Visual',
@@ -62,6 +65,7 @@ const breadcrumbParents: Partial<Record<Page, Page>> = {
   cp4ba: 'capabilities',
   product: 'capabilities',
   community: 'overview',
+  enablement: 'community',
   think: 'conference',
   techxchange: 'conference',
   sessions: 'techxchange',
@@ -96,14 +100,20 @@ const breadcrumbSectionLabels: Record<string, string> = {
   'insights-registration': 'Session Search',
   'business-automation-schedule': 'Business Automation Schedule',
   'conference-overview': 'Conference at a Glance',
+  'enablement-overview': 'Overview',
+  'enablement-activities': 'Activities by Month',
 }
 
 function formatBreadcrumbSectionLabel(id: string) {
   if (breadcrumbSectionLabels[id]) return breadcrumbSectionLabels[id]
+  const enablementMonth = /^enablement-(\d{4})-(\d{2})$/.exec(id)
+  if (enablementMonth) {
+    return new Date(Number(enablementMonth[1]), Number(enablementMonth[2]) - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  }
   if (id.startsWith('session-')) return id.slice('session-'.length).toUpperCase()
 
   const label = id
-    .replace(/^(capabilities-all|capabilities|portfolio|process-automation|content-services|decision-intelligence|cp4ba|conference|techxchange|think|sessions|maps|info|ug|surveys|av)-/, '')
+    .replace(/^(capabilities-all|capabilities|portfolio|process-automation|content-services|decision-intelligence|cp4ba|conference|techxchange|think|sessions|maps|info|ug|surveys|av|enablement)-/, '')
     .replace(/-/g, ' ')
 
   return label.replace(/\b\w+/g, word => {
@@ -150,6 +160,7 @@ function pageForHash(hash: string): Page {
   if (id === 'insights' || id === 'insights-top' || id.startsWith('insights-') || id.startsWith('executive-')) return 'insights'
   if (id === 'review-top' || id.startsWith('review-')) return 'review'
   if (id === 'info-top' || id.startsWith('info-') || id.startsWith('conference-info-') || id.startsWith('meeting-zone-')) return 'info'
+  if (id === 'enablement-top' || id.startsWith('enablement-')) return 'enablement'
   if (id === 'community-top' || id.startsWith('community-') || id === 'product-communities' || id === 'ug-communities') return 'community'
   if (id === 'product-top' || id.startsWith('new-ai-capabilities') || id.startsWith('product-') || id.startsWith('demo-')) return 'capabilities'
   if (id === 'ug-top' || id.startsWith('ug-')) return 'ug'
@@ -2440,6 +2451,484 @@ function formatCountdown(totalSeconds: number) {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
 
+type EnablementItem = {
+  name: string
+  group: string
+  type?: string
+  product?: string
+  status?: string
+  date?: string
+  quarter?: string
+  audience?: string
+  link?: string
+  registration?: string
+  time?: string
+  topic?: string
+}
+
+const enablementItems = enablementData.items as EnablementItem[]
+
+const enablementStatusStyles: Record<string, string> = {
+  Done: 'border-[#42be65]/40 bg-[#42be65]/10 text-[#6fdc8c]',
+  'Working on it': 'border-[#f1c21b]/40 bg-[#f1c21b]/10 text-[#f1c21b]',
+  Stuck: 'border-[#fa4d56]/40 bg-[#fa4d56]/10 text-[#ff8389]',
+  'On Hold': 'border-white/20 bg-white/[0.05] text-[#c6c6c6]',
+}
+
+function safeHttpUrl(url?: string) {
+  return url && /^https?:\/\//i.test(url) ? url : undefined
+}
+
+function formatEnablementDate(date: string) {
+  const parsed = new Date(`${date}T00:00:00`)
+  if (Number.isNaN(parsed.getTime())) return date
+  return parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function formatEnablementMonth(key: string) {
+  if (key === 'unscheduled') return 'Unscheduled'
+  const parsed = new Date(`${key}-01T00:00:00`)
+  return Number.isNaN(parsed.getTime())
+    ? key
+    : parsed.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+}
+
+type EnablementViewMode = 'quarter' | 'collapsed' | 'expanded'
+type EnablementFilterKey = 'year' | 'quarter' | 'type' | 'product' | 'audience' | 'status'
+
+const enablementNow = new Date()
+const enablementCurrentQuarter = `Q${Math.floor(enablementNow.getMonth() / 3) + 1}`
+const enablementCurrentYear = String(enablementNow.getFullYear())
+const enablementDefaultQuarter = enablementItems.some(
+  item => item.date?.startsWith(enablementCurrentYear) && item.quarter === enablementCurrentQuarter,
+)
+  ? enablementCurrentQuarter
+  : ''
+const enablementDefaultYear = enablementItems.some(item => item.date?.startsWith(enablementCurrentYear))
+  ? enablementCurrentYear
+  : ''
+const enablementValuesOf = (item: EnablementItem, key: EnablementFilterKey) =>
+  key === 'year'
+    ? item.date
+      ? [item.date.slice(0, 4)]
+      : []
+    : (item[key] ?? '').split(',').map(value => value.trim()).filter(Boolean)
+const enablementMonthKeyOf = (item: EnablementItem) => (item.date ? item.date.slice(0, 7) : 'unscheduled')
+const enablementMonthKeys = Array.from(new Set(enablementItems.map(enablementMonthKeyOf))).sort((a, b) =>
+  a === 'unscheduled' ? 1 : b === 'unscheduled' ? -1 : a.localeCompare(b),
+)
+const enablementQuarterOfMonth = (key: string) =>
+  key === 'unscheduled' ? '' : `Q${Math.floor((Number(key.slice(5, 7)) - 1) / 3) + 1}`
+const isEnablementCurrentQuarterMonth = (key: string) =>
+  key !== 'unscheduled' &&
+  key.slice(0, 4) === String(enablementNow.getFullYear()) &&
+  enablementQuarterOfMonth(key) === enablementCurrentQuarter
+const enablementAllSectionKeys = ['overview', 'activities', ...enablementMonthKeys]
+
+const enablementViewModeLabels: Record<EnablementViewMode, string> = {
+  quarter: 'Current year and quarter, first month with data expanded',
+  expanded: 'All sections expanded',
+  collapsed: 'All sections collapsed',
+}
+const enablementNextViewMode = (mode: EnablementViewMode | null): EnablementViewMode =>
+  mode === 'quarter' ? 'expanded' : mode === 'expanded' ? 'collapsed' : 'quarter'
+
+function EnablementContainer({
+  sectionKey,
+  linkId,
+  title,
+  eyebrow,
+  count,
+  heading: Heading = 'h3',
+  headingId,
+  collapsed,
+  onToggle,
+  actions,
+  nested = false,
+  children,
+}: {
+  sectionKey: string
+  linkId?: string
+  title: string
+  eyebrow?: string
+  count?: string
+  heading?: 'h2' | 'h3' | 'h4'
+  headingId?: string
+  collapsed: boolean
+  onToggle: () => void
+  actions?: ReactNode
+  nested?: boolean
+  children: ReactNode
+}) {
+  const id = `enablement-${sectionKey}`
+  const contentId = `${id}-content`
+  return (
+    <div
+      id={id}
+      className={`scroll-mt-28 overflow-hidden rounded-xl border ${
+        nested ? 'border-white/[0.07] bg-[#1f1f1f]' : 'border-[#4589ff]/25 bg-white/[0.02]'
+      }`}
+    >
+      <div className={`flex items-center justify-between gap-3 px-4 py-3 ${collapsed ? '' : 'border-b border-white/[0.06]'}`}>
+        <div className="min-w-0 flex-1">
+          {eyebrow && (
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">{eyebrow}</p>
+          )}
+          <Heading
+            id={headingId}
+            className={`${eyebrow ? 'mt-1 text-2xl' : nested ? 'text-sm' : 'text-base'} font-semibold text-white`}
+          >
+            <button
+              type="button"
+              onClick={onToggle}
+              aria-expanded={!collapsed}
+              aria-controls={contentId}
+              title={`${collapsed ? 'Expand' : 'Collapse'} ${title}`}
+              className="inline-flex items-center gap-2 rounded-sm text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+            >
+              <span>{title}</span>
+              {count && <span className="text-xs font-normal text-[#8d8d8d]">{count}</span>}
+              <ChevronIcon expanded={!collapsed} />
+            </button>
+          </Heading>
+        </div>
+        <div className="flex shrink-0 items-center gap-1">
+          {actions}
+          <CopySectionLink id={linkId ?? id} label={title} />
+        </div>
+      </div>
+      {!collapsed && (
+        <div id={contentId} className={nested ? 'p-3' : 'p-4'}>
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function EnablementPage() {
+  const [search, setSearch] = useState('')
+  const [filters, setFilters] = useState<Record<EnablementFilterKey, string>>({
+    year: enablementDefaultYear,
+    quarter: enablementDefaultQuarter,
+    type: '',
+    product: '',
+    audience: '',
+    status: '',
+  })
+  const [collapsed, setCollapsed] = useState<Set<string>>(
+    () => new Set(enablementMonthKeys.filter(key => !isEnablementCurrentQuarterMonth(key))),
+  )
+  const [viewMode, setViewMode] = useState<EnablementViewMode | null>(null)
+
+  const isCollapsed = (key: string) => collapsed.has(key)
+  const toggleSection = (key: string) =>
+    setCollapsed(current => {
+      const next = new Set(current)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+
+  // Opening a link to a month or the activities list reveals it, even if it was collapsed or filtered out.
+  useEffect(() => {
+    const reveal = () => {
+      const id = decodeURIComponent(window.location.hash.replace(/^#/, ''))
+      const monthMatch = /^enablement-(\d{4}-\d{2})$/.exec(id)
+      if (id !== 'enablement-activities' && !monthMatch) return
+      setCollapsed(current => {
+        const next = new Set(current)
+        next.delete('activities')
+        if (monthMatch) next.delete(monthMatch[1])
+        return next
+      })
+      if (monthMatch) {
+        setFilters(current => ({
+          ...current,
+          year: current.year && current.year !== monthMatch[1].slice(0, 4) ? '' : current.year,
+          quarter: current.quarter && current.quarter !== enablementQuarterOfMonth(monthMatch[1]) ? '' : current.quarter,
+        }))
+      }
+      window.requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }))
+    }
+    reveal()
+    window.addEventListener('hashchange', reveal)
+    return () => window.removeEventListener('hashchange', reveal)
+  }, [])
+
+  const cycleViewMode = () => {
+    const next = enablementNextViewMode(viewMode)
+    setViewMode(next)
+    if (next === 'expanded') {
+      setCollapsed(new Set())
+    } else if (next === 'collapsed') {
+      setCollapsed(new Set(enablementAllSectionKeys))
+    } else {
+      // Current year and quarter; only the first month that has data stays open.
+      // The "Activities by month" container is kept open too, since the month lives inside it.
+      const nextFilters = { ...filters, year: enablementDefaultYear, quarter: enablementDefaultQuarter }
+      const firstMonthWithData = enablementMonthKeys.find(monthKey =>
+        enablementItems.some(item => enablementMonthKeyOf(item) === monthKey && matchesFilters(item, nextFilters)),
+      )
+      setFilters(nextFilters)
+      setCollapsed(
+        new Set(enablementAllSectionKeys.filter(key => key !== 'activities' && key !== firstMonthWithData)),
+      )
+    }
+  }
+  const nextViewMode = enablementNextViewMode(viewMode)
+
+  const optionsFor = (key: EnablementFilterKey) =>
+    Array.from(new Set(enablementItems.flatMap(item => enablementValuesOf(item, key)))).sort()
+
+  const filterFields = [
+    { key: 'year', label: 'Year' },
+    { key: 'quarter', label: 'Quarter' },
+    { key: 'type', label: 'Enablement type' },
+    { key: 'product', label: 'Product' },
+    { key: 'audience', label: 'Audience' },
+    { key: 'status', label: 'Status' },
+  ] as const
+
+  const handleFilterChange = (key: EnablementFilterKey, value: string) => {
+    setFilters(current => ({ ...current, [key]: value }))
+    // Choosing a year or quarter opens the months that match both and collapses the rest.
+    if ((key === 'year' || key === 'quarter') && value) {
+      const year = key === 'year' ? value : filters.year
+      const quarter = key === 'quarter' ? value : filters.quarter
+      setCollapsed(current => {
+        const next = new Set(current)
+        for (const monthKey of enablementMonthKeys) {
+          const matches =
+            (!year || monthKey.slice(0, 4) === year) && (!quarter || enablementQuarterOfMonth(monthKey) === quarter)
+          if (matches) next.delete(monthKey)
+          else next.add(monthKey)
+        }
+        return next
+      })
+    }
+  }
+
+  const query = search.trim().toLowerCase()
+  function matchesFilters(item: EnablementItem, activeFilters: Record<EnablementFilterKey, string>) {
+    for (const { key } of filterFields) {
+      const selected = activeFilters[key]
+      if (selected && !enablementValuesOf(item, key).includes(selected)) return false
+    }
+    if (!query) return true
+    return [item.name, item.topic, item.product, item.type, item.audience, item.group]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+      .includes(query)
+  }
+  const filtered = enablementItems.filter(item => matchesFilters(item, filters))
+
+  const grouped = new Map<string, EnablementItem[]>()
+  for (const item of filtered) {
+    const key = enablementMonthKeyOf(item)
+    grouped.set(key, [...(grouped.get(key) ?? []), item])
+  }
+  const monthKeys = enablementMonthKeys.filter(key => grouped.has(key))
+
+  const doneCount = enablementItems.filter(item => item.status === 'Done').length
+  const hasActiveFilters = Boolean(query) || Object.values(filters).some(Boolean)
+  const syncedOn = formatEnablementDate(enablementData.generatedAt)
+
+  return (
+    <section id="enablement-top" aria-labelledby="enablement-heading" className="grid scroll-mt-28 gap-6">
+      <EnablementContainer
+        sectionKey="overview"
+        linkId="enablement-top"
+        eyebrow="Community"
+        title="Business Automation Enablement"
+        heading="h2"
+        headingId="enablement-heading"
+        collapsed={isCollapsed('overview')}
+        onToggle={() => toggleSection('overview')}
+        actions={
+          <button
+            type="button"
+            onClick={cycleViewMode}
+            aria-label={`View: ${viewMode ? enablementViewModeLabels[viewMode] : 'default'}. Switch to: ${enablementViewModeLabels[nextViewMode]}`}
+            title={`Switch to: ${enablementViewModeLabels[nextViewMode]}`}
+            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] text-[#c6c6c6] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+          >
+            <ThreeLevelVisibilityIcon level={viewMode === 'expanded' ? 2 : viewMode === 'collapsed' ? 0 : 1} />
+          </button>
+        }
+      >
+        <p className="max-w-2xl text-sm leading-relaxed text-[#c6c6c6]">
+          User group sessions, COE enablement, and sales enablement activities for IBM Business Automation, organized by date.
+        </p>
+
+        <div className="mt-4 overflow-hidden rounded-xl border border-[#4589ff]/35 bg-gradient-to-r from-[#0f62fe]/15 to-[#262626]">
+          <div className="grid gap-px bg-white/[0.06] sm:grid-cols-3">
+            {[
+              { label: 'Activities', value: enablementItems.length },
+              { label: 'Completed', value: doneCount },
+              { label: 'Upcoming or in progress', value: enablementItems.length - doneCount },
+            ].map(stat => (
+              <div key={stat.label} className="bg-[#262626]/95 px-5 py-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8d8d8d]">{stat.label}</p>
+                <p className="mt-1 text-lg font-semibold text-white">{stat.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-xl border border-white/[0.07] bg-[#262626] p-4">
+          <label className="block">
+            <span className="sr-only">Search enablement activities</span>
+            <input
+              type="search"
+              value={search}
+              onChange={event => setSearch(event.target.value)}
+              placeholder="Search by name, topic, product, or audience"
+              className="h-10 w-full rounded-md border border-white/[0.1] bg-[#161616] px-3 text-sm text-white placeholder:text-[#8d8d8d] focus:outline-none focus:ring-2 focus:ring-[#78a9ff]"
+            />
+          </label>
+          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            {filterFields.map(({ key, label }) => (
+              <label key={key} className="block">
+                <span className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8d8d8d]">{label}</span>
+                <select
+                  value={filters[key]}
+                  onChange={event => handleFilterChange(key, event.target.value)}
+                  className="h-9 w-full rounded-md border border-white/[0.1] bg-[#161616] px-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-[#78a9ff]"
+                >
+                  <option value="">All</option>
+                  {optionsFor(key).map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </label>
+            ))}
+          </div>
+          <div className="mt-3 flex items-center justify-between gap-3 text-xs text-[#8d8d8d]">
+            <span aria-live="polite">Showing {filtered.length} of {enablementItems.length} activities</span>
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch('')
+                  setFilters({ year: '', quarter: '', type: '', product: '', audience: '', status: '' })
+                }}
+                className="rounded-md border border-white/[0.1] px-2.5 py-1 font-semibold text-[#a6c8ff] transition-colors hover:border-[#4589ff]/60 hover:text-white"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+        </div>
+      </EnablementContainer>
+
+      <EnablementContainer
+        sectionKey="activities"
+        title="Activities by month"
+        count={`${filtered.length} of ${enablementItems.length}`}
+        collapsed={isCollapsed('activities')}
+        onToggle={() => toggleSection('activities')}
+      >
+        {filtered.length === 0 ? (
+          <p className="rounded-xl border border-white/[0.07] bg-[#262626] px-5 py-8 text-center text-sm text-[#c6c6c6]">
+            No activities match your filters.
+          </p>
+        ) : (
+          <div className="grid gap-4">
+            {monthKeys.map(monthKey => (
+              <EnablementContainer
+                key={monthKey}
+                sectionKey={monthKey}
+                nested
+                heading="h3"
+                title={formatEnablementMonth(monthKey)}
+                count={`(${grouped.get(monthKey)?.length})`}
+                collapsed={isCollapsed(monthKey)}
+                onToggle={() => toggleSection(monthKey)}
+              >
+                <ul className="grid gap-3">
+                  {grouped.get(monthKey)?.map((item, index) => {
+                    const url = safeHttpUrl(item.link) ?? safeHttpUrl(item.registration)
+                    const actionLabel = safeHttpUrl(item.link) ? 'Open' : 'Register'
+                    const title = item.topic || item.name
+                    return (
+                      <li
+                        key={`${item.name}-${item.date ?? 'none'}-${index}`}
+                        className="rounded-xl border border-white/[0.07] bg-[#262626] px-5 py-4 transition-colors hover:border-[#4589ff]/35"
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8d8d8d]">
+                              {item.date ? formatEnablementDate(item.date) : 'Date to be determined'}
+                              {item.time ? ` · ${item.time}` : ''}
+                            </p>
+                            <h4 className="mt-1 text-sm font-semibold text-white">{title}</h4>
+                            {item.topic && item.topic !== item.name && (
+                              <p className="mt-0.5 text-xs text-[#c6c6c6]">{item.name}</p>
+                            )}
+                          </div>
+                          <div className="flex shrink-0 items-center gap-2">
+                            {item.status && (
+                              <span
+                                className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${
+                                  enablementStatusStyles[item.status] ?? 'border-white/20 bg-white/[0.05] text-[#c6c6c6]'
+                                }`}
+                              >
+                                {item.status}
+                              </span>
+                            )}
+                            {url && (
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1.5 rounded-md border border-[#4589ff]/35 bg-[#0f62fe]/10 px-2.5 py-1.5 text-xs font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff] hover:bg-[#0f62fe]/25 hover:text-white"
+                              >
+                                {actionLabel}
+                                <ExternalLinkIcon />
+                                <span className="sr-only"> {title} (opens in a new tab)</span>
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {[item.type, item.product, item.audience, item.quarter]
+                            .filter((tag): tag is string => Boolean(tag))
+                            .map(tag => (
+                              <span
+                                key={tag}
+                                className="rounded border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 text-[11px] text-[#c6c6c6]"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                        </div>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </EnablementContainer>
+            ))}
+          </div>
+        )}
+      </EnablementContainer>
+
+      <p className="text-center text-xs text-[#8d8d8d]">
+        Snapshot of the Business Automation Enablement Tracker, last synced on {syncedOn}.
+      </p>
+      <div className="flex justify-center">
+        <a
+          href="#enablement-top"
+          className="rounded-lg border border-[#4589ff]/50 bg-[#0f62fe]/15 px-4 py-2.5 text-sm font-semibold text-[#a6c8ff] transition-colors hover:border-[#4589ff] hover:bg-[#0f62fe]/30 hover:text-white"
+        >
+          Back to top
+        </a>
+      </div>
+    </section>
+  )
+}
+
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>(() => pageForHash(window.location.hash))
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(() => {
@@ -2872,6 +3361,7 @@ export default function App() {
     currentPage === 'capabilities' ||
     currentPage === 'cp4ba' ||
     Boolean(activeBusinessAutomationCapability)
+  const isCommunitySection = currentPage === 'community' || currentPage === 'enablement'
   const isBusinessAutomationSection =
     currentPage === 'overview' || isCapabilitiesPage
   const isIbmSection = currentPage === 'ibm' || currentPage === 'insights' || currentPage === 'review' || currentPage === 'speaker'
@@ -4795,6 +5285,8 @@ Owners are shown only where the conversation assigned one; shared recommendation
                       ? 'Conference Info'
                       : currentPage === 'community'
                         ? 'Community'
+                        : currentPage === 'enablement'
+                          ? 'Community Enablement'
                         : currentPage === 'ug'
                           ? 'User Groups'
                           : currentPage === 'surveys'
@@ -4886,7 +5378,9 @@ Owners are shown only where the conversation assigned one; shared recommendation
                     ? isBusinessAutomationSection
                     : page === 'conference'
                       ? isConferenceSection
-                      : currentPage === page
+                      : page === 'community'
+                        ? isCommunitySection
+                        : currentPage === page
                   return (
                     <a
                       key={page}
@@ -4921,6 +5415,34 @@ Owners are shown only where the conversation assigned one; shared recommendation
                   <FullscreenIcon active={isFullscreen} />
                 </button>
               </div>
+              {isCommunitySection && (
+                <nav aria-label="Community subpages" className="flex w-full flex-wrap items-center gap-1.5 sm:justify-end">
+                  {([
+                    ['community', 'Overview'],
+                    ['enablement', 'Enablement'],
+                  ] as const).map(([page, label]) => {
+                    const isActive = currentPage === page
+                    return (
+                      <a
+                        key={page}
+                        href={`#${pageAnchors[page]}`}
+                        onClick={event => {
+                          event.preventDefault()
+                          navigateToPage(page)
+                        }}
+                        aria-current={isActive ? 'page' : undefined}
+                        className={`inline-flex h-7 items-center justify-center whitespace-nowrap rounded px-2.5 text-[11px] font-semibold transition-colors ${
+                          isActive
+                            ? 'bg-[#0f62fe]/20 text-white'
+                            : 'text-[#c6c6c6] hover:bg-white/[0.04] hover:text-[#a6c8ff]'
+                        }`}
+                      >
+                        {label}
+                      </a>
+                    )
+                  })}
+                </nav>
+              )}
               {isBusinessAutomationSection && (
                 <nav aria-label="Business Automation subpages" className="flex w-full flex-wrap items-center gap-1.5 sm:justify-end">
                   {([
@@ -5071,6 +5593,9 @@ Owners are shown only where the conversation assigned one; shared recommendation
                     ? `${conferenceInfo.length + 2} conference guides · Atlanta, GA`
                       : currentPage === 'community'
                         ? `${userConnectCommunities.length} IBM Business Automation User Connect communities`
+                      : currentPage === 'enablement'
+                        ? `${enablementItems.length} enablement activities · user groups, COE, and sales`
+
                       : currentPage === 'ug'
                         ? `${ugResourceCount} Business Automation user group resources`
                         : currentPage === 'surveys'
@@ -7178,6 +7703,9 @@ Owners are shown only where the conversation assigned one; shared recommendation
               </a>
             </div>
           </section>
+        ) : currentPage === 'enablement' ? (
+          <EnablementPage />
+
         ) : currentPage === 'ug' ? (
           <>
             <section id="ug-top" aria-labelledby="ug-heading" className="scroll-mt-28">
