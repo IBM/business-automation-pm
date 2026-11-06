@@ -2736,7 +2736,7 @@ function EnablementPage() {
   const syncedOn = formatEnablementDate(enablementData.generatedAt)
 
   return (
-    <section id="enablement-top" aria-labelledby="enablement-heading" className="grid scroll-mt-28 gap-6">
+    <section id="enablement-top" aria-labelledby="enablement-heading" className="grid grid-cols-[minmax(0,1fr)] scroll-mt-28 gap-6">
       <EnablementContainer
         sectionKey="overview"
         linkId="enablement-top"
@@ -2835,7 +2835,7 @@ function EnablementPage() {
             No activities match your filters.
           </p>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
             {monthKeys.map(monthKey => (
               <EnablementContainer
                 key={monthKey}
@@ -2847,63 +2847,64 @@ function EnablementPage() {
                 collapsed={isCollapsed(monthKey)}
                 onToggle={() => toggleSection(monthKey)}
               >
-                <ul className="grid gap-3">
+                <ul className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-1.5">
                   {grouped.get(monthKey)?.map((item, index) => {
                     const url = safeHttpUrl(item.link) ?? safeHttpUrl(item.registration)
                     const actionLabel = safeHttpUrl(item.link) ? 'Open' : 'Register'
                     const title = item.topic || item.name
+                    const dateLabel = item.date ? formatEnablementDate(item.date) : 'Date TBD'
+                    const tags = [item.type, item.product, item.audience, item.quarter].filter((tag): tag is string =>
+                      Boolean(tag),
+                    )
+                    const fullDetails = [
+                      `${item.date ? formatEnablementDate(item.date) : 'Date to be determined'}${item.time ? ` · ${item.time}` : ''}`,
+                      title,
+                      item.topic && item.topic !== item.name ? item.name : '',
+                      tags.join(' · '),
+                    ]
+                      .filter(Boolean)
+                      .join('\n')
                     return (
                       <li
                         key={`${item.name}-${item.date ?? 'none'}-${index}`}
-                        className="rounded-xl border border-white/[0.07] bg-[#262626] px-5 py-4 transition-colors hover:border-[#4589ff]/35"
+                        title={fullDetails}
+                        className="flex min-w-0 items-center gap-3 rounded-lg border border-white/[0.07] bg-[#262626] px-3 py-1.5 transition-colors hover:border-[#4589ff]/35"
                       >
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#8d8d8d]">
-                              {item.date ? formatEnablementDate(item.date) : 'Date to be determined'}
-                              {item.time ? ` · ${item.time}` : ''}
-                            </p>
-                            <h4 className="mt-1 text-sm font-semibold text-white">{title}</h4>
-                            {item.topic && item.topic !== item.name && (
-                              <p className="mt-0.5 text-xs text-[#c6c6c6]">{item.name}</p>
-                            )}
-                          </div>
-                          <div className="flex shrink-0 items-center gap-2">
-                            {item.status && (
-                              <span
-                                className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${
-                                  enablementStatusStyles[item.status] ?? 'border-white/20 bg-white/[0.05] text-[#c6c6c6]'
-                                }`}
-                              >
-                                {item.status}
-                              </span>
-                            )}
-                            {url && (
-                              <a
-                                href={url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 rounded-md border border-[#4589ff]/35 bg-[#0f62fe]/10 px-2.5 py-1.5 text-xs font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff] hover:bg-[#0f62fe]/25 hover:text-white"
-                              >
-                                {actionLabel}
-                                <ExternalLinkIcon />
-                                <span className="sr-only"> {title} (opens in a new tab)</span>
-                              </a>
-                            )}
-                          </div>
-                        </div>
-                        <div className="mt-3 flex flex-wrap gap-1.5">
-                          {[item.type, item.product, item.audience, item.quarter]
-                            .filter((tag): tag is string => Boolean(tag))
-                            .map(tag => (
-                              <span
-                                key={tag}
-                                className="rounded border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 text-[11px] text-[#c6c6c6]"
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                        </div>
+                        <span className="w-24 shrink-0 whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.08em] text-[#8d8d8d]">
+                          {dateLabel}
+                        </span>
+                        <h4 className="min-w-0 flex-1 truncate text-sm font-semibold text-white">
+                          {title}
+                          {item.topic && item.topic !== item.name && (
+                            <span className="ml-2 text-xs font-normal text-[#c6c6c6]">{item.name}</span>
+                          )}
+                        </h4>
+                        {tags.length > 0 && (
+                          <span className="hidden max-w-[14rem] shrink truncate whitespace-nowrap text-[11px] text-[#a8a8a8] lg:block">
+                            {tags.join(' · ')}
+                          </span>
+                        )}
+                        {item.status && (
+                          <span
+                            className={`shrink-0 whitespace-nowrap rounded-full border px-2 py-0.5 text-[11px] font-semibold ${
+                              enablementStatusStyles[item.status] ?? 'border-white/20 bg-white/[0.05] text-[#c6c6c6]'
+                            }`}
+                          >
+                            {item.status}
+                          </span>
+                        )}
+                        {url && (
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border border-[#4589ff]/35 bg-[#0f62fe]/10 px-2 py-1 text-xs font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff] hover:bg-[#0f62fe]/25 hover:text-white"
+                          >
+                            {actionLabel}
+                            <ExternalLinkIcon />
+                            <span className="sr-only"> {title} (opens in a new tab)</span>
+                          </a>
+                        )}
                       </li>
                     )
                   })}
