@@ -1,7 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="260" height="64" viewBox="0 0 260 64" role="img" aria-label="Go Blue!">
+<svg xmlns="http://www.w3.org/2000/svg" width="130" height="36" viewBox="0 0 130 36" role="img" aria-label="Go Blue!">
   <title>Go Blue!</title>
-  <rect x="1" y="1" width="258" height="62" rx="10" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="2"/>
-  <text x="130" y="45" text-anchor="middle" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="40" font-weight="800">
-    <tspan fill="#FFCB05" stroke="#00274C" stroke-width="1" paint-order="stroke">Go</tspan><tspan fill="#00274C"> Blue!</tspan>
+  <text x="65" y="27" text-anchor="middle" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="24" font-weight="800" stroke-width="1.2" paint-order="stroke" stroke-linejoin="round">
+    <tspan fill="#FFCB05" stroke="#00274C">Go</tspan><tspan fill="#00274C" stroke="#FFCB05"> Blue!</tspan>
   </text>
 </svg>
