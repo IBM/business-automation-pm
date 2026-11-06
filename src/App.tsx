@@ -4828,7 +4828,7 @@ Owners are shown only where the conversation assigned one; shared recommendation
                 </a>
               ) : (
                 <a
-                  href="https://www.ibm.com/products/business-automation"
+                  href="https://www.ibm.com/products/cloud-pak-for-business-automation"
                   target="_blank"
                   rel="noreferrer"
                   aria-label="IBM Business Automation"
