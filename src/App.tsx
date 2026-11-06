@@ -9984,7 +9984,25 @@ Owners are shown only where the conversation assigned one; shared recommendation
             <span className="whitespace-nowrap">· {pagePublishIdentifier}</span>
           </div>
           <span className="whitespace-nowrap text-center">IBM Business Automation</span>
-          <span className="text-right font-semibold text-[#00274c]">Go Blue!</span>
+          <span className="justify-self-end">
+            <button
+              type="button"
+              onDoubleClick={() =>
+                window.open('https://github.com/IBM/business-automation-pm', '_blank', 'noopener,noreferrer')
+              }
+              onKeyDown={event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  window.open('https://github.com/IBM/business-automation-pm', '_blank', 'noopener,noreferrer')
+                }
+              }}
+              title="Double-click to open the GitHub repository"
+              aria-label="Go Blue! Double-click to open the GitHub repository in a new tab."
+              className="rounded text-right font-semibold text-[#00274c] transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#4589ff]/60"
+            >
+              Go Blue!
+            </button>
+          </span>
         </footer>
       </main>
       {showThomasImage && (
