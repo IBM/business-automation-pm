@@ -2015,6 +2015,151 @@ function formatEnablementMonth(key: string) {
     : parsed.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 }
 
+const enablementDatedMonthKeys = Array.from(
+  new Set(enablementItems.filter(item => item.date).map(item => item.date!.slice(0, 7))),
+).sort()
+const enablementCurrentMonthKey = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`
+const enablementDefaultCalendarMonth = enablementDatedMonthKeys.includes(enablementCurrentMonthKey)
+  ? enablementCurrentMonthKey
+  : (enablementDatedMonthKeys[enablementDatedMonthKeys.length - 1] ?? enablementCurrentMonthKey)
+
+function shiftEnablementMonth(key: string, delta: number) {
+  const next = new Date(Number(key.slice(0, 4)), Number(key.slice(5, 7)) - 1 + delta, 1)
+  return `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`
+}
+
+function parseEnablementTime(time?: string) {
+  const match = time && /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(time.trim())
+  if (!match) return null
+  const hours = (Number(match[1]) % 12) + (match[3].toUpperCase() === 'PM' ? 12 : 0)
+  return { hours, minutes: Number(match[2]) }
+}
+
+const enablementMinutesOf = (item: EnablementItem) => {
+  const time = parseEnablementTime(item.time)
+  return time ? time.hours * 60 + time.minutes : -1
+}
+
+function icsEscape(value: string) {
+  return value.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n')
+}
+
+// Lines longer than 75 octets must be folded; continuation lines start with a space.
+function icsFold(line: string) {
+  const encoder = new TextEncoder()
+  const lines: string[] = []
+  let current = ''
+  let size = 0
+  for (const char of line) {
+    const bytes = encoder.encode(char).length
+    if (size + bytes > (lines.length === 0 ? 75 : 74)) {
+      lines.push(current)
+      current = ''
+      size = 0
+    }
+    current += char
+    size += bytes
+  }
+  lines.push(current)
+  return lines.join('\r\n ')
+}
+
+function icsHash(value: string) {
+  let hash = 5381
+  for (let index = 0; index < value.length; index += 1) hash = ((hash << 5) + hash + value.charCodeAt(index)) >>> 0
+  return hash.toString(16)
+}
+
+const icsDate = (date: Date) =>
+  `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`
+
+// Items with a time become one-hour events in the viewer's local time (the tracker stores no time zone);
+// items without a time become all-day events.
+function buildEnablementIcs(items: EnablementItem[]) {
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//IBM Business Automation//Enablement//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'X-WR-CALNAME:Business Automation Enablement',
+  ]
+  for (const item of items) {
+    if (!item.date) continue
+    const start = new Date(`${item.date}T00:00:00`)
+    if (Number.isNaN(start.getTime())) continue
+    const time = parseEnablementTime(item.time)
+    const title = item.topic || item.name
+    const url = safeHttpUrl(item.link) ?? safeHttpUrl(item.registration)
+    const description = [
+      item.topic && item.topic !== item.name ? item.name : '',
+      [item.type, item.product, item.audience].filter(Boolean).join(' · '),
+      item.status ? `Status: ${item.status}` : '',
+      time ? `Starts at ${item.time}; time zone not specified, shown in your local time.` : '',
+      url ? `${safeHttpUrl(item.link) ? 'Link' : 'Register'}: ${url}` : '',
+    ].filter(Boolean).join('\n')
+    lines.push('BEGIN:VEVENT', `UID:${icsHash(`${item.name}|${item.topic ?? ''}|${item.date}|${item.time ?? ''}`)}@business-automation-pm`, `DTSTAMP:${stamp}`)
+    if (time) {
+      const begin = new Date(start)
+      begin.setHours(time.hours, time.minutes)
+      const end = new Date(begin.getTime() + 60 * 60 * 1000)
+      const local = (date: Date) => `${icsDate(date)}T${String(date.getHours()).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}00`
+      lines.push(`DTSTART:${local(begin)}`, `DTEND:${local(end)}`)
+    } else {
+      const end = new Date(start)
+      end.setDate(end.getDate() + 1)
+      lines.push(`DTSTART;VALUE=DATE:${icsDate(start)}`, `DTEND;VALUE=DATE:${icsDate(end)}`)
+    }
+    lines.push(`SUMMARY:${icsEscape(title)}`)
+    if (description) lines.push(`DESCRIPTION:${icsEscape(description)}`)
+    if (url) lines.push(`URL:${url}`)
+    lines.push('END:VEVENT')
+  }
+  lines.push('END:VCALENDAR')
+  return `${lines.map(icsFold).join('\r\n')}\r\n`
+}
+
+function downloadEnablementIcs(items: EnablementItem[], filename: string) {
+  const blob = new Blob([buildEnablementIcs(items)], { type: 'text/calendar;charset=utf-8' })
+  const href = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = href
+  anchor.download = filename
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  window.setTimeout(() => URL.revokeObjectURL(href), 1000)
+}
+
+const enablementFilenameOf = (text: string) =>
+  text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'enablement'
+
+function CalendarPlusIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" className="shrink-0" aria-hidden="true">
+      <path d="M2.75 4.25a1 1 0 011-1h8.5a1 1 0 011 1v8.5a1 1 0 01-1 1h-8.5a1 1 0 01-1-1v-8.5zM2.75 6.75h10.5M5.5 2v2.5M10.5 2v2.5M8 8.5v3.5M6.25 10.25h3.5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function EnablementAddToCalendarButton({ item }: { item: EnablementItem }) {
+  if (!item.date) return null
+  const title = item.topic || item.name
+  return (
+    <button
+      type="button"
+      onClick={() => downloadEnablementIcs([item], `${enablementFilenameOf(title)}.ics`)}
+      title="Add to calendar (.ics)"
+      className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border border-white/[0.12] bg-white/[0.03] px-2 py-1 text-xs font-semibold text-[#c6c6c6] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+    >
+      <CalendarPlusIcon />
+      <span className="sr-only">Add {title} to calendar</span>
+      <span aria-hidden="true" className="hidden xl:inline">.ics</span>
+    </button>
+  )
+}
+
 type EnablementViewMode = 'quarter' | 'collapsed' | 'expanded'
 type EnablementFilterKey = 'year' | 'quarter' | 'type' | 'product' | 'audience' | 'status'
 
@@ -2054,6 +2199,154 @@ const enablementViewModeLabels: Record<EnablementViewMode, string> = {
 }
 const enablementNextViewMode = (mode: EnablementViewMode | null): EnablementViewMode =>
   mode === 'quarter' ? 'expanded' : mode === 'expanded' ? 'collapsed' : 'quarter'
+
+function EnablementCalendar({
+  items,
+  month,
+  onMonthChange,
+}: {
+  items: EnablementItem[]
+  month: string
+  onMonthChange: (month: string) => void
+}) {
+  const [selected, setSelected] = useState<EnablementItem | null>(null)
+  const year = Number(month.slice(0, 4))
+  const monthIndex = Number(month.slice(5, 7)) - 1
+  const leadingBlanks = new Date(year, monthIndex, 1).getDay()
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
+  const weekCount = Math.ceil((leadingBlanks + daysInMonth) / 7)
+  const byDay = new Map<string, EnablementItem[]>()
+  for (const item of items) {
+    if (!item.date?.startsWith(month)) continue
+    byDay.set(item.date, [...(byDay.get(item.date) ?? []), item].sort((a, b) => enablementMinutesOf(a) - enablementMinutesOf(b)))
+  }
+  const monthItems = items.filter(item => item.date?.startsWith(month))
+  const today = new Date()
+  const todayKey = `${enablementCurrentMonthKey}-${String(today.getDate()).padStart(2, '0')}`
+  const navButton =
+    'inline-flex h-8 items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-xs font-semibold text-[#c6c6c6] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]'
+  const selectedUrl = selected ? (safeHttpUrl(selected.link) ?? safeHttpUrl(selected.registration)) : undefined
+
+  return (
+    <div>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5">
+          <button type="button" className={navButton} onClick={() => onMonthChange(shiftEnablementMonth(month, -1))} aria-label="Previous month">
+            ←
+          </button>
+          <button type="button" className={navButton} onClick={() => onMonthChange(shiftEnablementMonth(month, 1))} aria-label="Next month">
+            →
+          </button>
+          <button type="button" className={navButton} onClick={() => onMonthChange(enablementCurrentMonthKey)}>
+            Today
+          </button>
+          <h4 className="ml-2 text-base font-semibold text-white" aria-live="polite">{formatEnablementMonth(month)}</h4>
+        </div>
+        <button
+          type="button"
+          disabled={monthItems.length === 0}
+          onClick={() => downloadEnablementIcs(monthItems, `business-automation-enablement-${month}.ics`)}
+          className={`${navButton} gap-1.5 disabled:cursor-not-allowed disabled:opacity-40`}
+        >
+          <CalendarPlusIcon />
+          Add {monthItems.length} in {formatEnablementMonth(month)} to calendar
+        </button>
+      </div>
+
+      <div className="overflow-x-auto">
+        <div role="grid" aria-label={`Enablement activities, ${formatEnablementMonth(month)}`} className="min-w-[44rem]">
+          <div role="row" className="grid grid-cols-7 gap-px">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+              <div key={day} role="columnheader" className="px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-[#8d8d8d]">
+                {day}
+              </div>
+            ))}
+          </div>
+          <div className="grid gap-px overflow-hidden rounded-lg border border-white/[0.07] bg-white/[0.07]">
+            {Array.from({ length: weekCount }, (_, week) => (
+              <div key={week} role="row" className="grid grid-cols-7 gap-px">
+                {Array.from({ length: 7 }, (_, weekday) => {
+                  const day = week * 7 + weekday - leadingBlanks + 1
+                  if (day < 1 || day > daysInMonth) {
+                    return <div key={weekday} role="gridcell" className="min-h-[6.5rem] bg-[#1a1a1a]" />
+                  }
+                  const dateKey = `${month}-${String(day).padStart(2, '0')}`
+                  const dayItems = byDay.get(dateKey) ?? []
+                  return (
+                    <div key={weekday} role="gridcell" className={`min-h-[6.5rem] min-w-0 p-1.5 ${dateKey === todayKey ? 'bg-[#0f62fe]/15' : 'bg-[#262626]'}`}>
+                      <p className={`mb-1 text-[11px] font-semibold ${dateKey === todayKey ? 'text-[#78a9ff]' : 'text-[#8d8d8d]'}`}>{day}</p>
+                      <ul className="grid gap-1">
+                        {dayItems.map((item, index) => {
+                          const label = item.topic || item.name
+                          const isSelected = selected === item
+                          return (
+                            <li key={`${item.name}-${index}`}>
+                              <button
+                                type="button"
+                                onClick={() => setSelected(isSelected ? null : item)}
+                                aria-pressed={isSelected}
+                                title={`${item.time ? `${item.time} · ` : ''}${label}${item.topic && item.topic !== item.name ? ` (${item.name})` : ''}`}
+                                className={`block w-full truncate rounded border-l-2 px-1.5 py-0.5 text-left text-[11px] leading-snug transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${
+                                  item.status === 'Done' ? 'border-[#42be65] bg-[#42be65]/10 text-[#c6c6c6]' : 'border-[#4589ff] bg-[#0f62fe]/20 text-white'
+                                } ${isSelected ? 'ring-2 ring-[#78a9ff]' : 'hover:bg-white/[0.12]'}`}
+                              >
+                                {item.time && <span className="mr-1 text-[#a8a8a8]">{item.time.replace(':00', '').replace(' ', '').toLowerCase()}</span>}
+                                {label}
+                              </button>
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    </div>
+                  )
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {monthItems.length === 0 && (
+        <p className="mt-3 text-center text-sm text-[#c6c6c6]">No activities match your filters in {formatEnablementMonth(month)}.</p>
+      )}
+
+      {selected && (
+        <div className="mt-3 rounded-lg border border-[#4589ff]/35 bg-[#0f62fe]/10 p-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#8d8d8d]">
+            {selected.date ? formatEnablementDate(selected.date) : 'Date TBD'}{selected.time ? ` · ${selected.time}` : ''}{selected.status ? ` · ${selected.status}` : ''}
+          </p>
+          <h5 className="mt-1 text-sm font-semibold text-white">{selected.topic || selected.name}</h5>
+          {selected.topic && selected.topic !== selected.name && <p className="text-xs text-[#c6c6c6]">{selected.name}</p>}
+          <p className="mt-1 text-xs text-[#a8a8a8]">
+            {[selected.type, selected.product, selected.audience].filter(Boolean).join(' · ')}
+          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            {selectedUrl && (
+              <a
+                href={selectedUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-[#4589ff]/35 bg-[#0f62fe]/10 px-2 py-1 text-xs font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff] hover:bg-[#0f62fe]/25 hover:text-white"
+              >
+                {safeHttpUrl(selected.link) ? 'Open' : 'Register'}
+                <ExternalLinkIcon />
+                <span className="sr-only"> (opens in a new tab)</span>
+              </a>
+            )}
+            <button
+              type="button"
+              onClick={() => downloadEnablementIcs([selected], `${enablementFilenameOf(selected.topic || selected.name)}.ics`)}
+              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-white/[0.12] bg-white/[0.03] px-2 py-1 text-xs font-semibold text-[#c6c6c6] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white"
+            >
+              <CalendarPlusIcon />
+              Add to calendar (.ics)
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 function EnablementContainer({
   sectionKey,
@@ -2142,6 +2435,8 @@ function EnablementPage() {
     () => new Set(enablementMonthKeys.filter(key => !isEnablementCurrentQuarterMonth(key))),
   )
   const [viewMode, setViewMode] = useState<EnablementViewMode | null>(null)
+  const [layout, setLayout] = useState<'list' | 'calendar'>('list')
+  const [calendarMonth, setCalendarMonth] = useState(enablementDefaultCalendarMonth)
 
   const isCollapsed = (key: string) => collapsed.has(key)
   const toggleSection = (key: string) =>
@@ -2329,18 +2624,29 @@ function EnablementPage() {
           </div>
           <div className="mt-3 flex items-center justify-between gap-3 text-xs text-[#8d8d8d]">
             <span aria-live="polite">Showing {filtered.length} of {enablementItems.length} activities</span>
-            {hasActiveFilters && (
+            <span className="flex flex-wrap items-center justify-end gap-2">
               <button
                 type="button"
-                onClick={() => {
-                  setSearch('')
-                  setFilters({ year: '', quarter: '', type: '', product: '', audience: '', status: '' })
-                }}
-                className="rounded-md border border-white/[0.1] px-2.5 py-1 font-semibold text-[#a6c8ff] transition-colors hover:border-[#4589ff]/60 hover:text-white"
+                disabled={filtered.every(item => !item.date)}
+                onClick={() => downloadEnablementIcs(filtered, 'business-automation-enablement.ics')}
+                className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.1] px-2.5 py-1 font-semibold text-[#a6c8ff] transition-colors hover:border-[#4589ff]/60 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Clear filters
+                <CalendarPlusIcon />
+                Export {filtered.filter(item => item.date).length} to calendar (.ics)
               </button>
-            )}
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch('')
+                    setFilters({ year: '', quarter: '', type: '', product: '', audience: '', status: '' })
+                  }}
+                  className="rounded-md border border-white/[0.1] px-2.5 py-1 font-semibold text-[#a6c8ff] transition-colors hover:border-[#4589ff]/60 hover:text-white"
+                >
+                  Clear filters
+                </button>
+              )}
+            </span>
           </div>
         </div>
       </EnablementContainer>
@@ -2351,8 +2657,27 @@ function EnablementPage() {
         count={`${filtered.length} of ${enablementItems.length}`}
         collapsed={isCollapsed('activities')}
         onToggle={() => toggleSection('activities')}
+        actions={
+          <div role="group" aria-label="Activities layout" className="mr-1 inline-flex overflow-hidden rounded-md border border-white/[0.1]">
+            {(['list', 'calendar'] as const).map(option => (
+              <button
+                key={option}
+                type="button"
+                aria-pressed={layout === option}
+                onClick={() => setLayout(option)}
+                className={`px-2.5 py-1 text-xs font-semibold capitalize transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${
+                  layout === option ? 'bg-[#0f62fe]/30 text-white' : 'bg-white/[0.03] text-[#c6c6c6] hover:bg-white/[0.08] hover:text-white'
+                }`}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        }
       >
-        {filtered.length === 0 ? (
+        {layout === 'calendar' ? (
+          <EnablementCalendar items={filtered} month={calendarMonth} onMonthChange={setCalendarMonth} />
+        ) : filtered.length === 0 ? (
           <p className="rounded-xl border border-white/[0.07] bg-[#262626] px-5 py-8 text-center text-sm text-[#c6c6c6]">
             No activities match your filters.
           </p>
@@ -2415,6 +2740,7 @@ function EnablementPage() {
                             {item.status}
                           </span>
                         )}
+                        <EnablementAddToCalendarButton item={item} />
                         {url && (
                           <a
                             href={url}

@@ -9,4 +9,8 @@ Private Repo for business-automation-pm
 
 <a href="https://ibm.github.io/business-automation-pm/"><img src="docs/site-screenshot.png" alt="Business Automation site preview" width="100%" /></a>
 
+## Local development
+
+To view the site on your own machine, see [View the site locally](docs/local-development.md).
+
 ![Go Blue!](docs/go-blue.svg)
