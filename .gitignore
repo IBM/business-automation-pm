@@ -4,3 +4,4 @@ dist
 
 # Local site export (includes password-gated content)
 docs/site-export.md
+docs/site-export.pdf
