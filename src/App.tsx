@@ -2458,9 +2458,27 @@ type GlobalSearchEntry = {
   subtitle: string
   category: string
   haystack: string
+  pages: Page[]
   url?: string
   sessionId?: string
   gated?: boolean
+}
+
+type GlobalSearchScope = 'site' | 'page' | 'subpages'
+
+const globalSearchScopes: { id: GlobalSearchScope; chip: string; placeholder: string; description: string }[] = [
+  { id: 'site', chip: 'Site', placeholder: 'Search site', description: 'entire site' },
+  { id: 'page', chip: 'Page', placeholder: 'Search page', description: 'current page' },
+  { id: 'subpages', chip: 'Page+', placeholder: 'Search page and subpages', description: 'current page and sub-pages' },
+]
+
+function isPageWithin(page: Page, root: Page) {
+  let current: Page | undefined = page
+  while (current) {
+    if (current === root) return true
+    current = breadcrumbParents[current]
+  }
+  return false
 }
 
 const globalSearchGatedPages: Page[] = ['ibm', 'insights', 'speaker']
@@ -2469,7 +2487,9 @@ function buildGlobalSearchEntries(): GlobalSearchEntry[] {
   const entries: GlobalSearchEntry[] = []
   const text = (...parts: Array<string | string[] | undefined>) => parts.flat().filter(Boolean).join(' ')
   const add = (entry: Omit<GlobalSearchEntry, 'haystack'>, ...extra: Array<string | string[] | undefined>) => {
-    entries.push({ ...entry, haystack: text(entry.title, entry.subtitle, entry.category, ...extra).toLowerCase() })
+    const created = { ...entry, haystack: text(entry.title, entry.subtitle, entry.category, ...extra).toLowerCase() }
+    entries.push(created)
+    return created
   }
   const hostOf = (url: string) => url.replace(/^https?:\/\//, '').split('/')[0]
 
@@ -2478,6 +2498,7 @@ function buildGlobalSearchEntries(): GlobalSearchEntry[] {
     const parents = getBreadcrumbTrail(page).slice(0, -1).map(parent => breadcrumbLabels[parent]).join(' / ')
     add({
       id: pageAnchors[page],
+      pages: [page],
       title: page === 'sessions' ? 'Sessions' : breadcrumbLabels[page],
       subtitle: capability?.tagline ?? (parents || 'Home'),
       category: 'Page',
@@ -2488,6 +2509,7 @@ function buildGlobalSearchEntries(): GlobalSearchEntry[] {
   sessions.forEach(session => add({
     id: `session-${session.id.toLowerCase()}`,
     sessionId: session.id,
+    pages: ['sessions'],
     title: session.title,
     subtitle: `${session.id} · ${session.type} · ${session.day} · ${session.time}`,
     category: 'Session',
@@ -2495,53 +2517,59 @@ function buildGlobalSearchEntries(): GlobalSearchEntry[] {
 
   generalSessions.forEach(session => add({
     id: `general-session-${session.id.toLowerCase()}`,
+    pages: ['schedule'],
     title: session.title,
     subtitle: `${session.day} · ${session.time} · ${session.location}`,
     category: 'General session',
   }, session.description, session.speakers.map(speaker => text(speaker.name, speaker.role)), session.techTrack, session.sessionTopic, session.industry))
 
   venueMaps.forEach((map, index) => add({
-    id: `venue-map-${index + 1}`, title: map.title, subtitle: map.description, category: 'Map',
+    id: `venue-map-${index + 1}`, pages: ['maps'], title: map.title, subtitle: map.description, category: 'Map',
   }))
   conferenceInfo.forEach((item, index) => add({
-    id: `conference-info-${index + 3}`, title: item.title, subtitle: item.description, category: 'Conference info',
+    id: `conference-info-${index + 3}`, pages: ['info'], title: item.title, subtitle: item.description, category: 'Conference info',
   }))
   userConnectCommunities.forEach((community, index) => add({
-    id: `community-${index + 1}`, title: community.name, subtitle: 'IBM User Connect community', category: 'Community',
+    id: `community-${index + 1}`, pages: ['community'], title: community.name, subtitle: 'IBM User Connect community', category: 'Community',
   }, community.description, community.products))
   surveys.forEach((survey, index) => add({
-    id: `survey-${index + 1}`, title: survey.name, subtitle: survey.displayUrl, category: 'Survey',
+    id: `survey-${index + 1}`, pages: ['surveys'], title: survey.name, subtitle: survey.displayUrl, category: 'Survey',
   }))
   ugSectionImages.forEach(item => add({
-    id: item.id, title: item.title, subtitle: item.description ?? 'User group resource', category: 'User group',
+    id: item.id, pages: ['ug'], title: item.title, subtitle: item.description ?? 'User group resource', category: 'User group',
   }))
 
-  const seenResources = new Set<string>()
-  const addResource = (name: string, subtitle: string, category: string, url?: string) => {
+  const seenResources = new Map<string, GlobalSearchEntry>()
+  const addResource = (page: PortfolioResourcePage, name: string, subtitle: string, category: string, url?: string) => {
     const key = `${category}|${name}|${url ?? ''}`
-    if (seenResources.has(key)) return
-    seenResources.add(key)
-    add({
+    const existing = seenResources.get(key)
+    if (existing) {
+      if (!existing.pages.includes(page)) existing.pages.push(page)
+      return
+    }
+    seenResources.set(key, add({
       id: 'new-ai-capabilities',
+      pages: [page, 'capabilities'],
       title: name,
       subtitle: url ? `${subtitle ? `${subtitle} · ` : ''}${hostOf(url)}` : subtitle,
       category,
       url,
-    })
+    }))
   }
-  Object.values(portfolioResources).forEach(resources => {
-    resources.references.forEach(item => addResource(item.name, '', 'Reference', item.url))
-    resources.aiCapabilities.forEach(item => addResource(item.name, `${item.area} · ${item.description}`, 'AI capability'))
-    resources.previews.forEach(item => addResource(item.name, item.action, 'Preview or trial', item.url))
-    resources.demos.forEach(group => group.links.forEach(link => addResource(link.name, group.title, 'Demo', link.url)))
-    resources.salesKits.forEach(item => addResource(item.name, '', 'Sales kit', item.url))
-    resources.environments.forEach(item => addResource(item.name, item.description, 'Demo environment', item.url))
-    resources.techZoneCollections.forEach(item => addResource(item.name, item.description, 'TechZone collection', item.url))
-    resources.youtubePlaylists.forEach(item => addResource(item.name, '', 'YouTube playlist', item.url))
+  ;(Object.entries(portfolioResources) as [PortfolioResourcePage, (typeof portfolioResources)[PortfolioResourcePage]][]).forEach(([page, resources]) => {
+    resources.references.forEach(item => addResource(page, item.name, '', 'Reference', item.url))
+    resources.aiCapabilities.forEach(item => addResource(page, item.name, `${item.area} · ${item.description}`, 'AI capability'))
+    resources.previews.forEach(item => addResource(page, item.name, item.action, 'Preview or trial', item.url))
+    resources.demos.forEach(group => group.links.forEach(link => addResource(page, link.name, group.title, 'Demo', link.url)))
+    resources.salesKits.forEach(item => addResource(page, item.name, '', 'Sales kit', item.url))
+    resources.environments.forEach(item => addResource(page, item.name, item.description, 'Demo environment', item.url))
+    resources.techZoneCollections.forEach(item => addResource(page, item.name, item.description, 'TechZone collection', item.url))
+    resources.youtubePlaylists.forEach(item => addResource(page, item.name, '', 'YouTube playlist', item.url))
   })
 
   enablementItems.forEach(item => add({
     id: item.date ? `enablement-${enablementMonthKeyOf(item)}` : 'enablement-activities',
+    pages: ['enablement'],
     title: item.topic ? `${item.name} — ${item.topic}` : item.name,
     subtitle: [item.date, item.group, item.status].filter(Boolean).join(' · '),
     category: 'Enablement',
@@ -2570,20 +2598,35 @@ function searchGlobalEntries(entries: GlobalSearchEntry[], query: string, limit 
 }
 
 function GlobalSearch({
+  currentPage,
   includeGated,
   onSelect,
 }: {
+  currentPage: Page
   includeGated: boolean
   onSelect: (entry: GlobalSearchEntry) => void
 }) {
   const [query, setQuery] = useState('')
+  const [scope, setScope] = useState<GlobalSearchScope>('site')
   const [isFocused, setIsFocused] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
+  const scopeConfig = globalSearchScopes.find(item => item.id === scope) ?? globalSearchScopes[0]
   const entries = useMemo(
-    () => (includeGated ? globalSearchEntries : globalSearchEntries.filter(entry => !entry.gated)),
-    [includeGated],
+    () => globalSearchEntries.filter(entry => {
+      if (entry.gated && !includeGated) return false
+      if (scope === 'page') return entry.pages.includes(currentPage)
+      if (scope === 'subpages') return entry.pages.some(page => isPageWithin(page, currentPage))
+      return true
+    }),
+    [currentPage, includeGated, scope],
   )
+  const cycleScope = () => {
+    const next = globalSearchScopes[(globalSearchScopes.findIndex(item => item.id === scope) + 1) % globalSearchScopes.length]
+    setScope(next.id)
+    setActiveIndex(0)
+    inputRef.current?.focus()
+  }
   const results = useMemo(() => searchGlobalEntries(entries, query), [entries, query])
   const isOpen = isFocused && query.trim() !== ''
   const optionId = (index: number) => `global-search-option-${index}`
@@ -2626,7 +2669,7 @@ function GlobalSearch({
         aria-autocomplete="list"
         aria-activedescendant={isOpen && results.length > 0 ? optionId(activeIndex) : undefined}
         autoComplete="off"
-        placeholder="Search site"
+        placeholder={scopeConfig.placeholder}
         value={query}
         onChange={event => {
           setQuery(event.target.value)
@@ -2635,8 +2678,18 @@ function GlobalSearch({
         onKeyDown={onKeyDown}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        className="h-8 w-full rounded-md border border-white/[0.1] bg-white/[0.04] pl-8 pr-2 text-xs text-white placeholder:text-[#8d8d8d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+        className="h-8 w-full rounded-md border border-white/[0.1] bg-white/[0.04] pl-8 pr-11 text-xs text-white placeholder:text-[#8d8d8d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
       />
+      <button
+        type="button"
+        onMouseDown={event => event.preventDefault()}
+        onClick={cycleScope}
+        aria-label={`Search scope: ${scopeConfig.description}. Activate to change.`}
+        title={`Searching ${scopeConfig.description}. Click to change.`}
+        className="absolute right-1 top-1/2 -translate-y-1/2 rounded bg-white/[0.08] px-1.5 py-0.5 text-[10px] font-semibold leading-none text-[#a6c8ff] transition-colors hover:bg-white/[0.16] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+      >
+        {scopeConfig.chip}
+      </button>
       {isOpen && (
         <ul
           id="global-search-results"
@@ -2645,7 +2698,7 @@ function GlobalSearch({
           className="absolute right-0 top-full z-30 mt-1 max-h-96 w-[min(28rem,calc(100vw-2rem))] overflow-y-auto rounded-lg border border-white/[0.12] bg-[#262626] py-1 shadow-xl"
         >
           {results.length === 0 ? (
-            <li role="presentation" className="px-3 py-2 text-xs text-[#c6c6c6]">No results for “{query.trim()}”</li>
+            <li role="presentation" className="px-3 py-2 text-xs text-[#c6c6c6]">No results for “{query.trim()}” in {scopeConfig.description}</li>
           ) : results.map((entry, index) => (
             <li
               key={`${entry.category}-${entry.id}-${entry.title}-${index}`}
@@ -5000,7 +5053,7 @@ export default function App() {
               )}
             </ol>
           </nav>
-          <GlobalSearch includeGated={hasIbmAccess} onSelect={openSearchResult} />
+          <GlobalSearch currentPage={currentPage} includeGated={hasIbmAccess} onSelect={openSearchResult} />
           </div>
         </div>
       </header>
