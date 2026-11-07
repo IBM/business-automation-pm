@@ -2462,6 +2462,7 @@ type GlobalSearchEntry = {
   url?: string
   sessionId?: string
   gated?: boolean
+  element?: HTMLElement
 }
 
 type GlobalSearchScope = 'site' | 'page' | 'subpages'
@@ -2597,6 +2598,36 @@ function searchGlobalEntries(entries: GlobalSearchEntry[], query: string, limit 
     .map(match => match.entry)
 }
 
+function searchRenderedPage(query: string, limit: number): GlobalSearchEntry[] {
+  const tokens = query.toLowerCase().split(/\s+/).filter(Boolean)
+  const root = document.querySelector('main')
+  if (!root || tokens.length === 0) return []
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
+  const seen = new Set<HTMLElement>()
+  const found: GlobalSearchEntry[] = []
+  for (let node = walker.nextNode(); node && found.length < limit; node = walker.nextNode()) {
+    let block = node.parentElement
+    if (!block || block.closest('svg, script, style, [role="search"]')) continue
+    while (block.parentElement && block !== root && getComputedStyle(block).display === 'inline') block = block.parentElement
+    if (seen.has(block)) continue
+    seen.add(block)
+    const content = (block.textContent ?? '').replace(/\s+/g, ' ').trim()
+    const lower = content.toLowerCase()
+    if (!tokens.every(token => lower.includes(token)) || block.getClientRects().length === 0) continue
+    const start = Math.max(0, lower.indexOf(tokens[0]) - 30)
+    found.push({
+      id: `rendered-${found.length}`,
+      title: `${start > 0 ? '…' : ''}${content.slice(start, start + 110)}${start + 110 < content.length ? '…' : ''}`,
+      subtitle: '',
+      category: 'On this page',
+      haystack: lower,
+      pages: [],
+      element: block,
+    })
+  }
+  return found
+}
+
 function GlobalSearch({
   currentPage,
   includeGated,
@@ -2627,7 +2658,11 @@ function GlobalSearch({
     setActiveIndex(0)
     inputRef.current?.focus()
   }
-  const results = useMemo(() => searchGlobalEntries(entries, query), [entries, query])
+  const results = useMemo(() => {
+    const indexed = searchGlobalEntries(entries, query)
+    if (scope === 'site' || indexed.length >= 10) return indexed
+    return [...indexed, ...searchRenderedPage(query, 10 - indexed.length)]
+  }, [entries, query, scope])
   const isOpen = isFocused && query.trim() !== ''
   const optionId = (index: number) => `global-search-option-${index}`
 
@@ -2635,6 +2670,15 @@ function GlobalSearch({
     setQuery('')
     setActiveIndex(0)
     inputRef.current?.blur()
+    const element = entry.element
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      const previous = element.style.outline
+      element.style.outline = '2px solid #78a9ff'
+      element.style.outlineOffset = '4px'
+      window.setTimeout(() => { element.style.outline = previous }, 2000)
+      return
+    }
     onSelect(entry)
   }
 
