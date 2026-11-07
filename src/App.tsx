@@ -3522,7 +3522,7 @@ export default function App() {
         className="mt-8 scroll-mt-28 overflow-hidden rounded-xl border border-[#ff832b]/25 bg-[#262626]"
       >
         <div className="flex items-start justify-between gap-4 border-b border-white/[0.06] px-5 py-4 sm:px-6">
-          <div>
+          <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#ff832b]">Product resources</p>
             </div>
@@ -4003,7 +4003,7 @@ export default function App() {
         className="mt-14 scroll-mt-28 overflow-hidden rounded-2xl border-2 border-[#ff832b]/45 bg-[linear-gradient(145deg,rgba(255,131,43,0.08),rgba(14,16,25,1)_28%)] shadow-[0_20px_60px_rgba(0,0,0,0.3),0_0_32px_rgba(255,131,43,0.08)]"
       >
         <div className="flex items-start justify-between gap-4 border-b border-[#ff832b]/20 bg-[#ff832b]/[0.04] px-5 py-6 sm:px-7">
-          <div>
+          <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#ff832b]">Multi-capability resource library</p>
             </div>
@@ -4709,7 +4709,7 @@ export default function App() {
     <div className="min-h-screen bg-[#161616]">
       {/* Header */}
       <header data-page-header className="border-b border-white/[0.06] bg-[#161616]/80 backdrop-blur-sm sticky top-0 z-20">
-        <div className={`relative mx-auto max-w-5xl px-4 sm:px-6 ${isMainHeaderExpanded ? 'py-3 sm:py-4' : 'py-2'}`}>
+        <div className={`relative w-full px-4 sm:px-6 lg:px-10 ${isMainHeaderExpanded ? 'py-3 sm:py-4' : 'py-2'}`}>
           {isMainHeaderExpanded ? (
           <div id="main-page-header-content" className="flex flex-col justify-between gap-3 md:flex-row md:items-start md:gap-0">
             <div>
@@ -5104,7 +5104,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-4 sm:px-6 sm:py-5">
+      <main className="w-full px-4 py-4 sm:px-6 sm:py-5 lg:px-10">
         {isIbmSection && !hasIbmAccess ? (
           <section
             id="ibm-access"
@@ -5418,7 +5418,7 @@ export default function App() {
             <span id="product-demos" className="sr-only" aria-hidden="true" />
             <div className="rounded-xl border border-white/[0.07] bg-[#262626] p-5 sm:p-6">
               <div className="flex items-start justify-between gap-4">
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">Portfolio Overview</p>
                   <h2 id="capabilities-all-heading" className="mt-1 text-2xl font-semibold text-white">
                     <button
