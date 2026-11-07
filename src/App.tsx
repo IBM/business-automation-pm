@@ -2581,7 +2581,9 @@ function buildGlobalSearchEntries(): GlobalSearchEntry[] {
 
 const globalSearchEntries = buildGlobalSearchEntries()
 
-function searchGlobalEntries(entries: GlobalSearchEntry[], query: string, limit = 10) {
+const globalSearchResultLimit = 100
+
+function searchGlobalEntries(entries: GlobalSearchEntry[], query: string, limit = globalSearchResultLimit) {
   const tokens = query.toLowerCase().split(/\s+/).filter(Boolean)
   if (tokens.length === 0) return []
   return entries
@@ -2660,8 +2662,8 @@ function GlobalSearch({
   }
   const results = useMemo(() => {
     const indexed = searchGlobalEntries(entries, query)
-    if (scope === 'site' || indexed.length >= 10) return indexed
-    return [...indexed, ...searchRenderedPage(query, 10 - indexed.length)]
+    if (scope === 'site' || indexed.length >= globalSearchResultLimit) return indexed
+    return [...indexed, ...searchRenderedPage(query, globalSearchResultLimit - indexed.length)]
   }, [entries, query, scope])
   const isOpen = isFocused && query.trim() !== ''
   const optionId = (index: number) => `global-search-option-${index}`
