@@ -210,6 +210,11 @@ const businessAutomationCapabilityFilters = [
 const allBusinessAutomationCapabilityPages = businessAutomationCapabilityFilters.map(filter => filter.page)
 
 const IBM_ACCESS_SESSION_KEY = 'ibm-access-granted'
+const SITE_ACCESS_COUNTED_KEY = 'site-access-counted'
+const SITE_ACCESS_COUNTER_URL = 'https://abacus.jasoncameron.dev'
+const SITE_ACCESS_COUNTER_NAMESPACE = 'business-automation-pm-ibm'
+const SITE_ACCESS_COUNTER_KEY = 'site-accesses'
+
 const IBM_PASSWORD_HASH = 'd4b720fc558f69d4e4e29c789a25f505a19b662fef228e853dcb67006536e592'
 
 async function hashPassword(value: string) {
@@ -881,18 +886,23 @@ const infoReferenceInfoGroups = referenceInfoGroups.map(group => ({
 
 const userConnectCommunities = [
   {
-    name: 'BPM, Workflow, and Case',
-    url: 'https://community.ibm.com/community/user/groups/community-home/recent-community-events?communitykey=810abde6-3916-441b-aac3-b9105bb37e3c',
-    description: 'Community for IBM Business Process Manager (BPM), IBM Business Automation Workflow (BAW), and IBM Advanced Case Manager users. Covers process automation, workflow design, case management, and related integrations.',
+    name: 'Cloud Pak for Business Automation',
+    capability: 'cp4ba',
+    url: 'https://community.ibm.com/community/user/groups/community-home/recent-community-events?communitykey=65a0df07-3745-40d1-a699-304350bd38fc',
+    description: 'Community for IBM Cloud Pak for Business Automation users — IBM’s integrated automation platform combining content management, workflow, decisions, capture, and RPA capabilities in a unified, containerized solution. Members discuss deployment, configuration, integration patterns, and best practices across the full Cloud Pak automation stack.',
     products: [
-      'IBM Business Process Manager (BPM Server)',
-      'IBM Business Process Manager Advanced (ESB)',
+      'IBM Cloud Pak for Business Automation',
       'IBM Business Automation Workflow (BAW)',
-      'IBM BAW (Advanced Case Manager)',
+      'IBM Operational Decision Manager (ODM)',
+      'IBM Content Cortex (previously FNCM)',
+      'IBM Datacap',
+      'IBM RPA (WDG Automation)',
+      'IBM Process Mining',
     ],
   },
   {
-    name: 'Content Management and Capture',
+    name: 'Content Services (Content Management and Capture)',
+    capability: 'content-services',
     url: 'https://community.ibm.com/community/user/groups/community-home/recent-community-events?communitykey=2b67f465-a5fe-4a66-ad25-f5e767b607e3',
     description: 'Community for IBM content management and capture platform users, covering document management, records management, content capture, and viewing solutions.',
     products: [
@@ -908,7 +918,20 @@ const userConnectCommunities = [
     ],
   },
   {
-    name: 'Decision Management & Intelligence (ODM, DI)',
+    name: 'Business Automation Workflow (BPM, Workflow, and Case)',
+    capability: 'process-automation',
+    url: 'https://community.ibm.com/community/user/groups/community-home/recent-community-events?communitykey=810abde6-3916-441b-aac3-b9105bb37e3c',
+    description: 'Community for IBM Business Process Manager (BPM), IBM Business Automation Workflow (BAW), and IBM Advanced Case Manager users. Covers process automation, workflow design, case management, and related integrations.',
+    products: [
+      'IBM Business Process Manager (BPM Server)',
+      'IBM Business Process Manager Advanced (ESB)',
+      'IBM Business Automation Workflow (BAW)',
+      'IBM BAW (Advanced Case Manager)',
+    ],
+  },
+  {
+    name: 'Decision Intelligence (Decision Management & Intelligence (ODM, DI))',
+    capability: 'decision-intelligence',
     url: 'https://community.ibm.com/community/user/groups/community-home/recent-community-events?communitykey=c0005a22-520b-4181-bfad-feffd8bdc022',
     description: 'Community for IBM Operational Decision Manager (ODM) and Decision Intelligence users. Focuses on business rules, decision automation, and AI-driven decision management.',
     products: [
@@ -920,43 +943,140 @@ const userConnectCommunities = [
   },
   {
     name: 'Open Editions (BAMOE)',
+    capability: 'process-automation',
     url: 'https://community.ibm.com/community/user/groups/community-home/recent-community-events?communitykey=6c04b811-cff1-4f31-bb5c-0185982de671',
     description: 'Community for IBM Business Automation Manager Open Editions (BAMOE) users, covering open-source-based process and decision automation built on Kogito and Drools.',
     products: ['IBM Business Automation Manager Open Editions (BAMOE)'],
   },
   {
     name: 'Robotic Process Automation (RPA)',
+    capability: 'process-automation',
     url: 'https://community.ibm.com/community/user/groups/community-home/recent-community-events?communitykey=8e1faacf-120e-4d65-b013-c14cc0e27c04',
     description: 'Community for IBM RPA (formerly WDG Automation) users, focused on robotic process automation, bot development, attended and unattended automation, and workforce orchestration.',
     products: ['IBM RPA (WDG Automation)'],
   },
   {
     name: 'Blueworks Live',
+    capability: 'process-automation',
     url: 'https://community.ibm.com/community/user/groups/community-home/recent-community-events?communitykey=6209ec75-bc9a-4b5f-9611-65d286eb7379',
     description: 'Community for IBM Blueworks Live users — IBM’s cloud-native business process discovery and documentation tool. Members share best practices for process mapping, collaboration, process improvement, and connecting Blueworks Live workflows to broader automation initiatives.',
     products: ['IBM Blueworks Live'],
   },
   {
     name: 'Process Mining',
+    capability: 'process-automation',
     url: 'https://community.ibm.com/community/user/groups/community-home/recent-community-events?communitykey=347f0b63-ba83-42bb-a040-85d25f9b661a',
     description: 'Community for IBM Process Mining users, focused on data-driven process discovery, conformance checking, and continuous process improvement. Members discuss mining techniques, integration with ERP and BPM systems, and applying AI-powered insights to optimize end-to-end processes.',
     products: ['IBM Process Mining'],
   },
-  {
-    name: 'Cloud Pak for Business Automation',
-    url: 'https://community.ibm.com/community/user/groups/community-home/recent-community-events?communitykey=65a0df07-3745-40d1-a699-304350bd38fc',
-    description: 'Community for IBM Cloud Pak for Business Automation users — IBM’s integrated automation platform combining content management, workflow, decisions, capture, and RPA capabilities in a unified, containerized solution. Members discuss deployment, configuration, integration patterns, and best practices across the full Cloud Pak automation stack.',
-    products: [
-      'IBM Cloud Pak for Business Automation',
-      'IBM Business Automation Workflow (BAW)',
-      'IBM Operational Decision Manager (ODM)',
-      'IBM Content Cortex (previously FNCM)',
-      'IBM Datacap',
-      'IBM RPA (WDG Automation)',
-      'IBM Process Mining',
-    ],
-  },
 ]
+
+const communityCapabilityOptions = businessAutomationCapabilityFilters.map(filter => ({
+  id: filter.page as string,
+  label: filter.label,
+  color: filter.color,
+}))
+const communityProductsByCapability = new Map<string, string[]>(
+  communityCapabilityOptions.map(option => [
+    option.id,
+    Array.from(new Set(userConnectCommunities.filter(community => community.capability === option.id).flatMap(community => community.products))),
+  ]),
+)
+
+const communityProductOptions = Array.from(new Set(userConnectCommunities.flatMap(community => community.products)))
+  .sort((a, b) => a.localeCompare(b))
+  .map(product => ({ id: product, label: product }))
+
+function CommunityFilterGroup({
+  id,
+  title,
+  options,
+  selected,
+  onChange,
+  onOptionDoubleClick,
+}: {
+  id: string
+  title: string
+  options: { id: string; label: string; color?: string }[]
+  selected: Set<string>
+  onChange: (next: Set<string>) => void
+  onOptionDoubleClick?: (optionId: string) => void
+}) {
+  const [expanded, setExpanded] = useState(true)
+  const allSelected = selected.size === options.length
+  const noneSelected = selected.size === 0
+  const actionButton =
+    'inline-flex h-7 items-center rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[11px] font-semibold text-[#c6c6c6] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] disabled:cursor-default disabled:opacity-40 disabled:hover:border-white/[0.1] disabled:hover:bg-white/[0.03] disabled:hover:text-[#c6c6c6]'
+  return (
+    <div className="rounded-xl border border-white/[0.07] bg-[#262626] p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <button
+            type="button"
+            onClick={() => setExpanded(current => !current)}
+            aria-expanded={expanded}
+            aria-controls={`${id}-controls`}
+            aria-label={`${expanded ? 'Collapse' : 'Expand'} ${title} filter`}
+            title={`${expanded ? 'Collapse' : 'Expand'} ${title} filter`}
+            className="inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+          >
+            {title}
+            <VideoVisibilityIcon visible={expanded} />
+          </button>
+          <span className="text-xs font-medium text-[#c6c6c6]">
+            {allSelected ? `All ${options.length} selected` : `${selected.size} of ${options.length} selected`}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <button type="button" disabled={allSelected} onClick={() => onChange(new Set(options.map(option => option.id)))} className={actionButton}>
+            All
+          </button>
+          <button type="button" disabled={noneSelected} onClick={() => onChange(new Set())} className={actionButton}>
+            None
+          </button>
+        </div>
+      </div>
+      <div id={`${id}-controls`} hidden={!expanded} role="group" aria-label={`Filter communities by ${title.toLowerCase()}`} className="mt-3 flex flex-wrap gap-2 border-t border-white/[0.06] pt-3">
+        {options.map(option => {
+          const isActive = selected.has(option.id)
+          const color = option.color ?? '#4589ff'
+          return (
+            <button
+              key={option.id}
+              type="button"
+              aria-pressed={isActive}
+              title={onOptionDoubleClick ? 'Click to toggle. Double-click to deselect its products.' : undefined}
+              onDoubleClick={onOptionDoubleClick ? () => onOptionDoubleClick(option.id) : undefined}
+              onClick={() => {
+                const next = new Set(selected)
+                if (isActive) next.delete(option.id)
+                else next.add(option.id)
+                onChange(next)
+              }}
+              className={`inline-flex min-h-8 items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${
+                isActive ? 'text-white' : 'border-white/[0.1] bg-white/[0.02] text-[#a8a8a8] hover:border-white/[0.22] hover:bg-white/[0.05] hover:text-white'
+              }`}
+              style={isActive ? { borderColor: `${color}bb`, backgroundColor: `${color}20` } : undefined}
+            >
+              <span
+                aria-hidden="true"
+                className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border"
+                style={{ borderColor: isActive ? color : `${color}88`, backgroundColor: isActive ? color : `${color}18` }}
+              >
+                {isActive && (
+                  <svg viewBox="0 0 16 16" className="h-2.5 w-2.5 text-[#161616]" fill="none">
+                    <path d="m3.5 8.2 2.7 2.7 6.3-6.3" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </span>
+              {option.label}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 
 const ugSectionImages = [
   {
@@ -2090,14 +2210,16 @@ function buildEnablementIcs(items: EnablementItem[]) {
     const start = new Date(`${item.date}T00:00:00`)
     if (Number.isNaN(start.getTime())) continue
     const time = parseEnablementTime(item.time)
-    const title = item.topic || item.name
+    const baseTitle = item.topic || item.name
+    const title = /\bIBM\b/i.test(baseTitle) ? baseTitle : `IBM: ${baseTitle}`
     const url = safeHttpUrl(item.link) ?? safeHttpUrl(item.registration)
     const description = [
       item.topic && item.topic !== item.name ? item.name : '',
-      [item.type, item.product, item.audience].filter(Boolean).join(' · '),
-      item.status ? `Status: ${item.status}` : '',
+      item.type ? `Enablement Type: ${item.type}` : '',
+      item.product ? `Product: ${item.product}` : '',
+      item.audience ? `Audience: ${item.audience}` : '',
+      url ? `Link: ${url}` : '',
       time ? `Starts at ${item.time}; time zone not specified, shown in your local time.` : '',
-      url ? `${safeHttpUrl(item.link) ? 'Link' : 'Register'}: ${url}` : '',
     ].filter(Boolean).join('\n')
     lines.push('BEGIN:VEVENT', `UID:${icsHash(`${item.name}|${item.topic ?? ''}|${item.date}|${item.time ?? ''}`)}@business-automation-pm`, `DTSTAMP:${stamp}`)
     if (time) {
@@ -2150,12 +2272,11 @@ function EnablementAddToCalendarButton({ item }: { item: EnablementItem }) {
     <button
       type="button"
       onClick={() => downloadEnablementIcs([item], `${enablementFilenameOf(title)}.ics`)}
-      title="Add to calendar (.ics)"
+      title="Add to calendar"
       className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border border-white/[0.12] bg-white/[0.03] px-2 py-1 text-xs font-semibold text-[#c6c6c6] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
     >
       <CalendarPlusIcon />
       <span className="sr-only">Add {title} to calendar</span>
-      <span aria-hidden="true" className="hidden xl:inline">.ics</span>
     </button>
   )
 }
@@ -2280,18 +2401,27 @@ function EnablementCalendar({
                           const label = item.topic || item.name
                           const isSelected = selected === item
                           return (
-                            <li key={`${item.name}-${index}`}>
+                            <li key={`${item.name}-${index}`} className="flex items-stretch gap-0.5">
                               <button
                                 type="button"
                                 onClick={() => setSelected(isSelected ? null : item)}
                                 aria-pressed={isSelected}
                                 title={`${item.time ? `${item.time} · ` : ''}${label}${item.topic && item.topic !== item.name ? ` (${item.name})` : ''}`}
-                                className={`block w-full truncate rounded border-l-2 px-1.5 py-0.5 text-left text-[11px] leading-snug transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${
+                                className={`block min-w-0 flex-1 truncate rounded border-l-2 px-1.5 py-0.5 text-left text-[11px] leading-snug transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${
                                   item.status === 'Done' ? 'border-[#42be65] bg-[#42be65]/10 text-[#c6c6c6]' : 'border-[#4589ff] bg-[#0f62fe]/20 text-white'
                                 } ${isSelected ? 'ring-2 ring-[#78a9ff]' : 'hover:bg-white/[0.12]'}`}
                               >
                                 {item.time && <span className="mr-1 text-[#a8a8a8]">{item.time.replace(':00', '').replace(' ', '').toLowerCase()}</span>}
                                 {label}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => downloadEnablementIcs([item], `${enablementFilenameOf(label)}.ics`)}
+                                title="Add this event to calendar (.ics)"
+                                className="inline-flex shrink-0 items-center justify-center rounded px-1 text-[#a8a8a8] transition-colors hover:bg-[#0f62fe]/25 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                              >
+                                <CalendarPlusIcon />
+                                <span className="sr-only">Add {label} to calendar</span>
                               </button>
                             </li>
                           )
@@ -3102,6 +3232,40 @@ export default function App() {
     const page = pageForHash(window.location.hash)
     return id && id !== pageAnchors[page] ? id : null
   })
+  const [communityCapabilities, setCommunityCapabilities] = useState<Set<string>>(
+    () => new Set(communityCapabilityOptions.map(option => option.id)),
+  )
+  const [isCommunityFiltersExpanded, setIsCommunityFiltersExpanded] = useState(true)
+  const [communityProducts, setCommunityProducts] = useState<Set<string>>(
+    () => new Set(communityProductOptions.map(option => option.id)),
+  )
+  const [siteAccessCount, setSiteAccessCount] = useState<number | null>(null)
+  useEffect(() => {
+    const controller = new AbortController()
+    let alreadyCounted = false
+    try {
+      alreadyCounted = sessionStorage.getItem(SITE_ACCESS_COUNTED_KEY) === 'true'
+    } catch {
+      // sessionStorage unavailable; count this load.
+    }
+    fetch(`${SITE_ACCESS_COUNTER_URL}/${alreadyCounted ? 'get' : 'hit'}/${SITE_ACCESS_COUNTER_NAMESPACE}/${SITE_ACCESS_COUNTER_KEY}`, {
+      signal: controller.signal,
+    })
+      .then(response => (response.ok ? response.json() : Promise.reject(new Error(String(response.status)))))
+      .then((data: { value?: number }) => {
+        if (typeof data.value !== 'number') return
+        setSiteAccessCount(data.value)
+        try {
+          sessionStorage.setItem(SITE_ACCESS_COUNTED_KEY, 'true')
+        } catch {
+          // ignore
+        }
+      })
+      .catch(() => {
+        // Counter unavailable or blocked; the footer simply omits the count.
+      })
+    return () => controller.abort()
+  }, [])
   const currentPageRef = useRef(currentPage)
   const previousPageRef = useRef<Page | null>(null)
   const [selectedCapabilityPages, setSelectedCapabilityPages] = useState<Set<PortfolioResourcePage>>(() => {
@@ -7353,7 +7517,7 @@ export default function App() {
             <span id="ug-communities" className="sr-only" aria-hidden="true" />
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">IBM Data &amp; AI</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">IBM Data &amp; AI: Business Automation</p>
                 <h2 id="community-heading" className="mt-1 text-2xl font-semibold text-white">Community - User Connects</h2>
                 <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#c6c6c6]">
                   Connect with IBM product leaders and fellow users to shape the roadmap, exchange practical advice, and get an early look at innovations you can put to work sooner.
@@ -7362,26 +7526,77 @@ export default function App() {
               <CopySectionLink id="community-top" label="Community page" />
             </div>
 
-            <div className="mb-6 overflow-hidden rounded-xl border border-[#4589ff]/35 bg-gradient-to-r from-[#0f62fe]/15 to-[#262626]">
-              <div className="grid gap-px bg-white/[0.06] sm:grid-cols-3">
-                {[
-                  { label: 'Communities', value: userConnectCommunities.length },
-                  {
-                    label: 'Product connections',
-                    value: new Set(userConnectCommunities.flatMap(community => community.products)).size,
-                  },
-                  { label: 'Focus', value: 'Business Automation' },
-                ].map(item => (
-                  <div key={item.label} className="bg-[#262626]/95 px-5 py-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8d8d8d]">{item.label}</p>
-                    <p className="mt-1 text-lg font-semibold text-white">{item.value}</p>
-                  </div>
-                ))}
+            {(() => {
+              const visibleCommunities = userConnectCommunities
+                .map((community, index) => ({ community, index }))
+                .filter(({ community }) =>
+                  communityCapabilities.has(community.capability) ||
+                  community.products.some(product => communityProducts.has(product)),
+                )
+              const handleCapabilityChange = (next: Set<string>) => {
+                const added = [...next].filter(id => !communityCapabilities.has(id))
+                if (added.length > 0) {
+                  setCommunityProducts(current => {
+                    const merged = new Set(current)
+                    added.forEach(id => communityProductsByCapability.get(id)?.forEach(product => merged.add(product)))
+                    return merged
+                  })
+                }
+                setCommunityCapabilities(next)
+              }
+              return (
+                <>
+            <section
+              aria-labelledby="community-filters-heading"
+              className="mb-6 rounded-xl border border-[#4589ff]/30 bg-[#1c1c1c] p-4 sm:p-5"
+            >
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                <h3 id="community-filters-heading" className="text-base font-semibold text-white">Capabilities and Products</h3>
+                <button
+                  type="button"
+                  onClick={() => setIsCommunityFiltersExpanded(expanded => !expanded)}
+                  aria-expanded={isCommunityFiltersExpanded}
+                  aria-controls="community-filters-body"
+                  aria-label={isCommunityFiltersExpanded ? 'Collapse Filters' : 'Expand Filters'}
+                  title={isCommunityFiltersExpanded ? 'Collapse Filters' : 'Expand Filters'}
+                  className="inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                >
+                  Filter
+                  <VideoVisibilityIcon visible={isCommunityFiltersExpanded} />
+                </button>
+                <span className="text-xs font-medium text-[#c6c6c6]">
+                  Communities: {visibleCommunities.length} of {userConnectCommunities.length} · Product connections: {new Set(visibleCommunities.flatMap(({ community }) => community.products)).size}
+                </span>
               </div>
-            </div>
+              <div id="community-filters-body" hidden={!isCommunityFiltersExpanded} className="mt-4 grid gap-4 border-t border-white/[0.06] pt-4">
+              <CommunityFilterGroup
+                id="community-capability-filter"
+                title="Capabilities"
+                options={communityCapabilityOptions}
+                selected={communityCapabilities}
+                onChange={handleCapabilityChange}
+                onOptionDoubleClick={id => {
+                  const associated = communityProductsByCapability.get(id) ?? []
+                  setCommunityProducts(current => new Set([...current].filter(product => !associated.includes(product))))
+                }}
+              />
+              <CommunityFilterGroup
+                id="community-product-filter"
+                title="Products"
+                options={communityProductOptions}
+                selected={communityProducts}
+                onChange={setCommunityProducts}
+              />
+              </div>
+            </section>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              {userConnectCommunities.map((community, index) => (
+            {visibleCommunities.length === 0 && (
+              <p className="rounded-xl border border-white/[0.07] bg-[#262626] px-5 py-6 text-center text-sm text-[#c6c6c6]">
+                No communities match the selected capabilities and products.
+              </p>
+            )}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {visibleCommunities.map(({ community, index }) => (
                 <article
                   key={community.name}
                   id={`community-${index + 1}`}
@@ -7424,6 +7639,9 @@ export default function App() {
                 </article>
               ))}
             </div>
+                </>
+              )
+            })()}
             <div className="mt-8 flex justify-center">
               <a
                 href="#community-top"
@@ -8633,6 +8851,11 @@ export default function App() {
               Thomas Yang
             </button>
             <span className="whitespace-nowrap">· {pagePublishIdentifier}</span>
+            {siteAccessCount !== null && (
+              <span className="whitespace-nowrap" title="Total site accesses">
+                · {siteAccessCount.toLocaleString('en-US')} {siteAccessCount === 1 ? 'visit' : 'visits'}
+              </span>
+            )}
           </div>
           <span className="whitespace-nowrap text-center">IBM Business Automation</span>
           <span className="justify-self-end">
