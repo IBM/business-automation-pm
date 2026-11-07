@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react'
 import enablementData from './enablement.json'
 
 // Resolve files in /public against the deploy base path (e.g. /<repo>/ on GitHub Pages)
@@ -1799,6 +1799,15 @@ function FullscreenIcon({ active }: { active: boolean }) {
   )
 }
 
+function SearchIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 16 16" className={className} fill="none" aria-hidden="true">
+      <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="m10.5 10.5 3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function CloseIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -2443,6 +2452,224 @@ function EnablementPage() {
   )
 }
 
+type GlobalSearchEntry = {
+  id: string
+  title: string
+  subtitle: string
+  category: string
+  haystack: string
+  url?: string
+  sessionId?: string
+  gated?: boolean
+}
+
+const globalSearchGatedPages: Page[] = ['ibm', 'insights', 'speaker']
+
+function buildGlobalSearchEntries(): GlobalSearchEntry[] {
+  const entries: GlobalSearchEntry[] = []
+  const text = (...parts: Array<string | string[] | undefined>) => parts.flat().filter(Boolean).join(' ')
+  const add = (entry: Omit<GlobalSearchEntry, 'haystack'>, ...extra: Array<string | string[] | undefined>) => {
+    entries.push({ ...entry, haystack: text(entry.title, entry.subtitle, entry.category, ...extra).toLowerCase() })
+  }
+  const hostOf = (url: string) => url.replace(/^https?:\/\//, '').split('/')[0]
+
+  ;(Object.keys(pageAnchors) as Page[]).filter(page => page !== 'product').forEach(page => {
+    const capability = businessAutomationCapabilities.find(item => item.page === page)
+    const parents = getBreadcrumbTrail(page).slice(0, -1).map(parent => breadcrumbLabels[parent]).join(' / ')
+    add({
+      id: pageAnchors[page],
+      title: page === 'sessions' ? 'Sessions' : breadcrumbLabels[page],
+      subtitle: capability?.tagline ?? (parents || 'Home'),
+      category: 'Page',
+      gated: globalSearchGatedPages.includes(page),
+    }, capability?.description, capability?.overview, capability?.capabilities)
+  })
+
+  sessions.forEach(session => add({
+    id: `session-${session.id.toLowerCase()}`,
+    sessionId: session.id,
+    title: session.title,
+    subtitle: `${session.id} · ${session.type} · ${session.day} · ${session.time}`,
+    category: 'Session',
+  }, session.description, session.speakers, session.location, session.track))
+
+  generalSessions.forEach(session => add({
+    id: `general-session-${session.id.toLowerCase()}`,
+    title: session.title,
+    subtitle: `${session.day} · ${session.time} · ${session.location}`,
+    category: 'General session',
+  }, session.description, session.speakers.map(speaker => text(speaker.name, speaker.role)), session.techTrack, session.sessionTopic, session.industry))
+
+  venueMaps.forEach((map, index) => add({
+    id: `venue-map-${index + 1}`, title: map.title, subtitle: map.description, category: 'Map',
+  }))
+  conferenceInfo.forEach((item, index) => add({
+    id: `conference-info-${index + 3}`, title: item.title, subtitle: item.description, category: 'Conference info',
+  }))
+  userConnectCommunities.forEach((community, index) => add({
+    id: `community-${index + 1}`, title: community.name, subtitle: 'IBM User Connect community', category: 'Community',
+  }, community.description, community.products))
+  surveys.forEach((survey, index) => add({
+    id: `survey-${index + 1}`, title: survey.name, subtitle: survey.displayUrl, category: 'Survey',
+  }))
+  ugSectionImages.forEach(item => add({
+    id: item.id, title: item.title, subtitle: item.description ?? 'User group resource', category: 'User group',
+  }))
+
+  const seenResources = new Set<string>()
+  const addResource = (name: string, subtitle: string, category: string, url?: string) => {
+    const key = `${category}|${name}|${url ?? ''}`
+    if (seenResources.has(key)) return
+    seenResources.add(key)
+    add({
+      id: 'new-ai-capabilities',
+      title: name,
+      subtitle: url ? `${subtitle ? `${subtitle} · ` : ''}${hostOf(url)}` : subtitle,
+      category,
+      url,
+    })
+  }
+  Object.values(portfolioResources).forEach(resources => {
+    resources.references.forEach(item => addResource(item.name, '', 'Reference', item.url))
+    resources.aiCapabilities.forEach(item => addResource(item.name, `${item.area} · ${item.description}`, 'AI capability'))
+    resources.previews.forEach(item => addResource(item.name, item.action, 'Preview or trial', item.url))
+    resources.demos.forEach(group => group.links.forEach(link => addResource(link.name, group.title, 'Demo', link.url)))
+    resources.salesKits.forEach(item => addResource(item.name, '', 'Sales kit', item.url))
+    resources.environments.forEach(item => addResource(item.name, item.description, 'Demo environment', item.url))
+    resources.techZoneCollections.forEach(item => addResource(item.name, item.description, 'TechZone collection', item.url))
+    resources.youtubePlaylists.forEach(item => addResource(item.name, '', 'YouTube playlist', item.url))
+  })
+
+  enablementItems.forEach(item => add({
+    id: item.date ? `enablement-${enablementMonthKeyOf(item)}` : 'enablement-activities',
+    title: item.topic ? `${item.name} — ${item.topic}` : item.name,
+    subtitle: [item.date, item.group, item.status].filter(Boolean).join(' · '),
+    category: 'Enablement',
+  }, item.type, item.product, item.audience, item.quarter))
+
+  return entries
+}
+
+const globalSearchEntries = buildGlobalSearchEntries()
+
+function searchGlobalEntries(entries: GlobalSearchEntry[], query: string, limit = 10) {
+  const tokens = query.toLowerCase().split(/\s+/).filter(Boolean)
+  if (tokens.length === 0) return []
+  return entries
+    .map((entry, index) => {
+      if (!tokens.every(token => entry.haystack.includes(token))) return null
+      const title = entry.title.toLowerCase()
+      const score = tokens.reduce((total, token) => total + (title.startsWith(token) ? 3 : title.includes(token) ? 2 : 0), 0) +
+        (entry.category === 'Page' ? 1 : 0)
+      return { entry, index, score }
+    })
+    .filter((match): match is { entry: GlobalSearchEntry; index: number; score: number } => match !== null)
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .slice(0, limit)
+    .map(match => match.entry)
+}
+
+function GlobalSearch({
+  includeGated,
+  onSelect,
+}: {
+  includeGated: boolean
+  onSelect: (entry: GlobalSearchEntry) => void
+}) {
+  const [query, setQuery] = useState('')
+  const [isFocused, setIsFocused] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const entries = useMemo(
+    () => (includeGated ? globalSearchEntries : globalSearchEntries.filter(entry => !entry.gated)),
+    [includeGated],
+  )
+  const results = useMemo(() => searchGlobalEntries(entries, query), [entries, query])
+  const isOpen = isFocused && query.trim() !== ''
+  const optionId = (index: number) => `global-search-option-${index}`
+
+  const choose = (entry: GlobalSearchEntry) => {
+    setQuery('')
+    setActiveIndex(0)
+    inputRef.current?.blur()
+    onSelect(entry)
+  }
+
+  const onKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'ArrowDown' && results.length > 0) {
+      event.preventDefault()
+      setActiveIndex(index => (index + 1) % results.length)
+    } else if (event.key === 'ArrowUp' && results.length > 0) {
+      event.preventDefault()
+      setActiveIndex(index => (index - 1 + results.length) % results.length)
+    } else if (event.key === 'Enter' && results[activeIndex]) {
+      event.preventDefault()
+      choose(results[activeIndex])
+    } else if (event.key === 'Escape') {
+      event.preventDefault()
+      setQuery('')
+      inputRef.current?.blur()
+    }
+  }
+
+  return (
+    <div role="search" className="relative w-44 shrink-0 sm:w-72">
+      <label htmlFor="global-search-input" className="sr-only">Search the site</label>
+      <SearchIcon className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#8d8d8d]" />
+      <input
+        ref={inputRef}
+        id="global-search-input"
+        type="text"
+        role="combobox"
+        aria-expanded={isOpen}
+        aria-controls="global-search-results"
+        aria-autocomplete="list"
+        aria-activedescendant={isOpen && results.length > 0 ? optionId(activeIndex) : undefined}
+        autoComplete="off"
+        placeholder="Search site"
+        value={query}
+        onChange={event => {
+          setQuery(event.target.value)
+          setActiveIndex(0)
+        }}
+        onKeyDown={onKeyDown}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        className="h-8 w-full rounded-md border border-white/[0.1] bg-white/[0.04] pl-8 pr-2 text-xs text-white placeholder:text-[#8d8d8d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+      />
+      {isOpen && (
+        <ul
+          id="global-search-results"
+          role="listbox"
+          aria-label="Search results"
+          className="absolute right-0 top-full z-30 mt-1 max-h-96 w-[min(28rem,calc(100vw-2rem))] overflow-y-auto rounded-lg border border-white/[0.12] bg-[#262626] py-1 shadow-xl"
+        >
+          {results.length === 0 ? (
+            <li role="presentation" className="px-3 py-2 text-xs text-[#c6c6c6]">No results for “{query.trim()}”</li>
+          ) : results.map((entry, index) => (
+            <li
+              key={`${entry.category}-${entry.id}-${entry.title}-${index}`}
+              id={optionId(index)}
+              role="option"
+              aria-selected={index === activeIndex}
+              onMouseDown={event => event.preventDefault()}
+              onMouseEnter={() => setActiveIndex(index)}
+              onClick={() => choose(entry)}
+              className={`cursor-pointer px-3 py-2 ${index === activeIndex ? 'bg-[#0f62fe]/25' : ''}`}
+            >
+              <span className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-[#78a9ff]">
+                {entry.category}{entry.url ? ' ↗' : ''}
+              </span>
+              <span className="block truncate text-xs font-semibold text-white">{entry.title}</span>
+              {entry.subtitle && <span className="block truncate text-[11px] text-[#a8a8a8]">{entry.subtitle}</span>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>(() => pageForHash(window.location.hash))
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(() => {
@@ -2641,6 +2868,24 @@ export default function App() {
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => scrollElementBelowPageHeader(id))
     })
+  }
+  const openSearchResult = (entry: GlobalSearchEntry) => {
+    if (entry.url) {
+      window.open(entry.url, '_blank', 'noopener,noreferrer')
+      return
+    }
+    if (entry.sessionId) {
+      const sessionId = entry.sessionId
+      setActiveTypes(new Set(allTypes))
+      setActiveDays(new Set(days))
+      setActiveSpeakers(new Set())
+      setExpandedIds(current => new Set(current).add(sessionId))
+    }
+    if (window.location.hash === `#${entry.id}`) {
+      scrollElementBelowPageHeader(entry.id)
+    } else {
+      window.location.hash = entry.id
+    }
   }
   const navigateToBreadcrumbPage = (page: Page) => {
     navigateToPage(page, pageAnchors[page])
@@ -4719,7 +4964,8 @@ export default function App() {
               </div>
             </div>
           )}
-          <nav aria-label="Breadcrumb" className="mt-2 border-t border-white/[0.06] pt-2">
+          <div className="mt-2 flex items-center justify-between gap-3 border-t border-white/[0.06] pt-2">
+          <nav aria-label="Breadcrumb" className="min-w-0">
             <ol className="flex flex-wrap items-center gap-2 text-xs font-medium text-[#8d8d8d]">
               {breadcrumbTrail.map((page, index) => {
                 const isCurrentPage = index === breadcrumbTrail.length - 1 && !selectedSectionLabel
@@ -4754,6 +5000,8 @@ export default function App() {
               )}
             </ol>
           </nav>
+          <GlobalSearch includeGated={hasIbmAccess} onSelect={openSearchResult} />
+          </div>
         </div>
       </header>
 
