@@ -1221,32 +1221,84 @@ const OnboardingCollapseContext = createContext<{
   goToPageEdge: () => {},
 })
 
+const onboardingSectionTitles = new Map<string, string>()
+;(function indexOnboardingTitles(sections: OnboardingSection[]) {
+  for (const section of sections) {
+    onboardingSectionTitles.set(section.id, section.title)
+    indexOnboardingTitles(
+      section.blocks.filter((block): block is Extract<OnboardingBlock, { t: 'sec' }> => block.t === 'sec').map(block => block.s),
+    )
+  }
+})(onboardingAutomationSections)
+
 function OnboardingSectionNavButtons({ sectionId }: { sectionId: string }) {
   const { goToSection, goToPageEdge } = useContext(OnboardingCollapseContext)
   const position = allOnboardingSectionIds.indexOf(sectionId)
   const previousId = position > 0 ? allOnboardingSectionIds[position - 1] : null
   const nextId = position >= 0 && position < allOnboardingSectionIds.length - 1 ? allOnboardingSectionIds[position + 1] : null
-  const buttonClass =
-    'rounded-md border border-white/[0.12] bg-white/[0.04] px-2.5 py-1 text-xs font-semibold text-[#c6c6c6] transition-colors hover:border-[#4589ff] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/[0.12] disabled:hover:text-[#c6c6c6]'
+  const segmentClass =
+    'inline-flex h-8 w-9 items-center justify-center text-[#c6c6c6] transition-colors hover:bg-[#0f62fe]/20 hover:text-white focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-[#c6c6c6]'
+  const groupClass = 'inline-flex overflow-hidden rounded-md border border-white/[0.12] bg-white/[0.04]'
+  const iconProps = {
+    'aria-hidden': true,
+    viewBox: '0 0 16 16',
+    className: 'h-3.5 w-3.5',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.5,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+  } as const
   return (
     <nav
       aria-label="Section navigation"
-      className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] pt-3"
+      className="mt-2 grid grid-cols-[auto_1fr_auto] items-center gap-3 border-t border-white/[0.06] pt-3"
     >
-      <div className="flex items-center gap-2">
-        <button type="button" disabled={!previousId} onClick={() => previousId && goToSection(previousId)} className={buttonClass}>
-          &larr; Previous
+      <div className={groupClass} role="group" aria-label="Previous and next section">
+        <button
+          type="button"
+          disabled={!previousId}
+          onClick={() => previousId && goToSection(previousId)}
+          aria-label={previousId ? `Previous section: ${onboardingSectionTitles.get(previousId)}` : 'Previous section'}
+          title="Previous section"
+          className={segmentClass}
+        >
+          <svg {...iconProps}>
+            <path d="M10 3 5 8l5 5" />
+          </svg>
         </button>
-        <button type="button" disabled={!nextId} onClick={() => nextId && goToSection(nextId)} className={buttonClass}>
-          Next &rarr;
+        <button
+          type="button"
+          disabled={!nextId}
+          onClick={() => nextId && goToSection(nextId)}
+          aria-label={nextId ? `Next section: ${onboardingSectionTitles.get(nextId)}` : 'Next section'}
+          title="Next section"
+          className={`${segmentClass} border-l border-white/[0.12]`}
+        >
+          <svg {...iconProps}>
+            <path d="m6 3 5 5-5 5" />
+          </svg>
         </button>
       </div>
-      <div className="flex items-center gap-2">
-        <button type="button" onClick={() => goToPageEdge('top')} className={buttonClass}>
-          &uarr; Top
+      <p className="min-w-0 truncate text-center text-xs font-semibold text-[#c6c6c6]">
+        {onboardingSectionTitles.get(sectionId)}
+      </p>
+      <div className={groupClass} role="group" aria-label="Top and bottom of page">
+        <button type="button" onClick={() => goToPageEdge('top')} aria-label="Go to the top of the page" title="Top of page" className={segmentClass}>
+          <svg {...iconProps}>
+            <path d="M3 2.5h10M8 14V5M4.5 8.5 8 5l3.5 3.5" />
+          </svg>
         </button>
-        <button type="button" onClick={() => goToPageEdge('bottom')} className={buttonClass}>
-          &darr; Bottom
+        <button
+          type="button"
+          onClick={() => goToPageEdge('bottom')}
+          aria-label="Go to the end of the page"
+          title="End of page"
+          className={`${segmentClass} border-l border-white/[0.12]`}
+        >
+          <svg {...iconProps}>
+            <path d="M3 13.5h10M8 2v9M4.5 7.5 8 11l3.5-3.5" />
+          </svg>
         </button>
       </div>
     </nav>
@@ -1256,7 +1308,6 @@ function OnboardingSectionNavButtons({ sectionId }: { sectionId: string }) {
 function OnboardingAutomationSections() {
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set(allOnboardingSectionIds))
   const allCollapsed = collapsed.size === allOnboardingSectionIds.length
-  const allExpanded = collapsed.size === 0
 
   useEffect(() => {
     const reveal = () => {
@@ -1312,33 +1363,24 @@ function OnboardingAutomationSections() {
   }
 
   const goToPageEdge = (edge: 'top' | 'bottom') => {
-    if (edge === 'top') document.getElementById('onboarding-automation-top')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    else document.getElementById('onboarding-automation-bottom')?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    if (edge === 'top') window.scrollTo({ top: 0, behavior: 'smooth' })
+    else window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })
   }
 
-  const buttonClass =
-    'rounded-md border border-white/[0.12] bg-white/[0.04] px-2.5 py-1.5 text-xs font-semibold text-[#c6c6c6] transition-colors hover:border-[#4589ff] hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/[0.12] disabled:hover:text-[#c6c6c6]'
+  const collapseAllLabel = allCollapsed ? 'Expand all Onboarding Automation sections' : 'Collapse all Onboarding Automation sections'
 
   return (
     <OnboardingCollapseContext.Provider value={{ collapsed, toggle, goToSection, goToPageEdge }}>
-      <div className="mb-3 flex flex-wrap items-center justify-end gap-2">
+      <div className="mb-3 flex justify-end">
         <button
           type="button"
-          onClick={() => setCollapsed(new Set())}
-          disabled={allExpanded}
-          className={buttonClass}
-          aria-label="Expand all Onboarding Automation sections"
+          onClick={() => setCollapsed(allCollapsed ? new Set() : new Set(allOnboardingSectionIds))}
+          aria-label={collapseAllLabel}
+          title="Expand/Collapse sections"
+          className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md border border-[#ff832b]/45 bg-[#ff832b]/10 px-3 text-xs font-semibold text-[#ffb784] shadow-[0_0_18px_rgba(255,131,43,0.08)] transition-colors hover:border-[#ff832b]/75 hover:bg-[#ff832b]/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb784]"
         >
-          Expand all
-        </button>
-        <button
-          type="button"
-          onClick={() => setCollapsed(new Set(allOnboardingSectionIds))}
-          disabled={allCollapsed}
-          className={buttonClass}
-          aria-label="Collapse all Onboarding Automation sections"
-        >
-          Collapse all
+          <VideoVisibilityIcon visible={!allCollapsed} />
+          {allCollapsed ? 'Expand Sections' : 'Collapse Sections'}
         </button>
       </div>
       <div className="grid gap-4">
@@ -1404,7 +1446,15 @@ function OnboardingAutomationSectionView({
           </button>
         </HeadingTag>
       </div>
-      <CopySectionLink id={sectionId} label={section.title} />
+      <div className="flex shrink-0 items-center gap-1">
+        <ProductResourceSectionToggleButton
+          expanded={!isCollapsed}
+          controls={contentId}
+          label={section.title}
+          onToggle={() => toggle(section.id)}
+        />
+        <CopySectionLink id={sectionId} label={section.title} />
+      </div>
     </div>
   )
   const body = isCollapsed ? null : (
@@ -6823,17 +6873,7 @@ export default function App() {
 
             <OnboardingAutomationContents />
 
-            <div className="grid gap-4">
-              {onboardingAutomationSections.map((section, index) => (
-                <OnboardingAutomationSectionView
-                  key={section.id}
-                  section={section}
-                  depth={0}
-                  index={index}
-                  total={onboardingAutomationSections.length}
-                />
-              ))}
-            </div>
+            <OnboardingAutomationSections />
           </section>
 
         ) : currentPage === 'capabilities' ? (
