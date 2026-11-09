@@ -27,10 +27,4 @@ npm run preview    # serves dist/ at http://localhost:4173
 ## Tips
 
 - Pages use hash links, for example `http://localhost:5173/#enablement-top`.
-- IBM-only pages ask for a password. To skip it for the current browser session, run this in the browser console and reload:
-
-  ```js
-  sessionStorage.setItem('ibm-access-granted', 'true')
-  ```
-
 - Every push to `main` deploys to GitHub Pages, so check changes locally first.

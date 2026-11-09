@@ -5,11 +5,12 @@ import enablementData from './enablement.json'
 const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`
 
 type SessionType = 'Lab' | 'Meet the Expert' | 'Meetup' | 'Tech Talk' | 'Breakout' | 'Client Advisory Board'
-type Page = 'overview' | 'capabilities' | 'process-automation' | 'content-services' | 'decision-intelligence' | 'cp4ba' | 'conference' | 'think' | 'sessions' | 'techxchange' | 'schedule' | 'maps' | 'ibm' | 'insights' | 'info' | 'product' | 'community' | 'enablement' | 'ug' | 'surveys' | 'speaker'
+type Page = 'overview' | 'capabilities' | 'lets-create' | 'process-automation' | 'content-services' | 'decision-intelligence' | 'cp4ba' | 'conference' | 'think' | 'sessions' | 'techxchange' | 'schedule' | 'maps' | 'ibm' | 'insights' | 'info' | 'product' | 'community' | 'enablement' | 'ug' | 'surveys' | 'speaker'
 
 const pageAnchors: Record<Page, string> = {
   overview: 'main',
   capabilities: 'capabilities-top',
+  'lets-create': 'lets-create-top',
   'process-automation': 'capabilities-process-automation',
   'content-services': 'capabilities-content-services',
   'decision-intelligence': 'capabilities-decision-intelligence',
@@ -34,6 +35,7 @@ const pageAnchors: Record<Page, string> = {
 const breadcrumbLabels: Record<Page, string> = {
   overview: 'Main',
   capabilities: 'Portfolio',
+  'lets-create': 'Let\'s Create!',
   'process-automation': 'Process Automation',
   'content-services': 'Content Services',
   'decision-intelligence': 'Decision Intelligence',
@@ -57,6 +59,7 @@ const breadcrumbLabels: Record<Page, string> = {
 
 const breadcrumbParents: Partial<Record<Page, Page>> = {
   capabilities: 'overview',
+  'lets-create': 'overview',
   'process-automation': 'capabilities',
   'content-services': 'capabilities',
   'decision-intelligence': 'capabilities',
@@ -119,6 +122,7 @@ function getBreadcrumbTrail(page: Page) {
 function pageForHash(hash: string): Page {
   const id = decodeURIComponent(hash.replace(/^#/, ''))
   if (id === 'main') return 'overview'
+  if (id === 'lets-create-top' || id.startsWith('lets-create-')) return 'lets-create'
   if (id === 'capabilities-top') return 'capabilities'
   if (id === 'capabilities-all') return 'capabilities'
   if (id.startsWith('capabilities-all-')) return 'capabilities'
@@ -987,6 +991,37 @@ const communityProductOptions = Array.from(new Set(userConnectCommunities.flatMa
   .sort((a, b) => a.localeCompare(b))
   .map(product => ({ id: product, label: product }))
 
+type LetsCreateSection = 'yourlearning' | 'navattic' | 'jam-in-a-box' | 'irt-solutions'
+
+interface LetsCreateAsset {
+  name: string
+  description: string
+  url: string
+  section: LetsCreateSection
+  capability: PortfolioResourcePage
+  products: string[]
+}
+
+const letsCreateSections: { id: LetsCreateSection; label: string; description: string }[] = [
+  { id: 'yourlearning', label: 'YourLearning Enablement', description: 'Courses, learning paths, and enablement sessions in IBM YourLearning.' },
+  { id: 'navattic', label: 'Navattic', description: 'Interactive product demos built with Navattic.' },
+  { id: 'jam-in-a-box', label: 'Jam-in-a-Box', description: 'Jam-in-a-Box assets.' },
+  { id: 'irt-solutions', label: 'IRT Solutions', description: 'IRT Solutions assets.' },
+]
+
+// Add assets here. Each one is placed in a section and tagged with one capability
+// and the products it relates to; the filters on the page use those tags.
+// Products must match names in letsCreateProductsByCapability below.
+const letsCreateAssets: LetsCreateAsset[] = []
+
+const letsCreateProductsByCapability = new Map<string, string[]>([
+  ...businessAutomationCapabilities.map(capability => [capability.page as string, capability.products] as [string, string[]]),
+  ['cp4ba', ['IBM Cloud Pak for Business Automation']],
+])
+const letsCreateProductOptions = Array.from(new Set([...letsCreateProductsByCapability.values()].flat()))
+  .sort((a, b) => a.localeCompare(b))
+  .map(product => ({ id: product, label: product }))
+
 function CommunityFilterGroup({
   id,
   title,
@@ -994,6 +1029,7 @@ function CommunityFilterGroup({
   selected,
   onChange,
   onOptionDoubleClick,
+  noun = 'communities',
 }: {
   id: string
   title: string
@@ -1001,6 +1037,7 @@ function CommunityFilterGroup({
   selected: Set<string>
   onChange: (next: Set<string>) => void
   onOptionDoubleClick?: (optionId: string) => void
+  noun?: string
 }) {
   const [expanded, setExpanded] = useState(true)
   const allSelected = selected.size === options.length
@@ -1036,7 +1073,7 @@ function CommunityFilterGroup({
           </button>
         </div>
       </div>
-      <div id={`${id}-controls`} hidden={!expanded} role="group" aria-label={`Filter communities by ${title.toLowerCase()}`} className="mt-3 flex flex-wrap gap-2 border-t border-white/[0.06] pt-3">
+      <div id={`${id}-controls`} hidden={!expanded} role="group" aria-label={`Filter ${noun} by ${title.toLowerCase()}`} className="mt-3 flex flex-wrap gap-2 border-t border-white/[0.06] pt-3">
         {options.map(option => {
           const isActive = selected.has(option.id)
           const color = option.color ?? '#4589ff'
@@ -3250,6 +3287,16 @@ export default function App() {
   const [communityProducts, setCommunityProducts] = useState<Set<string>>(
     () => new Set(communityProductOptions.map(option => option.id)),
   )
+  const [letsCreateVisibleSections, setLetsCreateVisibleSections] = useState<Set<string>>(
+    () => new Set(letsCreateSections.map(section => section.id)),
+  )
+  const [letsCreateCapabilities, setLetsCreateCapabilities] = useState<Set<string>>(
+    () => new Set(communityCapabilityOptions.map(option => option.id)),
+  )
+  const [letsCreateProducts, setLetsCreateProducts] = useState<Set<string>>(
+    () => new Set(letsCreateProductOptions.map(option => option.id)),
+  )
+  const [isLetsCreateFiltersExpanded, setIsLetsCreateFiltersExpanded] = useState(true)
   const [siteAccessCount, setSiteAccessCount] = useState<number | null>(null)
   useEffect(() => {
     const controller = new AbortController()
@@ -3629,7 +3676,7 @@ export default function App() {
     Boolean(activeBusinessAutomationCapability)
   const isCommunitySection = currentPage === 'community' || currentPage === 'enablement'
   const isBusinessAutomationSection =
-    currentPage === 'overview' || isCapabilitiesPage
+    currentPage === 'overview' || currentPage === 'lets-create' || isCapabilitiesPage
   const isIbmSection = currentPage === 'ibm' || currentPage === 'insights' || currentPage === 'speaker'
   const isTechXchangeSection =
     currentPage === 'techxchange' ||
@@ -5173,6 +5220,8 @@ export default function App() {
 
   const mainHeaderTitle = isCapabilitiesPage
     ? 'Business Automation Portfolio'
+    : currentPage === 'lets-create'
+    ? 'Let\'s Create!'
     : currentPage === 'conference'
       ? 'Conference'
       : currentPage === 'think'
@@ -5225,9 +5274,7 @@ export default function App() {
                 </a>
               ) : (
                 <a
-                  href="https://www.ibm.com/products/cloud-pak-for-business-automation"
-                  target="_blank"
-                  rel="noreferrer"
+                  href="https://ibm.biz/business-automation"
                   aria-label="IBM Business Automation"
                   className="mb-1 inline-flex items-center gap-2.5 text-[#78a9ff] transition-colors hover:text-white"
                 >
@@ -5353,6 +5400,7 @@ export default function App() {
                   {([
                     ['overview', 'Overview'],
                     ['capabilities', 'Portfolio'],
+                    ['lets-create', 'Let\'s Create!'],
                   ] as const).map(([page, label]) => {
                     const isActive = page === 'capabilities' ? isCapabilitiesPage : currentPage === page
                     return (
@@ -5473,6 +5521,8 @@ export default function App() {
                     ? 'IBM Cloud Pak for Business Automation'
                   : currentPage === 'capabilities'
                     ? 'Process · Content · Decisions · Platform'
+                  : currentPage === 'lets-create'
+                    ? 'Learn, demo, and build with Business Automation'
                   : currentPage === 'overview'
                   ? 'IBM Business Automation · AI-powered operations'
                   : currentPage === 'sessions'
@@ -5516,12 +5566,16 @@ export default function App() {
                     IBM TechXchange 2026
                   </span>
                 ) : (
-                  <span className="flex shrink-0 items-center gap-2">
+                  <a
+                    href="https://ibm.biz/business-automation"
+                    aria-label="IBM Business Automation"
+                    className="flex shrink-0 items-center gap-2 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                  >
                     <img src={asset('ibm-logo.png')} alt="IBM" className="h-4 w-auto" />
                     <span className="hidden text-[10px] font-semibold uppercase tracking-[0.14em] text-[#78a9ff] sm:inline">
                       Business Automation
                     </span>
-                  </span>
+                  </a>
                 )}
                 <span className="h-5 w-px shrink-0 bg-white/[0.14]" aria-hidden="true" />
                 <button
@@ -5915,6 +5969,179 @@ export default function App() {
               ))}
             </div>
           </section>
+        ) : currentPage === 'lets-create' ? (
+          <section id="lets-create-top" aria-labelledby="lets-create-heading" className="scroll-mt-28">
+            {(() => {
+              const visibleAssets = letsCreateAssets.filter(asset =>
+                letsCreateVisibleSections.has(asset.section) &&
+                (letsCreateCapabilities.has(asset.capability) || asset.products.some(product => letsCreateProducts.has(product))),
+              )
+              const handleCapabilityChange = (next: Set<string>) => {
+                const added = [...next].filter(id => !letsCreateCapabilities.has(id))
+                if (added.length > 0) {
+                  setLetsCreateProducts(current => {
+                    const merged = new Set(current)
+                    added.forEach(id => letsCreateProductsByCapability.get(id)?.forEach(product => merged.add(product)))
+                    return merged
+                  })
+                }
+                setLetsCreateCapabilities(next)
+              }
+              const shownSections = letsCreateSections.filter(section => letsCreateVisibleSections.has(section.id))
+              return (
+                <>
+                  <div className="mb-6 flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">IBM Data &amp; AI: Business Automation</p>
+                      <h2 id="lets-create-heading" className="mt-1 text-2xl font-semibold text-white">Let&rsquo;s Create!</h2>
+                      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#c6c6c6]">
+                        Learn, demo, and build with Business Automation. Filter by section, capability, or product to find the right asset.
+                      </p>
+                    </div>
+                    <CopySectionLink id="lets-create-top" label="Let's Create page" />
+                  </div>
+
+                  <section
+                    aria-labelledby="lets-create-filters-heading"
+                    className="mb-6 rounded-xl border border-[#4589ff]/30 bg-[#1c1c1c] p-4 sm:p-5"
+                  >
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                      <h3 id="lets-create-filters-heading" className="text-base font-semibold text-white">Sections, Capabilities and Products</h3>
+                      <button
+                        type="button"
+                        onClick={() => setIsLetsCreateFiltersExpanded(expanded => !expanded)}
+                        aria-expanded={isLetsCreateFiltersExpanded}
+                        aria-controls="lets-create-filters-body"
+                        aria-label={isLetsCreateFiltersExpanded ? 'Collapse Filters' : 'Expand Filters'}
+                        title={isLetsCreateFiltersExpanded ? 'Collapse Filters' : 'Expand Filters'}
+                        className="inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                      >
+                        Filter
+                        <VideoVisibilityIcon visible={isLetsCreateFiltersExpanded} />
+                      </button>
+                      <span aria-live="polite" className="text-xs font-medium text-[#c6c6c6]">
+                        Sections: {shownSections.length} of {letsCreateSections.length} · Assets: {visibleAssets.length} of {letsCreateAssets.length}
+                      </span>
+                    </div>
+                    <div id="lets-create-filters-body" hidden={!isLetsCreateFiltersExpanded} className="mt-4 grid gap-4 border-t border-white/[0.06] pt-4">
+                      <CommunityFilterGroup
+                        id="lets-create-section-filter"
+                        title="Sections"
+                        noun="assets"
+                        options={letsCreateSections.map(section => ({ id: section.id, label: section.label }))}
+                        selected={letsCreateVisibleSections}
+                        onChange={setLetsCreateVisibleSections}
+                      />
+                      <CommunityFilterGroup
+                        id="lets-create-capability-filter"
+                        title="Capabilities"
+                        noun="assets"
+                        options={communityCapabilityOptions}
+                        selected={letsCreateCapabilities}
+                        onChange={handleCapabilityChange}
+                        onOptionDoubleClick={id => {
+                          const associated = letsCreateProductsByCapability.get(id) ?? []
+                          setLetsCreateProducts(current => new Set([...current].filter(product => !associated.includes(product))))
+                        }}
+                      />
+                      <CommunityFilterGroup
+                        id="lets-create-product-filter"
+                        title="Products"
+                        noun="assets"
+                        options={letsCreateProductOptions}
+                        selected={letsCreateProducts}
+                        onChange={setLetsCreateProducts}
+                      />
+                    </div>
+                  </section>
+
+                  {shownSections.length === 0 && (
+                    <p className="rounded-xl border border-white/[0.07] bg-[#262626] px-5 py-6 text-center text-sm text-[#c6c6c6]">
+                      No sections are selected.
+                    </p>
+                  )}
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    {shownSections.map((section, sectionIndex) => {
+                      const sectionAssets = visibleAssets.filter(asset => asset.section === section.id)
+                      const sectionId = `lets-create-${section.id}`
+                      return (
+                        <article
+                          key={section.id}
+                          id={sectionId}
+                          aria-labelledby={`${sectionId}-heading`}
+                          className="scroll-mt-28 overflow-hidden rounded-xl border border-white/[0.07] bg-[#262626]"
+                        >
+                          <div className="flex items-start justify-between gap-4 border-b border-white/[0.06] px-5 py-4">
+                            <div>
+                              <p className="font-mono text-[10px] font-semibold tracking-[0.14em] text-[#8d8d8d]">
+                                {String(sectionIndex + 1).padStart(2, '0')} / {String(shownSections.length).padStart(2, '0')}
+                              </p>
+                              <h3 id={`${sectionId}-heading`} className="mt-2 text-base font-semibold text-white">{section.label}</h3>
+                              <p className="mt-1 text-xs leading-relaxed text-[#c6c6c6]">{section.description}</p>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-2">
+                              <span className="text-[10px] font-medium text-[#c6c6c6]">
+                                {sectionAssets.length} {sectionAssets.length === 1 ? 'asset' : 'assets'}
+                              </span>
+                              <CopySectionLink id={sectionId} label={section.label} />
+                            </div>
+                          </div>
+                          <div className="p-5">
+                            {sectionAssets.length === 0 ? (
+                              <p className="text-sm text-[#8d8d8d]">
+                                {letsCreateAssets.some(asset => asset.section === section.id)
+                                  ? 'No assets match the selected capabilities and products.'
+                                  : 'No assets have been added yet.'}
+                              </p>
+                            ) : (
+                              <ul className="grid gap-3">
+                                {sectionAssets.map(asset => {
+                                  const capability = businessAutomationCapabilityFilters.find(filter => filter.page === asset.capability)
+                                  return (
+                                    <li key={`${asset.section}-${asset.name}`} className="rounded-lg border border-white/[0.07] bg-[#161616] p-4">
+                                      <div className="flex items-start justify-between gap-3">
+                                        <h4 className="text-sm font-semibold text-white">{asset.name}</h4>
+                                        <a
+                                          href={asset.url}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-[#4589ff]/35 bg-[#0f62fe]/10 px-2.5 py-1.5 text-xs font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff] hover:bg-[#0f62fe]/25 hover:text-white"
+                                        >
+                                          Open
+                                          <ExternalLinkIcon />
+                                        </a>
+                                      </div>
+                                      <p className="mt-2 text-xs leading-relaxed text-[#c6c6c6]">{asset.description}</p>
+                                      <div className="mt-3 flex flex-wrap gap-1.5">
+                                        {capability && (
+                                          <span
+                                            className="rounded-full border px-2 py-0.5 text-[10px] font-semibold text-white"
+                                            style={{ borderColor: `${capability.color}bb`, backgroundColor: `${capability.color}20` }}
+                                          >
+                                            {capability.label}
+                                          </span>
+                                        )}
+                                        {asset.products.map(product => (
+                                          <span key={product} className="rounded-full border border-white/[0.1] bg-white/[0.03] px-2 py-0.5 text-[10px] font-medium text-[#c6c6c6]">
+                                            {product}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </li>
+                                  )
+                                })}
+                              </ul>
+                            )}
+                          </div>
+                        </article>
+                      )
+                    })}
+                  </div>
+                </>
+              )
+            })()}
+          </section>
+
         ) : currentPage === 'capabilities' ? (
           <>
           {renderCapabilityFilters()}
