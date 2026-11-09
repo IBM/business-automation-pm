@@ -1,5 +1,11 @@
 import { Fragment, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react'
 import enablementData from './enablement.json'
+import {
+  onboardingAutomationSections,
+  onboardingAutomationTagline,
+  type OnboardingBlock,
+  type OnboardingSection,
+} from './onboardingAutomationContent'
 
 // Resolve files in /public against the deploy base path (e.g. /<repo>/ on GitHub Pages)
 const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`
@@ -1040,376 +1046,264 @@ const letsCreateProductOptions = Array.from(new Set([...letsCreateProductsByCapa
 
 const onboardingAutomationSourceUrl = 'https://ibm-cloud-architecture.github.io/refarch-dba/use-cases/onboarding-automation'
 
-interface OnboardingAutomationBlock {
-  heading?: string
-  text?: string
-  items?: string[]
-  ordered?: boolean
-  note?: { kind: 'info' | 'warning' | 'success'; text: string }
-  // File names under public/onboarding-automation/ (screenshots from the original lab)
-  images?: string[]
+
+const onboardingAutomationAnchor = (id: string) => `onboarding-automation-${id}`
+
+// Renders **bold** and [label](url) markup. "#id" links stay on this page.
+function renderOnboardingInline(text: string, keyPrefix = 'i'): ReactNode[] {
+  const pattern = /\[([^\]]+)\]\(([^)\s]+)\)|\*\*([^*]+)\*\*/g
+  const nodes: ReactNode[] = []
+  let last = 0
+  let match: RegExpExecArray | null
+  let index = 0
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > last) nodes.push(text.slice(last, match.index))
+    const key = `${keyPrefix}-${index++}`
+    if (match[1] !== undefined) {
+      const href = match[2]
+      const internal = href.startsWith('#')
+      nodes.push(
+        <a
+          key={key}
+          href={internal ? `#${onboardingAutomationAnchor(href.slice(1))}` : href}
+          {...(internal ? {} : { target: '_blank', rel: 'noreferrer' })}
+          className="text-[#78a9ff] underline decoration-[#78a9ff]/40 underline-offset-2 transition-colors hover:text-white"
+        >
+          {renderOnboardingInline(match[1], key)}
+        </a>,
+      )
+    } else {
+      nodes.push(
+        <strong key={key} className="font-semibold text-white">
+          {match[3]}
+        </strong>,
+      )
+    }
+    last = match.index + match[0].length
+  }
+  if (last < text.length) nodes.push(text.slice(last))
+  return nodes
 }
 
-interface OnboardingAutomationSection {
-  id: string
-  title: string
-  optional?: boolean
-  blocks: OnboardingAutomationBlock[]
+function OnboardingAutomationBlockView({ block, depth, index }: { block: OnboardingBlock; depth: number; index: number }) {
+  switch (block.t) {
+    case 'p':
+      return <p className="text-sm leading-relaxed text-[#c6c6c6]">{renderOnboardingInline(block.x)}</p>
+    case 'step':
+      return (
+        <p className="mt-2 flex gap-2 text-sm leading-relaxed text-[#e0e0e0]">
+          <span className="shrink-0 font-semibold text-[#78a9ff]">{block.n}</span>
+          <span>{renderOnboardingInline(block.x)}</span>
+        </p>
+      )
+    case 'list':
+      return block.labels ? (
+        <ul className="grid gap-1 pl-6 text-sm leading-relaxed text-[#c6c6c6]">
+          {block.items.map((item, itemIndex) => (
+            <li key={itemIndex} className="flex gap-2">
+              <span className="w-5 shrink-0 text-[#8d8d8d]">{block.labels![itemIndex]}</span>
+              <span>{renderOnboardingInline(item)}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <ul className="grid list-disc gap-1 pl-10 text-sm leading-relaxed text-[#c6c6c6]">
+          {block.items.map((item, itemIndex) => (
+            <li key={itemIndex}>{renderOnboardingInline(item)}</li>
+          ))}
+        </ul>
+      )
+    case 'img':
+      return (
+        <a
+          href={asset(`onboarding-automation/${block.src}`)}
+          target="_blank"
+          rel="noreferrer"
+          title="Open full-size screenshot"
+          className="block max-w-3xl overflow-hidden rounded-lg border border-white/[0.1] bg-[#161616] transition-colors hover:border-[#4589ff]"
+        >
+          <img
+            src={asset(`onboarding-automation/${block.src}`)}
+            alt={block.alt}
+            loading="lazy"
+            decoding="async"
+            className="h-auto w-full"
+          />
+        </a>
+      )
+    case 'table':
+      return (
+        <div className="overflow-x-auto rounded-lg border border-white/[0.08]">
+          <table className="w-full border-collapse text-left text-sm text-[#c6c6c6]">
+            {block.head && (
+              <thead className="bg-white/[0.04] text-xs uppercase tracking-wide text-[#a8a8a8]">
+                <tr>
+                  {block.head.map(cell => (
+                    <th key={cell} scope="col" className="px-3 py-2 font-semibold">
+                      {cell}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+            )}
+            <tbody>
+              {block.rows.map((row, rowIndex) => (
+                <tr key={rowIndex} className="border-t border-white/[0.06] align-top">
+                  {row.map((cell, cellIndex) => (
+                    <td key={cellIndex} className="px-3 py-2">
+                      {renderOnboardingInline(cell)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )
+    case 'note': {
+      const kind = block.kind === 'info' && block.x.startsWith('\u26a0') ? 'warning' : block.kind
+      const classes =
+        kind === 'warning'
+          ? 'border-[#f1c21b]/50 bg-[#f1c21b]/10'
+          : kind === 'success'
+            ? 'border-[#42be65]/50 bg-[#42be65]/10'
+            : kind === 'info'
+              ? 'border-[#4589ff]/50 bg-[#0f62fe]/10'
+              : 'border-white/[0.14] bg-white/[0.04]'
+      return (
+        <p className={`rounded-lg border px-3 py-2 text-sm leading-relaxed text-[#e0e0e0] ${classes}`}>
+          {renderOnboardingInline(block.x)}
+        </p>
+      )
+    }
+    case 'nav':
+      return (
+        <p className="flex flex-wrap items-center gap-x-2 text-xs text-[#8d8d8d]">
+          {block.links.map((link, linkIndex) => (
+            <Fragment key={linkIndex}>
+              {linkIndex > 0 && <span aria-hidden="true">|</span>}
+              <a
+                href={`#${onboardingAutomationAnchor(link.to)}`}
+                className="text-[#78a9ff] transition-colors hover:text-white"
+              >
+                {link.label}
+              </a>
+            </Fragment>
+          ))}
+        </p>
+      )
+    case 'sec':
+      return <OnboardingAutomationSectionView section={block.s} depth={depth + 1} index={index} />
+  }
 }
 
-// Content imported from the IBM Cloud Architecture "refarch-dba" Onboarding Automation use case.
-// Screenshots and diagrams are not reproduced; see the original page for the images.
-const onboardingAutomationSections: OnboardingAutomationSection[] = [
-  {
-    id: 'scenario',
-    title: 'Scenario introduction',
-    blocks: [
-      {
-        text: 'Employee applicant John Doe submitted an employment application and a video interview with other materials. HR processors reviewed the application, adding comments and annotations to the document and bookmarks to the video so additional reviewers can quickly find key responses.',
-      },
-      {
-        text: 'Lucy and the other reviewers see everything about John Doe in one teamspace, consistently and securely. Some information, such as the applicant\u2019s SSN, appears on documents but is redacted so only reviewers with the right permission can see it. Video bookmarks let Lucy jump to key sections without watching the entire video. Finally, Lucy integrates with enterprise workflow to launch additional manual and automated processes.',
-        images: [
-          '010-Intro-OnboardingAutomation.png',
-          '000-Intro-DiscoveryMap.png',
-        ],
-      },
-    ],
-  },
-  {
-    id: 'setup',
-    title: 'Log in and set up your environment',
-    blocks: [
-      {
-        heading: 'Option A: Cloud Pak for Business Automation as a Service (IBMers and Business Partners)',
-        text: 'IBM maintains multiple SaaS tenants that can be reserved through IBM Technology Zone. Enablement users already have their environment set up. Demo users continue once their account administrator completes setup. Administrators should use the Administration Guide (IBM only).',
-        items: [
-          'Log in to your Cloud Pak for Business Automation as a Service demo environment and open the portal.',
-          'Open the menu in the upper left, select Production, then Run.',
-          'Click the Business Automation Apps tile to launch the Business Automation Navigator desktop. It opens in a new browser window or tab and can take some time to load.',
-          'Review the available demos, then click the Onboarding Automation tile.',
-          'Check the Storyboard and Discovery Map tabs to learn more about the demo.',
-          'Open the Run the demo! tab and click the picture of Lucy, the HR Employee Onboarding Specialist.',
-        ],
-        ordered: true,
-        images: ['001c-Portal.png', '001d-Portal.png', '001d-BAN.png', 'Application01b.png', 'Application03-Tabs.png', 'Application03-Lucy.png'],
-      },
-      {
-        heading: 'Option B: your own environment (not a trial or demo)',
-        text: 'Administrators deploy the demo from the dba-onboarding-automation git repository, which includes the deployment artifacts and technical architecture information.',
-        items: [
-          'Ask your administrator for the URL of the Business Automation Navigator desktop and your login credentials.',
-          'Wait for the desktop to load in a new browser window or tab, then log in.',
-          'Review the available demos and click the Onboarding Automation tile.',
-          'Check the Storyboard and Discovery Map tabs, then open Run the demo! and click the picture of Lucy.',
-        ],
-        ordered: true,
-        images: ['001d-BAN.png', 'Application01b.png', 'Application03-Tabs.png', 'Application03-Lucy.png'],
-      },
-    ],
-  },
-  {
-    id: 'navigator',
-    title: 'Tour IBM Navigator',
-    blocks: [
-      {
-        text: 'IBM Navigator is a desktop for an organization\u2019s workers to find and organize information. As Lucy, you review applicant John Doe\u2019s employment application and video interview.',
-      },
-      {
-        items: [
-          'Click the navigation menu icon (hamburger) in the upper left. It gives access to Browse, Search, Share, Teamspaces, Work, Cases, and Reports. The Work and Cases features show workflow tasks and case activities assigned to the user.',
-          'Click Browse. You are viewing the Corporate Operations repository, an IBM FileNet Content Manager repository. Navigator can also reach CM8, Content Manager OnDemand, Box, and CMIS-compliant repositories such as Alfresco and Microsoft SharePoint On-Premises.',
-          'In the folder tree, open Focus Corp Docs / Human Resources / Onboarded Employees.',
-          'Select the Selena Swift folder to see custom folder properties such as First Name, Last Name, Employee ID, Onboarded status, and Hire Date.',
-          'Open Selena Swift / Employee Packet and select the first document. Switch between the Details, Magazine, and Filmstrip views in the upper right.',
-          'Magazine view adds social features such as Likes, Tags, Downloads, and Comments. Filmstrip view suits media such as pictures; try it on the Photos folder.',
-        ],
-        ordered: true,
-        images: [
-          '100-Navigator-Hamburger.png',
-          '100-Navigator-BrowseFeature.png',
-          '110c-Navigator-OnboardedEmployees.png',
-          '115-Navigator-SelenaSwift.png',
-          '120c-Navigator-EmployeePacket.png',
-          '121-Navigator-Magazine.png',
-          '122-Navigator-Filmstrip.png',
-        ],
-      },
-    ],
-  },
-  {
-    id: 'teamspace',
-    title: 'Create and review a teamspace',
-    blocks: [
-      {
-        text: 'Teamspaces give a team a focused view of the folders, documents, and searches it needs to complete its tasks. Typically the teamspace already exists and several HR processors have reviewed it before it reaches Lucy. Here you first create the teamspace for John Doe, then review how it is used.',
-      },
-      {
-        heading: 'Teamspace template builder (recommended, optional)',
-        text: 'An Employee Onboarding template should already exist. Templates configure the folder hierarchy, documents, search templates, and security through a wizard so teamspaces are created in a timely, secure, and consistent way.',
-        items: [
-          'From the navigation menu choose Teamspaces, open the Templates tab, and click New Template.',
-          'Define Teamspace Template: enter a template name and description. In a shared environment choose values that distinguish your template.',
-          'Select Searches: none are needed for this use case.',
-          'Select Classes or Entry Templates: choose Use classes to add documents, then add the Employment Application and Document classes. If Employment Application is not available, the default Document class works but the custom properties (First Name, Last Name, Application Date) will not appear.',
-          'Folders and Documents Tree: click New Folder and build the folder structure, adding default documents if desired.',
-          'Select Roles: create custom roles, for example HR, Payroll, Manager (Department Manager), and IT, or add existing role templates. Click Finish.',
-        ],
-        ordered: true,
-        images: [
-          'ts-100-Teamspace-Feature.png',
-          'ts-110-New-Teamspace-Template.png',
-          'ts-120-Template-Builder.png',
-          'ts-130-Define-Teamspace-Template.png',
-          'ts-140b-Select-Searches.png',
-          'ts-150-Template-Select-Classes.png',
-          'ts-160-Folders-Documents-Tree.png',
-          'ts-170b-Select-Roles.png',
-        ],
-      },
-      {
-        heading: 'Teamspace builder',
-        text: 'Download the Employment Application PDF and the Video Interview MP4 from the original lab page. They are added to the teamspace below.',
-        items: [
-          'From Teamspaces, open the Teamspaces tab and click New Teamspace.',
-          'Define Teamspace: enter a name and description, and select the Employee Onboarding template (or your own template).',
-          'Select Searches and Select Classes or Entry Templates: review the items inherited from the template and click Next.',
-          'Folders and Documents Tree: the folder structure is created from the template. Right-click the Application folder and choose Add Document from Local Drive. Add Focus Corp - Employment Application.pdf with class Employment Application, First Name John, Last Name Doe, and any Application Date.',
-          'Add the video interview the same way into Application / Video Interview, using the Document class.',
-          'Select Users: you are shown as an owner. Add yourself to other roles or add users and groups, then click Finish.',
-        ],
-        ordered: true,
-        images: [
-          'ts-200b-New-Teamspace.png',
-          'ts-210-Teamspace-Builder.png',
-          'ts-220-Define-Teamspace.png',
-          'ts-230-Select-Searches.png',
-          'ts-240-Teamspace-Select-Classes.png',
-          'ts-250-Add-Application.png',
-          'ts-255b-Add-Document.png',
-          'ts-258-Add-Video.png',
-          'ts-260-Teamspace-Users.png',
-        ],
-      },
-      {
-        heading: 'Review the teamspace',
-        items: [
-          'From the navigation menu choose Teamspaces and locate your teamspace, for example Employee Onboarding - John Doe.',
-          'Right-click it and choose Modify, Roles to see custom roles and their security permissions. The Team tab shows the users and groups in each role. Click Cancel when done.',
-          'Open the teamspace. The left side has Browse (content), Search (saved searches), and Team (members). The main area shows the selected folder, and the right side shows a thumbnail and the custom and system properties of the selected document.',
-        ],
-        ordered: true,
-        images: [
-          '200-Teamspace-Feature.png',
-          '210-Teamspaces.png',
-          '220-Teamspace-Roles.png',
-          '230-Teamspace-Roles-Security.png',
-          '240-Teamspace-View.png',
-        ],
-      },
-      {
-        heading: 'Prepare teamspace content (optional)',
-        text: 'This step assumes familiarity with creating annotations. It prepares content for the document and video sections below.',
-        items: [
-          'Open Focus Corp - Employment Application.pdf and add: a redaction on the Social Security Number with reason Social Security Number; a highlight on the desired salary (85,000); a sticky note and a text annotation reading "Salary request exceeds job posting - please review"; Received and Reviewed date stamps; and document comments, including "Salary adjust was approved, please proceed with this candidate". Save and close the viewer.',
-          'Open the video in a new window and create bookmarks: 00:00:07 Tell me about yourself; 00:00:31 Why should we hire you?; 00:00:51 Why did you leave your last job?; 00:01:05 What is your greatest weakness?; 00:01:21 What are your greatest strengths?; 00:01:42 Where do you see yourself in 5 years?; 00:01:57 What do you like to do outside of work?',
-        ],
-        images: [
-          '300-Application-Document.png',
-          '305-Annotations.png',
-          '302-Annotation-Save.png',
-          '380-Video-Launch.png',
-          '382-Video-OpenNewWindow.png',
-          '383-Video-New-Bookmark-Add.png',
-        ],
-      },
-    ],
-  },
-  {
-    id: 'documents',
-    title: 'View and edit documents',
-    blocks: [
-      {
-        text: 'Open the application document (Focus Corp - Employment Application.pdf) from your teamspace. It also contains an I-9 document that you split out in the next section.',
-      },
-      {
-        items: [
-          'Review the viewer tools; hover over any tool for a tooltip. Use Fit to window to see a full page.',
-          'Annotations mark up a document with lines, rectangles, redactions, text, highlights, sticky notes, pencil, and stamps. Each has security permissions and records the user and timestamp. Hover over any redaction or annotation to see who created it and when.',
-          'Right-click a redaction and choose Select redaction reason. Redaction reasons use role-based security, so only users in a configured role can see behind the redaction or manage it. Data capture solutions can also redact values such as an SSN automatically.',
-          'Draw a Filled rectangle (redaction) around the Driver\u2019s License value, then right-click it, choose Edit redaction reason, and select PII.',
-          'Double-click the yellow sticky note to read or edit its text. A Text annotation beside it shows text without opening the note.',
-          'Click View Comments in the upper right to read, filter, add, edit, or delete document comments. Click it again to leave comment mode.',
-          'Add an Approved stamp from the Stamp annotation in the Annotations bar, place it on the document, and click Save. The stamp shows your email address and the date.',
-          'Click the Thumbnails icon at the bottom of the viewer to see every page.',
-        ],
-        ordered: true,
-        images: [
-          '300-Application-Document.png',
-          '300b-Viewer-Overview.png',
-          '310c-Viewer-Fit.png',
-          '315-Viewer-Timestamp.png',
-          '320c-Viewer-Redaction-Reason.png',
-          '322-Viewer-Create-Redaction.png',
-          '323-Viewer-Set-Redaction-Reason.png',
-          '330b-Sticky-Note.png',
-          '340b-Doc-Comment.png',
-          '350-Stamp.png',
-          '360-Thumbnail.png',
-          '362-Thumbnail-Size.png',
-        ],
-      },
-      {
-        note: {
-          kind: 'success',
-          text: 'Related capabilities: IBM Content Navigator Edit Service, Navigator Sync, Navigator Mobile, Navigator for Microsoft Office, Microsoft Office Online editing, and IBM Enterprise Video Streaming with automatic captions and transcoding.',
-        },
-      },
-    ],
-  },
-  {
-    id: 'merge-split',
-    title: 'Merge and split',
-    optional: true,
-    blocks: [
-      {
-        text: 'The first five pages of the application document are the actual application; the next four pages are an I-9 Employment Verification document that does not belong in the same file. Use Merge and Split to separate them.',
-      },
-      {
-        items: [
-          'Click Open in New Window in the upper right of the viewer, then choose Merge and Split. The Cut, Copy, and Paste icons appear, and pages can be dragged to a new position.',
-          'Click Add document, set Class to Document and Document Title to "John Doe - I9", and click Add. A second tab opens for the new document.',
-          'In the I-9 tab, select the first five pages (the application pages) and click Cut. Four pages remain. Click Check in document.',
-          'Return to the first tab (the original application), select the last four pages, click Cut, and click Check in document.',
-          'Close the viewer to return to the teamspace.',
-        ],
-        ordered: true,
-        images: [
-          '370-MergeSplit-Open.png',
-          '372-MergeSplit-Option.png',
-          '373-MergeSplit-Main.png',
-          '374-MergeSplit-AddDoc.png',
-          '375c-MergeSplit-DocSave.png',
-          '376-MergeSplit-I9.png',
-          '377-1-MergeSplit-I9CheckIn.png',
-          '378-1-MergeSplit.png',
-          '378-2c-MergeSplit-Cut.png',
-          '378-3-MergeSplit-Save.png',
-        ],
-      },
-    ],
-  },
-  {
-    id: 'video',
-    title: 'Review video',
-    optional: true,
-    blocks: [
-      {
-        text: 'The video viewer streams video and audio without browser plugins, so large files can be played right away.',
-      },
-      {
-        items: [
-          'Select the video in Application / Video Interview. A short live preview and the video properties appear in the right pane.',
-          'Click Open in New Window, then Bookmarks. The list shows each bookmark\u2019s name, description, time, and creator. Bookmarks let Focus Corp reviewers jump straight to key segments.',
-          'Type in the Filter field to find a bookmark by name, for example "strengths".',
-          'Click a bookmark and use Previous and Next to cycle through them. The video starts immediately.',
-          'Create a bookmark: play and pause at the desired point, click New Bookmark, enter a name and optional description, adjust the start time if needed, and click OK.',
-        ],
-        ordered: true,
-        images: [
-          '380-Video-Launch.png',
-          '382-Video-OpenNewWindow.png',
-          '383-Video-Bookmarks.png',
-          '384-Video-PreviousNext.png',
-          '385-Video-NewBookmark.png',
-        ],
-      },
-    ],
-  },
-  {
-    id: 'process',
-    title: 'Launch the Onboard Employee process',
-    blocks: [
-      {
-        text: 'Lucy is ready to approve the applicant, so she triggers a workflow to start the downstream onboarding process.',
-      },
-      {
-        items: [
-          'In your teamspace, open the Application folder, right-click the employment application, and choose Workflow, Launch Process.',
-          'Select the Onboard Employee process and click OK.',
-          'Enter any comments in Review Request Details. Document Name, First Name, Last Name, and Application Date are filled in from the document properties, and you can view the application one last time.',
-          'Click Launch process.',
-        ],
-        ordered: true,
-        images: [
-          '600-LaunchProcess.png',
-          '610-LaunchProcess-OnboardEmployee.png',
-          '620-LaunchProcess-LaunchUI.png',
-          '620B-LaunchProcess-Workplace.png',
-          '625-LaunchProcess-Launch.png',
-        ],
-        note: {
-          kind: 'warning',
-          text: 'If the launch screen does not appear automatically, find the task in Workplace and click its Name link.',
-        },
-      },
-      {
-        note: {
-          kind: 'info',
-          text: 'The process is not fully implemented in this scenario. It would orchestrate manual and automated onboarding steps such as sending the offer letter and employee packet, and preparing benefits, payroll, and IT accounts.',
-        },
-      },
-    ],
-  },
-  {
-    id: 'summary',
-    title: 'Summary',
-    blocks: [
-      {
-        text: 'Content services enables secure and compliant content access through teamspaces, viewing and editing capabilities such as role-based redactions, merge and split, and video bookmarks, and finally workflow to automate additional processes. Cloud Pak for Business Automation provides a pre-integrated platform that includes Content Services alongside Workflow (BAW), RPA, Decisions (ODM and ADS), and more.',
-      },
-    ],
-  },
-  {
-    id: 'troubleshooting',
-    title: 'Troubleshooting',
-    blocks: [
-      {
-        items: [
-          'Focus Corp folders, documents, or teamspaces are not available: on a Cloud Pak for Business Automation as a Service tenant, make sure you selected the Production environment. Otherwise ask the environment administrator to confirm the setup instructions were completed.',
-          'Browse shows folders but no documents in the Focus Corp structure: ask your tenant administrator to add your user ID to the TE_DEMO management access group (see the dba-onboarding-automation repository). Teamspace creation is not affected.',
-          'Unable to modify folders or documents: in an Enablement environment, permissions are restricted to viewing. The exception is Corporate Operations / Focus Corp / Human Resources / Onboarded Employees / Unsecured.',
-          'Launch Onboard Employee does not display the document: Chrome is the recommended browser. In Firefox you may need to temporarily disable the CSP header. In either browser, set the default action for PDF documents to open in the browser.',
-        ],
-      },
-    ],
-  },
-  {
-    id: 'additional-assets',
-    title: 'Additional assets',
-    blocks: [
-      {
-        text: 'Optional demos that extend the use case. The videos are linked from the original lab page.',
-        items: [
-          'Automation Document Processing (3:46): apply a full document processing workflow with low-code tools and deep-learning AI to eliminate manual work across the enterprise.',
-          'External Share (3:37): give trusted external users access to content in a simplified Navigator interface with security, full access control, and the same redaction of sensitive data.',
-          'GraphQL (7:18): query and manipulate data with the FileNet GraphQL API to simplify application development for Content Platform Engine.',
-          'Records Management (3:15): use IBM Enterprise Records to capture, declare, classify, store, and dispose of electronic and physical records according to retention policies.',
-          'Salesforce Integration (6:29): manage Salesforce content in FileNet Content Manager through the native connector, so users no longer switch applications.',
-          'Automate End-to-End Workflows (4:40): see how IBM Business Automation Workflow enables collaboration, integrates with content management, and provides analytics.',
-        ],
-        images: [
-          'aa-AutomationDocumentProcessingOverview.png',
-          'aa-TE-ExternalShare-Thumbnail.png',
-          'aa-FileNetGraphQL-Thumbnail-Intro.png',
-          'aa-RecordsManagement.png',
-          'aa-SalesforceOverview2.png',
-          'aa-AutomateEndtoEndWorkflow.png',
-        ],
-      },
-    ],
-  },
-]
+function OnboardingAutomationSectionView({
+  section,
+  depth,
+  index,
+  total,
+}: {
+  section: OnboardingSection
+  depth: number
+  index: number
+  total?: number
+}) {
+  const sectionId = onboardingAutomationAnchor(section.id)
+  const headingId = `${sectionId}-heading`
+  const headingClass =
+    depth === 0
+      ? 'mt-2 text-lg font-semibold text-white'
+      : depth === 1
+        ? 'text-base font-semibold text-white'
+        : depth === 2
+          ? 'text-sm font-semibold text-white'
+          : 'text-sm font-semibold text-[#e0e0e0]'
+  const HeadingTag = (depth === 0 ? 'h3' : depth === 1 ? 'h4' : 'h5') as 'h3' | 'h4' | 'h5'
+  const header = (
+    <div className="flex items-start justify-between gap-4">
+      <div>
+        {depth === 0 && total !== undefined && (
+          <p className="font-mono text-[10px] font-semibold tracking-[0.14em] text-[#8d8d8d]">
+            {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
+          </p>
+        )}
+        <HeadingTag id={headingId} className={headingClass}>
+          {section.title}
+        </HeadingTag>
+      </div>
+      <CopySectionLink id={sectionId} label={section.title} />
+    </div>
+  )
+  const body = (
+    <div className="grid gap-3">
+      {section.blocks.map((block, blockIndex) => (
+        <OnboardingAutomationBlockView key={blockIndex} block={block} depth={depth} index={blockIndex} />
+      ))}
+    </div>
+  )
+  if (depth === 0) {
+    return (
+      <article
+        id={sectionId}
+        aria-labelledby={headingId}
+        className="scroll-mt-28 overflow-hidden rounded-xl border border-white/[0.07] bg-[#262626]"
+      >
+        <div className="border-b border-white/[0.06] px-5 py-4">{header}</div>
+        <div className="p-5">{body}</div>
+      </article>
+    )
+  }
+  return (
+    <section
+      id={sectionId}
+      aria-labelledby={headingId}
+      className={`scroll-mt-28 grid gap-3 ${depth === 1 ? 'mt-2' : 'mt-1 border-l border-white/[0.08] pl-4'}`}
+    >
+      {header}
+      {body}
+    </section>
+  )
+}
+
+function OnboardingAutomationContents() {
+  const renderEntries = (blocks: OnboardingBlock[]): ReactNode => {
+    const entries = blocks.filter((block): block is Extract<OnboardingBlock, { t: 'sec' }> => block.t === 'sec' && block.s.toc !== false)
+    if (entries.length === 0) return null
+    return (
+      <ul className="mt-1 grid gap-1 pl-4">
+        {entries.map(entry => (
+          <li key={entry.s.id}>
+            <a
+              href={`#${onboardingAutomationAnchor(entry.s.id)}`}
+              className="text-[#78a9ff] transition-colors hover:text-white"
+            >
+              {entry.s.title}
+            </a>
+            {renderEntries(entry.s.blocks)}
+          </li>
+        ))}
+      </ul>
+    )
+  }
+  return (
+    <nav aria-label="Onboarding Automation contents" className="mb-6 rounded-xl border border-[#4589ff]/30 bg-[#1c1c1c] p-4 sm:p-5">
+      <h3 className="text-base font-semibold text-white">Contents</h3>
+      <ul className="mt-3 grid gap-2 text-sm">
+        {onboardingAutomationSections.map(section => (
+          <li key={section.id}>
+            <a
+              href={`#${onboardingAutomationAnchor(section.id)}`}
+              className="font-semibold text-[#78a9ff] transition-colors hover:text-white"
+            >
+              {section.title}
+            </a>
+            {renderEntries(section.blocks)}
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
 
 function CommunityFilterGroup({
   id,
@@ -6703,6 +6597,7 @@ export default function App() {
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">Let&rsquo;s Create! · YourLearning Enablement</p>
                 <h2 id="onboarding-automation-heading" className="mt-1 text-2xl font-semibold text-white">Onboarding Automation</h2>
+                <p className="mt-1 text-sm font-semibold text-[#c6c6c6]">{onboardingAutomationTagline}</p>
                 <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#c6c6c6]">
                   Content and document services demo: help Lucy, an HR onboarding specialist at Focus Corp, review applicant John Doe&rsquo;s materials in a secure teamspace and launch the onboarding process.
                 </p>
@@ -6735,111 +6630,19 @@ export default function App() {
               <CopySectionLink id="onboarding-automation-top" label="Onboarding Automation page" />
             </div>
 
-            <nav aria-label="Onboarding Automation contents" className="mb-6 rounded-xl border border-[#4589ff]/30 bg-[#1c1c1c] p-4 sm:p-5">
-              <h3 className="text-base font-semibold text-white">Contents</h3>
-              <ol className="mt-3 grid gap-1.5 text-sm sm:grid-cols-2">
-                {onboardingAutomationSections.map((section, index) => (
-                  <li key={section.id}>
-                    <a
-                      href={`#onboarding-automation-${section.id}`}
-                      className="text-[#78a9ff] transition-colors hover:text-white"
-                    >
-                      {index + 1}. {section.title}
-                    </a>
-                    {section.optional && <span className="ml-2 text-[10px] text-[#8d8d8d]">Optional</span>}
-                  </li>
-                ))}
-              </ol>
-            </nav>
+            <OnboardingAutomationContents />
 
             <div className="grid gap-4">
-              {onboardingAutomationSections.map((section, index) => {
-                const sectionId = `onboarding-automation-${section.id}`
-                return (
-                  <article
-                    key={section.id}
-                    id={sectionId}
-                    aria-labelledby={`${sectionId}-heading`}
-                    className="scroll-mt-28 overflow-hidden rounded-xl border border-white/[0.07] bg-[#262626]"
-                  >
-                    <div className="flex items-start justify-between gap-4 border-b border-white/[0.06] px-5 py-4">
-                      <div>
-                        <p className="font-mono text-[10px] font-semibold tracking-[0.14em] text-[#8d8d8d]">
-                          {String(index + 1).padStart(2, '0')} / {String(onboardingAutomationSections.length).padStart(2, '0')}
-                        </p>
-                        <h3 id={`${sectionId}-heading`} className="mt-2 flex flex-wrap items-center gap-2 text-base font-semibold text-white">
-                          {section.title}
-                          {section.optional && (
-                            <span className="rounded-full border border-white/[0.1] bg-white/[0.03] px-2 py-0.5 text-[10px] font-medium text-[#c6c6c6]">Optional</span>
-                          )}
-                        </h3>
-                      </div>
-                      <CopySectionLink id={sectionId} label={section.title} />
-                    </div>
-                    <div className="grid gap-4 p-5">
-                      {section.blocks.map((block, blockIndex) => {
-                        const noteClasses = block.note
-                          ? block.note.kind === 'warning'
-                            ? 'border-[#f1c21b]/50 bg-[#f1c21b]/10'
-                            : block.note.kind === 'success'
-                              ? 'border-[#42be65]/50 bg-[#42be65]/10'
-                              : 'border-[#4589ff]/50 bg-[#0f62fe]/10'
-                          : ''
-                        const ListTag = block.ordered ? 'ol' : 'ul'
-                        return (
-                          <div key={blockIndex} className="grid gap-2">
-                            {block.heading && <h4 className="text-sm font-semibold text-white">{block.heading}</h4>}
-                            {block.text && <p className="text-sm leading-relaxed text-[#c6c6c6]">{block.text}</p>}
-                            {block.items && (
-                              <ListTag className={`grid gap-1.5 pl-5 text-sm leading-relaxed text-[#c6c6c6] ${block.ordered ? 'list-decimal' : 'list-disc'}`}>
-                                {block.items.map(item => (
-                                  <li key={item}>{item}</li>
-                                ))}
-                              </ListTag>
-                            )}
-                            {block.images && (
-                              <ul className="mt-2 grid gap-3 sm:grid-cols-2" aria-label="Screenshots">
-                                {block.images.map((image, imageIndex) => (
-                                  <li key={`${image}-${imageIndex}`}>
-                                    <a
-                                      href={asset(`onboarding-automation/${image}`)}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      title="Open full-size screenshot"
-                                      className="block overflow-hidden rounded-lg border border-white/[0.1] bg-[#161616] transition-colors hover:border-[#4589ff]"
-                                    >
-                                      <img
-                                        src={asset(`onboarding-automation/${image}`)}
-                                        alt={`${section.title} screenshot ${imageIndex + 1} of ${block.images!.length}`}
-                                        loading="lazy"
-                                        decoding="async"
-                                        className="h-auto w-full"
-                                      />
-                                    </a>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
-                            {block.note && (
-                              <p className={`rounded-lg border px-3 py-2 text-sm leading-relaxed text-[#e0e0e0] ${noteClasses}`}>
-                                {block.note.text}
-                              </p>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </article>
-                )
-              })}
+              {onboardingAutomationSections.map((section, index) => (
+                <OnboardingAutomationSectionView
+                  key={section.id}
+                  section={section}
+                  depth={0}
+                  index={index}
+                  total={onboardingAutomationSections.length}
+                />
+              ))}
             </div>
-            <p className="mt-6 text-xs text-[#8d8d8d]">
-              Condensed from the{' '}
-              <a href={onboardingAutomationSourceUrl} target="_blank" rel="noreferrer" className="text-[#78a9ff] hover:text-white">
-                IBM Cloud Architecture Onboarding Automation use case
-              </a>
-              . Screenshots, diagrams and videos are available on the original page.
-            </p>
           </section>
 
         ) : currentPage === 'capabilities' ? (
