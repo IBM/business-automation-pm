@@ -1209,10 +1209,49 @@ const onboardingAutomationParents = new Map<string, string | null>()
 })(onboardingAutomationSections, null)
 const allOnboardingSectionIds = Array.from(onboardingAutomationParents.keys())
 
-const OnboardingCollapseContext = createContext<{ collapsed: Set<string>; toggle: (id: string) => void }>({
+const OnboardingCollapseContext = createContext<{
+  collapsed: Set<string>
+  toggle: (id: string) => void
+  goToSection: (id: string) => void
+  goToPageEdge: (edge: 'top' | 'bottom') => void
+}>({
   collapsed: new Set(),
   toggle: () => {},
+  goToSection: () => {},
+  goToPageEdge: () => {},
 })
+
+function OnboardingSectionNavButtons({ sectionId }: { sectionId: string }) {
+  const { goToSection, goToPageEdge } = useContext(OnboardingCollapseContext)
+  const position = allOnboardingSectionIds.indexOf(sectionId)
+  const previousId = position > 0 ? allOnboardingSectionIds[position - 1] : null
+  const nextId = position >= 0 && position < allOnboardingSectionIds.length - 1 ? allOnboardingSectionIds[position + 1] : null
+  const buttonClass =
+    'rounded-md border border-white/[0.12] bg-white/[0.04] px-2.5 py-1 text-xs font-semibold text-[#c6c6c6] transition-colors hover:border-[#4589ff] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/[0.12] disabled:hover:text-[#c6c6c6]'
+  return (
+    <nav
+      aria-label="Section navigation"
+      className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] pt-3"
+    >
+      <div className="flex items-center gap-2">
+        <button type="button" disabled={!previousId} onClick={() => previousId && goToSection(previousId)} className={buttonClass}>
+          &larr; Previous
+        </button>
+        <button type="button" disabled={!nextId} onClick={() => nextId && goToSection(nextId)} className={buttonClass}>
+          Next &rarr;
+        </button>
+      </div>
+      <div className="flex items-center gap-2">
+        <button type="button" onClick={() => goToPageEdge('top')} className={buttonClass}>
+          &uarr; Top
+        </button>
+        <button type="button" onClick={() => goToPageEdge('bottom')} className={buttonClass}>
+          &darr; Bottom
+        </button>
+      </div>
+    </nav>
+  )
+}
 
 function OnboardingAutomationSections() {
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set(allOnboardingSectionIds))
@@ -1254,11 +1293,34 @@ function OnboardingAutomationSections() {
       return next
     })
 
+  const goToSection = (id: string) => {
+    setCollapsed(current => {
+      const next = new Set(current)
+      next.delete(id)
+      let parent = onboardingAutomationParents.get(id) ?? null
+      while (parent) {
+        next.delete(parent)
+        parent = onboardingAutomationParents.get(parent) ?? null
+      }
+      return next
+    })
+    window.requestAnimationFrame(() =>
+      window.requestAnimationFrame(() =>
+        document.getElementById(onboardingAutomationAnchor(id))?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+      ),
+    )
+  }
+
+  const goToPageEdge = (edge: 'top' | 'bottom') => {
+    if (edge === 'top') document.getElementById('onboarding-automation-top')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    else document.getElementById('onboarding-automation-bottom')?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+  }
+
   const buttonClass =
     'rounded-md border border-white/[0.12] bg-white/[0.04] px-2.5 py-1.5 text-xs font-semibold text-[#c6c6c6] transition-colors hover:border-[#4589ff] hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/[0.12] disabled:hover:text-[#c6c6c6]'
 
   return (
-    <OnboardingCollapseContext.Provider value={{ collapsed, toggle }}>
+    <OnboardingCollapseContext.Provider value={{ collapsed, toggle, goToSection, goToPageEdge }}>
       <div className="mb-3 flex flex-wrap items-center justify-end gap-2">
         <button
           type="button"
@@ -1290,6 +1352,7 @@ function OnboardingAutomationSections() {
           />
         ))}
       </div>
+      <div id="onboarding-automation-bottom" aria-hidden="true" />
     </OnboardingCollapseContext.Provider>
   )
 }
@@ -1349,6 +1412,7 @@ function OnboardingAutomationSectionView({
       {section.blocks.map((block, blockIndex) => (
         <OnboardingAutomationBlockView key={blockIndex} block={block} depth={depth} index={blockIndex} />
       ))}
+      <OnboardingSectionNavButtons sectionId={section.id} />
     </div>
   )
   if (depth === 0) {
@@ -1367,7 +1431,9 @@ function OnboardingAutomationSectionView({
     <section
       id={sectionId}
       aria-labelledby={headingId}
-      className={`scroll-mt-28 grid gap-3 ${depth === 1 ? 'mt-2' : 'mt-1 border-l border-white/[0.08] pl-4'}`}
+      className={`scroll-mt-28 grid gap-3 ${
+        depth === 1 ? 'rounded-lg border border-white/[0.08] bg-[#1f1f1f] p-4' : 'mt-1 border-l border-white/[0.08] pl-4'
+      }`}
     >
       {header}
       {body}
@@ -3785,7 +3851,7 @@ export default function App() {
     const ids = letsCreateProductOptions.map(option => option.id)
     return readSetParam('lcp', ids, () => new Set(ids))
   })
-  const [isLetsCreateFiltersExpanded, setIsLetsCreateFiltersExpanded] = useState(true)
+  const [isLetsCreateFiltersExpanded, setIsLetsCreateFiltersExpanded] = useState(false)
   const [siteAccessCount, setSiteAccessCount] = useState<number | null>(null)
   useEffect(() => {
     const controller = new AbortController()
