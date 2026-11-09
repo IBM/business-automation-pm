@@ -1222,6 +1222,52 @@ const onboardingAutomationDescendants = new Map<string, string[]>(
   ]),
 )
 
+const onboardingTopLevelSectionIds = onboardingAutomationSections.map(section => section.id)
+
+// Page-wide level: 0 = everything collapsed, 1 = top-level sections open with subsections collapsed, 2 = everything expanded.
+function onboardingPageLevel(collapsed: Set<string>): 0 | 1 | 2 {
+  if (collapsed.size === allOnboardingSectionIds.length) return 0
+  if (collapsed.size === 0) return 2
+  return 1
+}
+
+function nextOnboardingPageCollapsed(collapsed: Set<string>): Set<string> {
+  const level = onboardingPageLevel(collapsed)
+  if (level === 0) {
+    return new Set(allOnboardingSectionIds.filter(id => !onboardingTopLevelSectionIds.includes(id)))
+  }
+  if (level === 1) return new Set()
+  return new Set(allOnboardingSectionIds)
+}
+
+const onboardingPageCycleLabels = [
+  'Show the top-level sections of the page',
+  'Expand all content on the page',
+  'Collapse all sections on the page',
+] as const
+
+function OnboardingPageCycleButton({
+  collapsed,
+  setCollapsed,
+}: {
+  collapsed: Set<string>
+  setCollapsed: (next: Set<string>) => void
+}) {
+  const level = onboardingPageLevel(collapsed)
+  const label = onboardingPageCycleLabels[level]
+  return (
+    <button
+      type="button"
+      onClick={() => setCollapsed(nextOnboardingPageCollapsed(collapsed))}
+      aria-label={label}
+      title={label}
+      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-white/[0.12] bg-white/[0.04] text-[#c6c6c6] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+    >
+      <ThreeLevelVisibilityIcon level={level} />
+    </button>
+  )
+}
+
 const OnboardingCollapseContext = createContext<{
   collapsed: Set<string>
   toggle: (id: string) => void
@@ -1320,8 +1366,13 @@ function OnboardingSectionNavButtons({ sectionId }: { sectionId: string }) {
   )
 }
 
-function OnboardingAutomationSections() {
-  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set(allOnboardingSectionIds))
+function OnboardingAutomationSections({
+  collapsed,
+  setCollapsed,
+}: {
+  collapsed: Set<string>
+  setCollapsed: (update: Set<string> | ((current: Set<string>) => Set<string>)) => void
+}) {
   const allCollapsed = collapsed.size === allOnboardingSectionIds.length
 
   useEffect(() => {
@@ -1343,7 +1394,7 @@ function OnboardingAutomationSections() {
         return next
       })
       window.requestAnimationFrame(() =>
-        window.requestAnimationFrame(() => document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth' })),
+        window.requestAnimationFrame(() => scrollElementBelowPageHeader(hash, 'smooth')),
       )
     }
     reveal()
@@ -1389,9 +1440,7 @@ function OnboardingAutomationSections() {
       return next
     })
     window.requestAnimationFrame(() =>
-      window.requestAnimationFrame(() =>
-        document.getElementById(onboardingAutomationAnchor(id))?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
-      ),
+      window.requestAnimationFrame(() => scrollElementBelowPageHeader(onboardingAutomationAnchor(id), 'smooth')),
     )
   }
 
@@ -3957,6 +4006,7 @@ export default function App() {
     return readSetParam('lcp', ids, () => new Set(ids))
   })
   const [isLetsCreateFiltersExpanded, setIsLetsCreateFiltersExpanded] = useState(false)
+  const [onboardingCollapsed, setOnboardingCollapsed] = useState<Set<string>>(() => new Set(allOnboardingSectionIds))
   const [siteAccessCount, setSiteAccessCount] = useState<number | null>(null)
   useEffect(() => {
     const controller = new AbortController()
@@ -6233,6 +6283,9 @@ export default function App() {
                   })}
                 </nav>
               )}
+              {currentPage === 'onboarding-automation' ? (
+                <OnboardingPageCycleButton collapsed={onboardingCollapsed} setCollapsed={setOnboardingCollapsed} />
+              ) : (
               <p className="text-right text-sm text-[#8d8d8d]">
                 {activeBusinessAutomationCapability
                   ? activeBusinessAutomationCapability.tagline
@@ -6275,6 +6328,7 @@ export default function App() {
                             ? 'Presenter setup · AV support'
                             : `${sessions.length} sessions · Oct 26–29, Atlanta, GA`}
               </p>
+              )}
             </div>
           </div>
           ) : (
@@ -6928,7 +6982,7 @@ export default function App() {
 
             <OnboardingAutomationContents />
 
-            <OnboardingAutomationSections />
+            <OnboardingAutomationSections collapsed={onboardingCollapsed} setCollapsed={setOnboardingCollapsed} />
           </section>
 
         ) : currentPage === 'capabilities' ? (

@@ -37,9 +37,9 @@ const sec = (id: string, title: string, blocks: OnboardingBlock[], toc?: boolean
 
 const GSL = 'getting-started-lab'
 const labNav = (topLabel: string, topId: string): OnboardingBlock =>
-  nav([topLabel, topId], ['Go to Getting Started Lab', GSL])
+  nav([topLabel, topId], ['Go to Lab Guide', GSL])
 const assetNav = (): OnboardingBlock =>
-  nav(['Go to top', 'additional-assets'], ['Go to Introduction', 'introduction'], ['Go to Getting Started Lab', GSL])
+  nav(['Go to top', 'additional-assets'], ['Go to Introduction', 'introduction'], ['Go to Lab Guide', GSL])
 
 const githubRepo = 'https://github.com/ibm-cloud-architecture/dba-onboarding-automation'
 const employmentApplicationPdf =
@@ -59,7 +59,7 @@ export const onboardingAutomationSections: OnboardingSection[] = [
       ),
       p(`**Choose an option:**`),
       list([
-        `**Cloud Pak for Business Automation as a Service demo environment (likely an IBMer or Business Partner):** your environment is predeployed, continue to the [Getting Started Lab](#${GSL}) section below.`,
+        `**Cloud Pak for Business Automation as a Service demo environment (likely an IBMer or Business Partner):** your environment is predeployed, continue to the [Lab Guide](#${GSL}) section below.`,
         `**Install Yourself:** To deploy Onboarding Automation on your own environment, and technical architecture information, see the [dba-onboarding-automation](${githubRepo}) git repository which includes the required deployment artifacts.`,
       ]),
       img('010-Intro-OnboardingAutomation.png', 'Onboarding Automation use case introduction'),
@@ -67,7 +67,7 @@ export const onboardingAutomationSections: OnboardingSection[] = [
   },
   {
     id: GSL,
-    title: 'Getting Started Lab',
+    title: 'Lab Guide',
     blocks: [
       sec('lab-section-0', '0. General Info', [
         p(`Expand to view icons used throughout this lab`),
@@ -91,7 +91,7 @@ export const onboardingAutomationSections: OnboardingSection[] = [
         ),
         p(`**Discovery Map**`),
         img('000-Intro-DiscoveryMap.png', 'Discovery Map'),
-        nav(['Go to top', 'lab-section-1'], ['Go to Getting Started Lab', GSL]),
+        nav(['Go to top', 'lab-section-1'], ['Go to Lab Guide', GSL]),
       ]),
 
       sec('lab-section-2', '2. Login and Setup Your Environment', [
@@ -144,7 +144,7 @@ export const onboardingAutomationSections: OnboardingSection[] = [
             ),
             img('Application03-Lucy.png', 'Run the demo tab with Lucy, HR Employee Onboarding Specialist'),
             note('note', `Please continue to the [next](#lab-section-3) section`),
-            nav(['Go to top (Option 2A)', 'lab-section-2a'], ['Go to Getting Started Lab', GSL]),
+            nav(['Go to top (Option 2A)', 'lab-section-2a'], ['Go to Lab Guide', GSL]),
           ],
         ),
         sec('lab-section-2b', 'Option 2B - Are You Using Your Own Environment (not an on Cloud trial/demo) ?', [
@@ -184,9 +184,9 @@ export const onboardingAutomationSections: OnboardingSection[] = [
           ),
           img('Application03-Lucy.png', 'Run the demo tab with Lucy, HR Employee Onboarding Specialist'),
           note('note', `Please continue to the [next](#lab-section-3) section`),
-          nav(['Go to top (Option 2B)', 'lab-section-2b'], ['Go to Getting Started Lab', GSL]),
+          nav(['Go to top (Option 2B)', 'lab-section-2b'], ['Go to Lab Guide', GSL]),
         ]),
-        nav(['Go to top', 'lab-section-2'], ['Go to Getting Started Lab', GSL]),
+        nav(['Go to top', 'lab-section-2'], ['Go to Lab Guide', GSL]),
       ]),
 
       sec('lab-section-3', '3. Tour IBM Navigator', [
@@ -243,7 +243,7 @@ export const onboardingAutomationSections: OnboardingSection[] = [
           `Select the **Filmstrip** view. The **Filmstrip** view is very useful for looking at media such pictures. Select the **Photos** folder below the **Employee Packet** folder and then select each picture document.`,
         ),
         img('122-Navigator-Filmstrip.png', 'Filmstrip view'),
-        nav(['Go to top', 'lab-section-3'], ['Go to Getting Started Lab', GSL]),
+        nav(['Go to top', 'lab-section-3'], ['Go to Lab Guide', GSL]),
       ]),
 
       sec('lab-section-4', '4. Create and Review Teamspace', [
@@ -319,7 +319,7 @@ export const onboardingAutomationSections: OnboardingSection[] = [
               'success',
               `The teamspace template is now complete, please refer to the next section **4.1.2 Teamspace Builder** to create a teamspace from this template.`,
             ),
-            nav(['Go to top (Teamspace Template Builder)', 'lab-section-411'], ['Go to Getting Started Lab', GSL]),
+            nav(['Go to top (Teamspace Template Builder)', 'lab-section-411'], ['Go to Lab Guide', GSL]),
           ]),
 
           sec('lab-section-412', '4.1.2 - Teamspace Builder', [
@@ -408,9 +408,9 @@ export const onboardingAutomationSections: OnboardingSection[] = [
               `As shown in the diagram below, your user name should be identified as an owner of the teamspace. To add yourself to another role, click on a role in the **Available roles** area. To add additional users to the teamspace, click on **Add Users and Groups...** and add any additional users or groups to the teamspace. When complete, click the **Finish** button to complete the setup of your teamspace.`,
             ),
             img('ts-260-Teamspace-Users.png', 'Select Users'),
-            nav(['Go to top (Teamspace Builder)', 'lab-section-412'], ['Go to Getting Started Lab', GSL]),
+            nav(['Go to top (Teamspace Builder)', 'lab-section-412'], ['Go to Lab Guide', GSL]),
           ]),
-          nav(['Go to top (Create Teamspace)', 'lab-section-41'], ['Go to Getting Started Lab', GSL]),
+          nav(['Go to top (Create Teamspace)', 'lab-section-41'], ['Go to Lab Guide', GSL]),
         ]),
 
         sec('lab-section-42', '4.2 - Review Teamspace', [
@@ -440,7 +440,7 @@ export const onboardingAutomationSections: OnboardingSection[] = [
             `As shown in the diagram above, the **Application** folder is selected in the **Browse** section with the contents of the folder displayed in the main section. On the right side of the screen, you will see a thumbnail of the document selected in the main section along with a **Properties** section showing the custom document properties associated with the document (**First Name**, **Last Name**, **Application Date**) along with the document **System Properties**.`,
           ),
           img('240-Teamspace-View.png', 'Teamspace view'),
-          nav(['Go to top (Review Teamspace)', 'lab-section-42'], ['Go to Getting Started Lab', GSL]),
+          nav(['Go to top (Review Teamspace)', 'lab-section-42'], ['Go to Lab Guide', GSL]),
         ]),
 
         sec('lab-section-43', '4.3 - Prepare Teamspace Content', [
@@ -483,7 +483,7 @@ export const onboardingAutomationSections: OnboardingSection[] = [
             img('305-Annotations.png', 'Annotations and comments on the employment application'),
             step(`3.`, `When complete, click on the **Save** icon to save your updates and then the **X** icon to exit the viewer.`),
             img('302-Annotation-Save.png', 'Save icon and X icon in the viewer'),
-            nav(['Go to top (Prepare Employment Application)', 'lab-section-431'], ['Go to Getting Started Lab', GSL]),
+            nav(['Go to top (Prepare Employment Application)', 'lab-section-431'], ['Go to Lab Guide', GSL]),
           ]),
 
           sec('lab-section-432', '4.3.2 - Prepare Video Interview', [
@@ -519,11 +519,11 @@ export const onboardingAutomationSections: OnboardingSection[] = [
             ),
             img('383-Video-New-Bookmark-Add.png', 'New Bookmark dialog'),
             p(`When complete, exit the viewer.`),
-            nav(['Go to top (Prepare Video Interview)', 'lab-section-432'], ['Go to Getting Started Lab', GSL]),
+            nav(['Go to top (Prepare Video Interview)', 'lab-section-432'], ['Go to Lab Guide', GSL]),
           ]),
-          nav(['Go to top (Prepare Teamspace Content)', 'lab-section-43'], ['Go to Getting Started Lab', GSL]),
+          nav(['Go to top (Prepare Teamspace Content)', 'lab-section-43'], ['Go to Lab Guide', GSL]),
         ]),
-        nav(['Go to top (Create and Review Teamspace)', 'lab-section-4'], ['Go to Getting Started Lab', GSL]),
+        nav(['Go to top (Create and Review Teamspace)', 'lab-section-4'], ['Go to Lab Guide', GSL]),
       ]),
 
       sec('lab-section-5', '5. View and Edit Documents', [
@@ -609,7 +609,7 @@ export const onboardingAutomationSections: OnboardingSection[] = [
             `Stream video with automatic caption generation and automated transcoding for multiple bitrates, video size and quality`,
           ],
         ]),
-        nav(['Go to top', 'lab-section-5'], ['Go to Getting Started Lab', GSL]),
+        nav(['Go to top', 'lab-section-5'], ['Go to Lab Guide', GSL]),
       ]),
 
       sec('lab-section-6', '6. Merge and Split ⚙️', [
@@ -657,7 +657,7 @@ export const onboardingAutomationSections: OnboardingSection[] = [
         step(`8.`, `Click on the **Check in document** icon to save and check-in the document to the repository.`),
         img('378-3-MergeSplit-Save.png', 'Check in document icon for the application'),
         p(`You can now exit the document viewer to return back to the teamspace.`),
-        nav(['Go to top', 'lab-section-6'], ['Go to Getting Started Lab', GSL]),
+        nav(['Go to top', 'lab-section-6'], ['Go to Lab Guide', GSL]),
       ]),
 
       sec('lab-section-7', '7. Review Video ⚙️', [
@@ -698,7 +698,7 @@ export const onboardingAutomationSections: OnboardingSection[] = [
           `Let's now create a new bookmark. Locate a time in the video to create a bookmark. This can be done by playing the video and pausing at the desired location. Once you have a good idea where to place the bookmark, click on **New Bookmark** and then enter the **Name** and optionally the **Description**. If necessary, adjust the **Start Time** to the desired time in the video.`,
         ),
         img('385-Video-NewBookmark.png', 'New Bookmark'),
-        nav(['Go to top', 'lab-section-7'], ['Go to Getting Started Lab', GSL]),
+        nav(['Go to top', 'lab-section-7'], ['Go to Lab Guide', GSL]),
       ]),
 
       sec('lab-section-8', '8. Launch Onboard Employee Process', [
@@ -728,7 +728,7 @@ export const onboardingAutomationSections: OnboardingSection[] = [
           'info',
           `Although not fully implemented within this scenario, the process just launched would orchestrate downstream activities to onboard the applicant including manual and automated steps such as sending the offer letter and employee packet, preparing backend systems for enrollment such as benefits, payroll and IT accounts.`,
         ),
-        nav(['Go to top', 'lab-section-8'], ['Go to Getting Started Lab', GSL]),
+        nav(['Go to top', 'lab-section-8'], ['Go to Lab Guide', GSL]),
       ]),
 
       sec('lab-section-9', '9. Summary', [
@@ -737,7 +737,7 @@ export const onboardingAutomationSections: OnboardingSection[] = [
         ),
         p(`Please visit the [Additional Assets](#additional-assets) section for additional features not covered in this lab.`),
         note('note', `BAW - Business Automation Workflow, ODM - Operational Decision Manager, ADS - Automation Decision Services`),
-        nav(['Go to top', 'lab-section-9'], ['Go to Getting Started Lab', GSL]),
+        nav(['Go to top', 'lab-section-9'], ['Go to Lab Guide', GSL]),
       ]),
 
       sec('lab-section-10', '10. Troubleshooting', [
@@ -757,7 +757,7 @@ export const onboardingAutomationSections: OnboardingSection[] = [
         p(
           `Chrome is the recommended browser to display the document in the viewer. If using Firefox, you may need to temporarily disable the CSP header to view the document at this time. For both viewers, ensure the default action to display PDF documents is set to use the browser.`,
         ),
-        nav(['Go to top', 'lab-section-10'], ['Go to Getting Started Lab', GSL]),
+        nav(['Go to top', 'lab-section-10'], ['Go to Lab Guide', GSL]),
       ]),
     ],
   },
