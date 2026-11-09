@@ -1416,6 +1416,10 @@ const portfolioResources: Record<PortfolioResourcePage, {
       { name: 'Process Mining', url: 'http://ibm.biz/ProcessMiningSalesKit' },
     ],
     environments: [
+      { name: 'Americas - Decision Intelligence SaaS', description: 'Access the Americas Decision Intelligence as a Service demo tenant.', url: 'https://demo-americas-di.decision-prod-us-south.decision.saas.ibm.com/landing', recommended: true },
+      { name: 'EMEA - Decision Intelligence SaaS', description: 'Access the EMEA Decision Intelligence as a Service demo tenant.', url: 'https://demo-emea-di.decision-prod-eu-de.decision.saas.ibm.com/landing', recommended: true },
+      { name: 'NextGen Cloud Pak for Business Automation as a Service', description: 'Access CP4BA as a Service demo tenants; see the environment user guide for onboarding.', url: 'https://www.automationcloud.ibm.com/' },
+
       { name: 'BAWoC SaaS Trial', description: 'Access the Business Automation Workflow on Cloud SaaS trial.', url: 'https://www.ibm.com/account/reg/signup?formid=urx-32021' },
       { name: 'RPA SaaS Trial Access', description: 'Access the IBM Robotic Process Automation as a Service trial.', url: 'https://www.ibm.com/account/reg/us-en/signup?formid=urx-46597' },
       { name: 'Process Mining SaaS Trial', description: 'Access the IBM Process Mining SaaS trial.', url: 'https://www.ibm.com/account/reg/signup?formid=urx-51356' },
@@ -1451,6 +1455,9 @@ const portfolioResources: Record<PortfolioResourcePage, {
       { name: 'Content Manager OnDemand', url: 'http://ibm.biz/CMODSalesKit' },
     ],
     environments: [
+      { name: 'Americas - Decision Intelligence SaaS', description: 'Access the Americas Decision Intelligence as a Service demo tenant.', url: 'https://demo-americas-di.decision-prod-us-south.decision.saas.ibm.com/landing', recommended: true },
+      { name: 'EMEA - Decision Intelligence SaaS', description: 'Access the EMEA Decision Intelligence as a Service demo tenant.', url: 'https://demo-emea-di.decision-prod-eu-de.decision.saas.ibm.com/landing', recommended: true },
+      { name: 'NextGen Cloud Pak for Business Automation as a Service', description: 'Access CP4BA as a Service demo tenants; see the environment user guide for onboarding.', url: 'https://www.automationcloud.ibm.com/' },
       { name: 'Apollo Business Automation Demo Environment', description: 'Access the Apollo Business Automation journey for Cloud Pak for Business Automation demos.', url: 'https://techzone.ibm.com/collection/apollo-business-automation/journey-cp4ba-demos', recommended: true },
     ],
     techZoneCollections: [
@@ -1481,6 +1488,7 @@ const portfolioResources: Record<PortfolioResourcePage, {
     environments: [
       { name: 'Americas - Decision Intelligence SaaS', description: 'Access the Americas Decision Intelligence as a Service demo tenant.', url: 'https://demo-americas-di.decision-prod-us-south.decision.saas.ibm.com/landing', recommended: true },
       { name: 'EMEA - Decision Intelligence SaaS', description: 'Access the EMEA Decision Intelligence as a Service demo tenant.', url: 'https://demo-emea-di.decision-prod-eu-de.decision.saas.ibm.com/landing', recommended: true },
+      { name: 'NextGen Cloud Pak for Business Automation as a Service', description: 'Access CP4BA as a Service demo tenants; see the environment user guide for onboarding.', url: 'https://www.automationcloud.ibm.com/' },
       { name: 'Build a Decision Model', description: 'Follow a hands-on tutorial to model, test, and simulate a business-rule decision model.', url: 'https://techzone.ibm.com/collection/5fa5a97fd48208001863e43a#tab-2' },
       { name: 'ODMoC SaaS Trial', description: 'Access the Operational Decision Manager on Cloud SaaS trial.', url: 'https://www.ibm.com/account/reg/signup?formid=urx-33261' },
     ],
