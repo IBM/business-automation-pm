@@ -1,6 +1,6 @@
 {
  "boardName": "Business Automation Enablement Tracker",
- "generatedAt": "2026-11-06",
+ "generatedAt": "2026-11-09",
  "items": [
   {
    "name": "Content - User Group",
@@ -1243,7 +1243,7 @@
    "audience": "External Customers",
    "registration": "https://community.ibm.com/community/user/events/event-description?CalendarEventKey=579dfed1-a76f-432c-97e6-01a0344cd51c&CommunityKey=810abde6-3916-441b-aac3-b9105bb37e3c&Home=%2fcommunity%2fuser%2fgroups%2fcommunity-home%2fmanage-events",
    "time": "09:00 AM",
-   "topic": "BAW User Connect Series"
+   "topic": "BAW User Connect Series | How the work management MCP server helps with case management"
   },
   {
    "name": "Content Cortex Premium townhall",
