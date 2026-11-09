@@ -1984,11 +1984,65 @@ function CloseIcon() {
   )
 }
 
+// Filters applied on the current page are written to the query string of copied section links
+// (e.g. ?cc=process-automation#community-top) and restored from it when the page loads.
+// Only filters that differ from their defaults are included.
+const linkFilterKeys = [
+  'cc', 'cp', 'lcs', 'lcc', 'lcp', 'days', 'types', 'sspk', 'day', 'basess', 'cspk', 'basched',
+  'iid', 'ity', 'ispk', 'caps', 'prs', 'sort',
+  'eq', 'ey', 'equ', 'et', 'ep', 'ea', 'es', 'elayout', 'emonth',
+] as const
+const linkFilterStore: { app: Record<string, string>; enablement: Record<string, string> } = {
+  app: {},
+  enablement: {},
+}
+const initialSearchParams = new URLSearchParams(window.location.search)
+// The filters are applied once on load; drop them from the address bar so later filter changes
+// are not contradicted by stale parameters (copied links always rebuild them from live state).
+if (linkFilterKeys.some(key => initialSearchParams.has(key))) {
+  const remaining = new URLSearchParams(window.location.search)
+  linkFilterKeys.forEach(key => remaining.delete(key))
+  const search = remaining.toString()
+  window.history.replaceState(null, '', `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`)
+}
+
+function readSetParam<T extends string>(key: string, allowed: readonly T[] | null, fallback: () => Set<T>): Set<T> {
+  const raw = initialSearchParams.get(key)
+  if (raw === null) return fallback()
+  const values = raw.split('|').filter(Boolean) as T[]
+  return new Set(allowed ? values.filter(value => allowed.includes(value)) : values)
+}
+
+function readStringParam(key: string, fallback: string, allowed?: readonly string[]) {
+  const raw = initialSearchParams.get(key)
+  if (raw === null) return fallback
+  return !allowed || allowed.includes(raw) ? raw : fallback
+}
+
+function readFlagParam(key: string) {
+  return initialSearchParams.get(key) === '1'
+}
+
+function encodeSetParam(out: Record<string, string>, key: string, selected: Set<string>, all: readonly string[] | null) {
+  const isDefault = all ? selected.size === all.length && all.every(value => selected.has(value)) : selected.size === 0
+  if (!isDefault) out[key] = [...selected].join('|')
+}
+
+function encodeStringParam(out: Record<string, string>, key: string, value: string, fallback: string) {
+  if (value !== fallback) out[key] = value
+}
+
 function CopySectionLink({ id, label = 'section' }: { id: string; label?: string }) {
   const [copied, setCopied] = useState(false)
 
   const copyLink = async () => {
     const url = new URL(window.location.href)
+    const params = new URLSearchParams(url.search)
+    linkFilterKeys.forEach(key => params.delete(key))
+    Object.entries({ ...linkFilterStore.app, ...linkFilterStore.enablement }).forEach(([key, value]) => {
+      params.set(key, value)
+    })
+    url.search = params.toString()
     url.hash = id
     try {
       await navigator.clipboard.writeText(url.toString())
@@ -2600,21 +2654,43 @@ function EnablementContainer({
 }
 
 function EnablementPage() {
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState(() => readStringParam('eq', ''))
   const [filters, setFilters] = useState<Record<EnablementFilterKey, string>>({
-    year: enablementDefaultYear,
-    quarter: enablementDefaultQuarter,
-    type: '',
-    product: '',
-    audience: '',
-    status: '',
+    year: readStringParam('ey', enablementDefaultYear),
+    quarter: readStringParam('equ', enablementDefaultQuarter),
+    type: readStringParam('et', ''),
+    product: readStringParam('ep', ''),
+    audience: readStringParam('ea', ''),
+    status: readStringParam('es', ''),
   })
   const [collapsed, setCollapsed] = useState<Set<string>>(
     () => new Set(enablementMonthKeys.filter(key => !isEnablementCurrentQuarterMonth(key))),
   )
   const [viewMode, setViewMode] = useState<EnablementViewMode | null>(null)
-  const [layout, setLayout] = useState<'list' | 'calendar'>('list')
-  const [calendarMonth, setCalendarMonth] = useState(enablementDefaultCalendarMonth)
+  const [layout, setLayout] = useState<'list' | 'calendar'>(() =>
+    readStringParam('elayout', 'list', ['list', 'calendar']) as 'list' | 'calendar',
+  )
+  const [calendarMonth, setCalendarMonth] = useState(() =>
+    readStringParam('emonth', enablementDefaultCalendarMonth, enablementDatedMonthKeys),
+  )
+
+  // Publish the applied filters so copied section links on this page carry them.
+  useEffect(() => {
+    const out: Record<string, string> = {}
+    encodeStringParam(out, 'eq', search.trim(), '')
+    encodeStringParam(out, 'ey', filters.year, enablementDefaultYear)
+    encodeStringParam(out, 'equ', filters.quarter, enablementDefaultQuarter)
+    encodeStringParam(out, 'et', filters.type, '')
+    encodeStringParam(out, 'ep', filters.product, '')
+    encodeStringParam(out, 'ea', filters.audience, '')
+    encodeStringParam(out, 'es', filters.status, '')
+    encodeStringParam(out, 'elayout', layout, 'list')
+    if (layout === 'calendar') encodeStringParam(out, 'emonth', calendarMonth, enablementDefaultCalendarMonth)
+    linkFilterStore.enablement = out
+    return () => {
+      linkFilterStore.enablement = {}
+    }
+  }, [search, filters, layout, calendarMonth])
 
   const isCollapsed = (key: string) => collapsed.has(key)
   const toggleSection = (key: string) =>
@@ -3280,22 +3356,27 @@ export default function App() {
     const page = pageForHash(window.location.hash)
     return id && id !== pageAnchors[page] ? id : null
   })
-  const [communityCapabilities, setCommunityCapabilities] = useState<Set<string>>(
-    () => new Set(communityCapabilityOptions.map(option => option.id)),
-  )
+  const [communityCapabilities, setCommunityCapabilities] = useState<Set<string>>(() => {
+    const ids = communityCapabilityOptions.map(option => option.id)
+    return readSetParam('cc', ids, () => new Set(ids))
+  })
   const [isCommunityFiltersExpanded, setIsCommunityFiltersExpanded] = useState(true)
-  const [communityProducts, setCommunityProducts] = useState<Set<string>>(
-    () => new Set(communityProductOptions.map(option => option.id)),
-  )
-  const [letsCreateVisibleSections, setLetsCreateVisibleSections] = useState<Set<string>>(
-    () => new Set(letsCreateSections.map(section => section.id)),
-  )
-  const [letsCreateCapabilities, setLetsCreateCapabilities] = useState<Set<string>>(
-    () => new Set(communityCapabilityOptions.map(option => option.id)),
-  )
-  const [letsCreateProducts, setLetsCreateProducts] = useState<Set<string>>(
-    () => new Set(letsCreateProductOptions.map(option => option.id)),
-  )
+  const [communityProducts, setCommunityProducts] = useState<Set<string>>(() => {
+    const ids = communityProductOptions.map(option => option.id)
+    return readSetParam('cp', ids, () => new Set(ids))
+  })
+  const [letsCreateVisibleSections, setLetsCreateVisibleSections] = useState<Set<string>>(() => {
+    const ids = letsCreateSections.map(section => section.id)
+    return readSetParam('lcs', ids, () => new Set(ids))
+  })
+  const [letsCreateCapabilities, setLetsCreateCapabilities] = useState<Set<string>>(() => {
+    const ids = communityCapabilityOptions.map(option => option.id)
+    return readSetParam('lcc', ids, () => new Set(ids))
+  })
+  const [letsCreateProducts, setLetsCreateProducts] = useState<Set<string>>(() => {
+    const ids = letsCreateProductOptions.map(option => option.id)
+    return readSetParam('lcp', ids, () => new Set(ids))
+  })
   const [isLetsCreateFiltersExpanded, setIsLetsCreateFiltersExpanded] = useState(true)
   const [siteAccessCount, setSiteAccessCount] = useState<number | null>(null)
   useEffect(() => {
@@ -3329,6 +3410,10 @@ export default function App() {
   const [selectedCapabilityPages, setSelectedCapabilityPages] = useState<Set<PortfolioResourcePage>>(() => {
     const initialPage = pageForHash(window.location.hash)
     const selectedPage = businessAutomationCapabilityFilters.find(filter => filter.page === initialPage)?.page
+    if (!selectedPage && initialPage === 'capabilities') {
+      const linked = readSetParam<PortfolioResourcePage>('caps', allBusinessAutomationCapabilityPages, () => new Set())
+      if (linked.size > 0) return linked
+    }
     return new Set(selectedPage ? [selectedPage] : allBusinessAutomationCapabilityPages)
   })
   const [hasIbmAccess, setHasIbmAccess] = useState(() => {
@@ -3340,17 +3425,23 @@ export default function App() {
   })
   const [ibmPassword, setIbmPassword] = useState('')
   const [ibmAccessError, setIbmAccessError] = useState('')
-  const [insightsSessionIdFilter, setInsightsSessionIdFilter] = useState('all')
-  const [insightsSessionTypeFilter, setInsightsSessionTypeFilter] = useState('all')
-  const [insightsSpeakerFilter, setInsightsSpeakerFilter] = useState('all')
+  const [insightsSessionIdFilter, setInsightsSessionIdFilter] = useState(() => readStringParam('iid', 'all'))
+  const [insightsSessionTypeFilter, setInsightsSessionTypeFilter] = useState(() => readStringParam('ity', 'all'))
+  const [insightsSpeakerFilter, setInsightsSpeakerFilter] = useState(() => readStringParam('ispk', 'all'))
   const [isMainHeaderExpanded, setIsMainHeaderExpanded] = useState(true)
-  const [activeOverviewDay, setActiveOverviewDay] = useState<string>(getInitialConferenceDay)
-  const [showBASessions, setShowBASessions] = useState(false)
-  const [activeConferenceSpeakers, setActiveConferenceSpeakers] = useState<Set<string>>(new Set())
-  const [showBusinessAutomationSchedule, setShowBusinessAutomationSchedule] = useState(false)
-  const [activeDays, setActiveDays] = useState<Set<string>>(new Set(days))
-  const [activeTypes, setActiveTypes] = useState<Set<SessionType>>(new Set(allTypes))
-  const [activeSpeakers, setActiveSpeakers] = useState<Set<string>>(new Set())
+  const [activeOverviewDay, setActiveOverviewDay] = useState<string>(() =>
+    readStringParam('day', getInitialConferenceDay(), conferenceDays),
+  )
+  const [activeConferenceSpeakers, setActiveConferenceSpeakers] = useState<Set<string>>(() =>
+    readSetParam('cspk', null, () => new Set<string>()),
+  )
+  const [showBASessions, setShowBASessions] = useState(() => readFlagParam('basess') || activeConferenceSpeakers.size > 0)
+  const [showBusinessAutomationSchedule, setShowBusinessAutomationSchedule] = useState(() => readFlagParam('basched'))
+  const [activeDays, setActiveDays] = useState<Set<string>>(() => readSetParam('days', days, () => new Set(days)))
+  const [activeTypes, setActiveTypes] = useState<Set<SessionType>>(() =>
+    readSetParam<SessionType>('types', allTypes, () => new Set(allTypes)),
+  )
+  const [activeSpeakers, setActiveSpeakers] = useState<Set<string>>(() => readSetParam('sspk', null, () => new Set<string>()))
   const [showFilters, setShowFilters] = useState(true)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
   const [showThomasImage, setShowThomasImage] = useState(false)
@@ -3363,9 +3454,15 @@ export default function App() {
   const [isProductResourceFiltersExpanded, setIsProductResourceFiltersExpanded] = useState(true)
   const [salesKitSortMode, setSalesKitSortMode] = useState<
     'default' | 'title-asc' | 'title-desc' | 'capability-asc' | 'capability-desc'
-  >('default')
+  >(() =>
+    readStringParam('sort', 'default', ['default', 'title-asc', 'title-desc', 'capability-asc', 'capability-desc']) as
+      'default' | 'title-asc' | 'title-desc' | 'capability-asc' | 'capability-desc',
+  )
   const [visibleProductResourceSections, setVisibleProductResourceSections] = useState<Set<ProductResourceSection>>(
-    () => new Set(productResourceSectionFilters.map(filter => filter.id)),
+    () => {
+      const ids = productResourceSectionFilters.map(filter => filter.id)
+      return readSetParam<ProductResourceSection>('prs', ids, () => new Set(ids))
+    },
   )
   const [collapsedProductResourceSections, setCollapsedProductResourceSections] = useState<Set<ProductResourceSection>>(new Set())
   const [hiddenYoutubePlaylistFrames, setHiddenYoutubePlaylistFrames] = useState<Set<string>>(
@@ -3373,6 +3470,47 @@ export default function App() {
       resources.youtubePlaylists.map(playlist => playlist.embedUrl),
     )),
   )
+
+  // Publish the filters that apply to the current page so copied section links can carry them.
+  useEffect(() => {
+    const out: Record<string, string> = {}
+    const isPortfolioPage = currentPage === 'capabilities' || businessAutomationCapabilityFilters.some(filter => filter.page === currentPage)
+    if (isPortfolioPage) {
+      if (currentPage === 'capabilities') {
+        encodeSetParam(out, 'caps', selectedCapabilityPages, allBusinessAutomationCapabilityPages)
+      }
+      encodeSetParam(out, 'prs', visibleProductResourceSections, productResourceSectionFilters.map(filter => filter.id))
+      encodeStringParam(out, 'sort', salesKitSortMode, 'default')
+    } else if (currentPage === 'community') {
+      encodeSetParam(out, 'cc', communityCapabilities, communityCapabilityOptions.map(option => option.id))
+      encodeSetParam(out, 'cp', communityProducts, communityProductOptions.map(option => option.id))
+    } else if (currentPage === 'lets-create') {
+      encodeSetParam(out, 'lcs', letsCreateVisibleSections, letsCreateSections.map(section => section.id))
+      encodeSetParam(out, 'lcc', letsCreateCapabilities, communityCapabilityOptions.map(option => option.id))
+      encodeSetParam(out, 'lcp', letsCreateProducts, letsCreateProductOptions.map(option => option.id))
+    } else if (currentPage === 'sessions') {
+      encodeSetParam(out, 'days', activeDays, days)
+      encodeSetParam(out, 'types', activeTypes, allTypes)
+      encodeSetParam(out, 'sspk', activeSpeakers, null)
+    } else if (currentPage === 'schedule') {
+      encodeStringParam(out, 'day', activeOverviewDay, getInitialConferenceDay())
+      if (showBASessions) out.basess = '1'
+      encodeSetParam(out, 'cspk', activeConferenceSpeakers, null)
+      if (showBusinessAutomationSchedule) out.basched = '1'
+    } else if (currentPage === 'insights') {
+      encodeStringParam(out, 'iid', insightsSessionIdFilter, 'all')
+      encodeStringParam(out, 'ity', insightsSessionTypeFilter, 'all')
+      encodeStringParam(out, 'ispk', insightsSpeakerFilter, 'all')
+    }
+    linkFilterStore.app = out
+  }, [
+    currentPage, selectedCapabilityPages, visibleProductResourceSections, salesKitSortMode,
+    communityCapabilities, communityProducts,
+    letsCreateVisibleSections, letsCreateCapabilities, letsCreateProducts,
+    activeDays, activeTypes, activeSpeakers,
+    activeOverviewDay, showBASessions, activeConferenceSpeakers, showBusinessAutomationSchedule,
+    insightsSessionIdFilter, insightsSessionTypeFilter, insightsSpeakerFilter,
+  ])
 
   useEffect(() => {
     if (visibleProductResourceSections.size !== 1) return
@@ -3395,6 +3533,7 @@ export default function App() {
   }, [currentPage])
 
   useEffect(() => {
+    let keepLinkedCapabilities = initialSearchParams.has('caps')
     const syncPageToHash = () => {
       const id = decodeURIComponent(window.location.hash.replace(/^#/, ''))
       const nextPage = pageForHash(window.location.hash)
@@ -3403,9 +3542,10 @@ export default function App() {
       const selectedPage = businessAutomationCapabilityFilters.find(filter => filter.page === nextPage)?.page
       if (selectedPage) {
         setSelectedCapabilityPages(new Set([selectedPage]))
-      } else if (nextPage === 'capabilities') {
+      } else if (nextPage === 'capabilities' && !keepLinkedCapabilities) {
         setSelectedCapabilityPages(new Set(allBusinessAutomationCapabilityPages))
       }
+      keepLinkedCapabilities = false
       if (id === 'business-automation-schedule') {
         setActiveOverviewDay(days[0])
         setShowBusinessAutomationSchedule(true)
