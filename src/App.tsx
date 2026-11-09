@@ -1046,6 +1046,8 @@ interface OnboardingAutomationBlock {
   items?: string[]
   ordered?: boolean
   note?: { kind: 'info' | 'warning' | 'success'; text: string }
+  // File names under public/onboarding-automation/ (screenshots from the original lab)
+  images?: string[]
 }
 
 interface OnboardingAutomationSection {
@@ -1067,6 +1069,10 @@ const onboardingAutomationSections: OnboardingAutomationSection[] = [
       },
       {
         text: 'Lucy and the other reviewers see everything about John Doe in one teamspace, consistently and securely. Some information, such as the applicant\u2019s SSN, appears on documents but is redacted so only reviewers with the right permission can see it. Video bookmarks let Lucy jump to key sections without watching the entire video. Finally, Lucy integrates with enterprise workflow to launch additional manual and automated processes.',
+        images: [
+          '010-Intro-OnboardingAutomation.png',
+          '000-Intro-DiscoveryMap.png',
+        ],
       },
     ],
   },
@@ -1086,6 +1092,7 @@ const onboardingAutomationSections: OnboardingAutomationSection[] = [
           'Open the Run the demo! tab and click the picture of Lucy, the HR Employee Onboarding Specialist.',
         ],
         ordered: true,
+        images: ['001c-Portal.png', '001d-Portal.png', '001d-BAN.png', 'Application01b.png', 'Application03-Tabs.png', 'Application03-Lucy.png'],
       },
       {
         heading: 'Option B: your own environment (not a trial or demo)',
@@ -1097,6 +1104,7 @@ const onboardingAutomationSections: OnboardingAutomationSection[] = [
           'Check the Storyboard and Discovery Map tabs, then open Run the demo! and click the picture of Lucy.',
         ],
         ordered: true,
+        images: ['001d-BAN.png', 'Application01b.png', 'Application03-Tabs.png', 'Application03-Lucy.png'],
       },
     ],
   },
@@ -1117,6 +1125,15 @@ const onboardingAutomationSections: OnboardingAutomationSection[] = [
           'Magazine view adds social features such as Likes, Tags, Downloads, and Comments. Filmstrip view suits media such as pictures; try it on the Photos folder.',
         ],
         ordered: true,
+        images: [
+          '100-Navigator-Hamburger.png',
+          '100-Navigator-BrowseFeature.png',
+          '110c-Navigator-OnboardedEmployees.png',
+          '115-Navigator-SelenaSwift.png',
+          '120c-Navigator-EmployeePacket.png',
+          '121-Navigator-Magazine.png',
+          '122-Navigator-Filmstrip.png',
+        ],
       },
     ],
   },
@@ -1139,6 +1156,16 @@ const onboardingAutomationSections: OnboardingAutomationSection[] = [
           'Select Roles: create custom roles, for example HR, Payroll, Manager (Department Manager), and IT, or add existing role templates. Click Finish.',
         ],
         ordered: true,
+        images: [
+          'ts-100-Teamspace-Feature.png',
+          'ts-110-New-Teamspace-Template.png',
+          'ts-120-Template-Builder.png',
+          'ts-130-Define-Teamspace-Template.png',
+          'ts-140b-Select-Searches.png',
+          'ts-150-Template-Select-Classes.png',
+          'ts-160-Folders-Documents-Tree.png',
+          'ts-170b-Select-Roles.png',
+        ],
       },
       {
         heading: 'Teamspace builder',
@@ -1152,6 +1179,17 @@ const onboardingAutomationSections: OnboardingAutomationSection[] = [
           'Select Users: you are shown as an owner. Add yourself to other roles or add users and groups, then click Finish.',
         ],
         ordered: true,
+        images: [
+          'ts-200b-New-Teamspace.png',
+          'ts-210-Teamspace-Builder.png',
+          'ts-220-Define-Teamspace.png',
+          'ts-230-Select-Searches.png',
+          'ts-240-Teamspace-Select-Classes.png',
+          'ts-250-Add-Application.png',
+          'ts-255b-Add-Document.png',
+          'ts-258-Add-Video.png',
+          'ts-260-Teamspace-Users.png',
+        ],
       },
       {
         heading: 'Review the teamspace',
@@ -1161,6 +1199,13 @@ const onboardingAutomationSections: OnboardingAutomationSection[] = [
           'Open the teamspace. The left side has Browse (content), Search (saved searches), and Team (members). The main area shows the selected folder, and the right side shows a thumbnail and the custom and system properties of the selected document.',
         ],
         ordered: true,
+        images: [
+          '200-Teamspace-Feature.png',
+          '210-Teamspaces.png',
+          '220-Teamspace-Roles.png',
+          '230-Teamspace-Roles-Security.png',
+          '240-Teamspace-View.png',
+        ],
       },
       {
         heading: 'Prepare teamspace content (optional)',
@@ -1168,6 +1213,14 @@ const onboardingAutomationSections: OnboardingAutomationSection[] = [
         items: [
           'Open Focus Corp - Employment Application.pdf and add: a redaction on the Social Security Number with reason Social Security Number; a highlight on the desired salary (85,000); a sticky note and a text annotation reading "Salary request exceeds job posting - please review"; Received and Reviewed date stamps; and document comments, including "Salary adjust was approved, please proceed with this candidate". Save and close the viewer.',
           'Open the video in a new window and create bookmarks: 00:00:07 Tell me about yourself; 00:00:31 Why should we hire you?; 00:00:51 Why did you leave your last job?; 00:01:05 What is your greatest weakness?; 00:01:21 What are your greatest strengths?; 00:01:42 Where do you see yourself in 5 years?; 00:01:57 What do you like to do outside of work?',
+        ],
+        images: [
+          '300-Application-Document.png',
+          '305-Annotations.png',
+          '302-Annotation-Save.png',
+          '380-Video-Launch.png',
+          '382-Video-OpenNewWindow.png',
+          '383-Video-New-Bookmark-Add.png',
         ],
       },
     ],
@@ -1191,6 +1244,20 @@ const onboardingAutomationSections: OnboardingAutomationSection[] = [
           'Click the Thumbnails icon at the bottom of the viewer to see every page.',
         ],
         ordered: true,
+        images: [
+          '300-Application-Document.png',
+          '300b-Viewer-Overview.png',
+          '310c-Viewer-Fit.png',
+          '315-Viewer-Timestamp.png',
+          '320c-Viewer-Redaction-Reason.png',
+          '322-Viewer-Create-Redaction.png',
+          '323-Viewer-Set-Redaction-Reason.png',
+          '330b-Sticky-Note.png',
+          '340b-Doc-Comment.png',
+          '350-Stamp.png',
+          '360-Thumbnail.png',
+          '362-Thumbnail-Size.png',
+        ],
       },
       {
         note: {
@@ -1217,6 +1284,18 @@ const onboardingAutomationSections: OnboardingAutomationSection[] = [
           'Close the viewer to return to the teamspace.',
         ],
         ordered: true,
+        images: [
+          '370-MergeSplit-Open.png',
+          '372-MergeSplit-Option.png',
+          '373-MergeSplit-Main.png',
+          '374-MergeSplit-AddDoc.png',
+          '375c-MergeSplit-DocSave.png',
+          '376-MergeSplit-I9.png',
+          '377-1-MergeSplit-I9CheckIn.png',
+          '378-1-MergeSplit.png',
+          '378-2c-MergeSplit-Cut.png',
+          '378-3-MergeSplit-Save.png',
+        ],
       },
     ],
   },
@@ -1237,6 +1316,13 @@ const onboardingAutomationSections: OnboardingAutomationSection[] = [
           'Create a bookmark: play and pause at the desired point, click New Bookmark, enter a name and optional description, adjust the start time if needed, and click OK.',
         ],
         ordered: true,
+        images: [
+          '380-Video-Launch.png',
+          '382-Video-OpenNewWindow.png',
+          '383-Video-Bookmarks.png',
+          '384-Video-PreviousNext.png',
+          '385-Video-NewBookmark.png',
+        ],
       },
     ],
   },
@@ -1255,6 +1341,13 @@ const onboardingAutomationSections: OnboardingAutomationSection[] = [
           'Click Launch process.',
         ],
         ordered: true,
+        images: [
+          '600-LaunchProcess.png',
+          '610-LaunchProcess-OnboardEmployee.png',
+          '620-LaunchProcess-LaunchUI.png',
+          '620B-LaunchProcess-Workplace.png',
+          '625-LaunchProcess-Launch.png',
+        ],
         note: {
           kind: 'warning',
           text: 'If the launch screen does not appear automatically, find the task in Workplace and click its Name link.',
@@ -1304,6 +1397,14 @@ const onboardingAutomationSections: OnboardingAutomationSection[] = [
           'Records Management (3:15): use IBM Enterprise Records to capture, declare, classify, store, and dispose of electronic and physical records according to retention policies.',
           'Salesforce Integration (6:29): manage Salesforce content in FileNet Content Manager through the native connector, so users no longer switch applications.',
           'Automate End-to-End Workflows (4:40): see how IBM Business Automation Workflow enables collaboration, integrates with content management, and provides analytics.',
+        ],
+        images: [
+          'aa-AutomationDocumentProcessingOverview.png',
+          'aa-TE-ExternalShare-Thumbnail.png',
+          'aa-FileNetGraphQL-Thumbnail-Intro.png',
+          'aa-RecordsManagement.png',
+          'aa-SalesforceOverview2.png',
+          'aa-AutomateEndtoEndWorkflow.png',
         ],
       },
     ],
@@ -6695,6 +6796,29 @@ export default function App() {
                                   <li key={item}>{item}</li>
                                 ))}
                               </ListTag>
+                            )}
+                            {block.images && (
+                              <ul className="mt-2 grid gap-3 sm:grid-cols-2" aria-label="Screenshots">
+                                {block.images.map((image, imageIndex) => (
+                                  <li key={`${image}-${imageIndex}`}>
+                                    <a
+                                      href={asset(`onboarding-automation/${image}`)}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      title="Open full-size screenshot"
+                                      className="block overflow-hidden rounded-lg border border-white/[0.1] bg-[#161616] transition-colors hover:border-[#4589ff]"
+                                    >
+                                      <img
+                                        src={asset(`onboarding-automation/${image}`)}
+                                        alt={`${section.title} screenshot ${imageIndex + 1} of ${block.images!.length}`}
+                                        loading="lazy"
+                                        decoding="async"
+                                        className="h-auto w-full"
+                                      />
+                                    </a>
+                                  </li>
+                                ))}
+                              </ul>
                             )}
                             {block.note && (
                               <p className={`rounded-lg border px-3 py-2 text-sm leading-relaxed text-[#e0e0e0] ${noteClasses}`}>
