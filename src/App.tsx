@@ -1450,8 +1450,11 @@ const portfolioResources: Record<PortfolioResourcePage, {
       { name: 'IBM Content Collector', url: 'http://ibm.biz/ICCSalesKit' },
       { name: 'Content Manager OnDemand', url: 'http://ibm.biz/CMODSalesKit' },
     ],
-    environments: [],
+    environments: [
+      { name: 'Apollo Business Automation Demo Environment', description: 'Access the Apollo Business Automation journey for Cloud Pak for Business Automation demos.', url: 'https://techzone.ibm.com/collection/apollo-business-automation/journey-cp4ba-demos', recommended: true },
+    ],
     techZoneCollections: [
+      { name: 'Apollo Business Automation', description: 'AI-powered productivity assets collected from Business Automation engagements.', url: 'https://techzone.ibm.com/collection/606d975f4bb0fb00182d15c5' },
       { name: 'IBM ECM System Monitor', description: 'Technical assets for monitoring and managing enterprise content environments.', url: 'https://techzone.ibm.com/collection/642be8753dc6450017510c5c' },
       { name: 'FileNet Content Manager for Technical Sales Level 4', description: 'Hands-on technical sales labs for IBM FileNet Content Manager.', url: 'https://techzone.ibm.com/collection/67b35eb3cbd2be7df984a4ac' },
       { name: 'Content services and Document processing', description: 'Journey assets for content services, document processing, governance, and capture.', url: 'https://techzone.ibm.com/collection/5f1b3ab4c1a2cf00201d47c4' },
