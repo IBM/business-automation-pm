@@ -1208,15 +1208,30 @@ const onboardingAutomationParents = new Map<string, string | null>()
   }
 })(onboardingAutomationSections, null)
 const allOnboardingSectionIds = Array.from(onboardingAutomationParents.keys())
+const onboardingAutomationDescendants = new Map<string, string[]>(
+  allOnboardingSectionIds.map(id => [
+    id,
+    allOnboardingSectionIds.filter(other => {
+      let parent = onboardingAutomationParents.get(other) ?? null
+      while (parent) {
+        if (parent === id) return true
+        parent = onboardingAutomationParents.get(parent) ?? null
+      }
+      return false
+    }),
+  ]),
+)
 
 const OnboardingCollapseContext = createContext<{
   collapsed: Set<string>
   toggle: (id: string) => void
+  cycle: (id: string) => void
   goToSection: (id: string) => void
   goToPageEdge: (edge: 'top' | 'bottom') => void
 }>({
   collapsed: new Set(),
   toggle: () => {},
+  cycle: () => {},
   goToSection: () => {},
   goToPageEdge: () => {},
 })
@@ -1344,6 +1359,24 @@ function OnboardingAutomationSections() {
       return next
     })
 
+  // Sections with subsections cycle: collapsed -> subsections shown (collapsed) -> everything expanded -> collapsed.
+  const cycle = (id: string) =>
+    setCollapsed(current => {
+      const descendants = onboardingAutomationDescendants.get(id) ?? []
+      const next = new Set(current)
+      if (current.has(id)) {
+        next.delete(id)
+        descendants.forEach(descendant => next.add(descendant))
+      } else if (descendants.some(descendant => current.has(descendant))) {
+        next.delete(id)
+        descendants.forEach(descendant => next.delete(descendant))
+      } else {
+        next.add(id)
+        descendants.forEach(descendant => next.add(descendant))
+      }
+      return next
+    })
+
   const goToSection = (id: string) => {
     setCollapsed(current => {
       const next = new Set(current)
@@ -1370,7 +1403,7 @@ function OnboardingAutomationSections() {
   const collapseAllLabel = allCollapsed ? 'Expand all Onboarding Automation sections' : 'Collapse all Onboarding Automation sections'
 
   return (
-    <OnboardingCollapseContext.Provider value={{ collapsed, toggle, goToSection, goToPageEdge }}>
+    <OnboardingCollapseContext.Provider value={{ collapsed, toggle, cycle, goToSection, goToPageEdge }}>
       <div className="mb-3 flex justify-end">
         <button
           type="button"
@@ -1410,8 +1443,17 @@ function OnboardingAutomationSectionView({
   index: number
   total?: number
 }) {
-  const { collapsed: collapsedSections, toggle } = useContext(OnboardingCollapseContext)
+  const { collapsed: collapsedSections, toggle, cycle } = useContext(OnboardingCollapseContext)
   const isCollapsed = collapsedSections.has(section.id)
+  const descendantIds = onboardingAutomationDescendants.get(section.id) ?? []
+  const hasSubsections = descendantIds.length > 0
+  // 0 = section collapsed, 1 = subsections shown but collapsed, 2 = subsections expanded
+  const expansionLevel: 0 | 1 | 2 = isCollapsed ? 0 : descendantIds.some(id => collapsedSections.has(id)) ? 1 : 2
+  const cycleLabel = [
+    `Show subsections of ${section.title}`,
+    `Expand all content in ${section.title}`,
+    `Collapse ${section.title} and its subsections`,
+  ][expansionLevel]
   const sectionId = onboardingAutomationAnchor(section.id)
   const headingId = `${sectionId}-heading`
   const contentId = `${sectionId}-content`
@@ -1447,12 +1489,25 @@ function OnboardingAutomationSectionView({
         </HeadingTag>
       </div>
       <div className="flex shrink-0 items-center gap-1">
-        <ProductResourceSectionToggleButton
-          expanded={!isCollapsed}
-          controls={contentId}
-          label={section.title}
-          onToggle={() => toggle(section.id)}
-        />
+        {hasSubsections ? (
+          <button
+            type="button"
+            onClick={() => cycle(section.id)}
+            aria-controls={contentId}
+            aria-label={cycleLabel}
+            title={cycleLabel}
+            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] text-[#c6c6c6] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+          >
+            <ThreeLevelVisibilityIcon level={expansionLevel} />
+          </button>
+        ) : (
+          <ProductResourceSectionToggleButton
+            expanded={!isCollapsed}
+            controls={contentId}
+            label={section.title}
+            onToggle={() => toggle(section.id)}
+          />
+        )}
         <CopySectionLink id={sectionId} label={section.title} />
       </div>
     </div>
