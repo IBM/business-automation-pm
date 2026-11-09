@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react'
+import { Fragment, createContext, useContext, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react'
 import enablementData from './enablement.json'
 import {
   onboardingAutomationSections,
@@ -1197,6 +1197,103 @@ function OnboardingAutomationBlockView({ block, depth, index }: { block: Onboard
   }
 }
 
+const onboardingAutomationParents = new Map<string, string | null>()
+;(function indexOnboardingSections(sections: OnboardingSection[], parent: string | null) {
+  for (const section of sections) {
+    onboardingAutomationParents.set(section.id, parent)
+    indexOnboardingSections(
+      section.blocks.filter((block): block is Extract<OnboardingBlock, { t: 'sec' }> => block.t === 'sec').map(block => block.s),
+      section.id,
+    )
+  }
+})(onboardingAutomationSections, null)
+const allOnboardingSectionIds = Array.from(onboardingAutomationParents.keys())
+
+const OnboardingCollapseContext = createContext<{ collapsed: Set<string>; toggle: (id: string) => void }>({
+  collapsed: new Set(),
+  toggle: () => {},
+})
+
+function OnboardingAutomationSections() {
+  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set(allOnboardingSectionIds))
+  const allCollapsed = collapsed.size === allOnboardingSectionIds.length
+  const allExpanded = collapsed.size === 0
+
+  useEffect(() => {
+    const reveal = () => {
+      const hash = decodeURIComponent(window.location.hash.replace(/^#/, ''))
+      const prefix = 'onboarding-automation-'
+      if (!hash.startsWith(prefix)) return
+      const sectionId = hash.slice(prefix.length)
+      if (!onboardingAutomationParents.has(sectionId)) return
+      // Expand every ancestor so the target section is visible (the target itself stays as-is).
+      setCollapsed(current => {
+        const next = new Set(current)
+        let parent = onboardingAutomationParents.get(sectionId) ?? null
+        while (parent) {
+          next.delete(parent)
+          parent = onboardingAutomationParents.get(parent) ?? null
+        }
+        next.delete(sectionId)
+        return next
+      })
+      window.requestAnimationFrame(() =>
+        window.requestAnimationFrame(() => document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth' })),
+      )
+    }
+    reveal()
+    window.addEventListener('hashchange', reveal)
+    return () => window.removeEventListener('hashchange', reveal)
+  }, [])
+
+  const toggle = (id: string) =>
+    setCollapsed(current => {
+      const next = new Set(current)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+
+  const buttonClass =
+    'rounded-md border border-white/[0.12] bg-white/[0.04] px-2.5 py-1.5 text-xs font-semibold text-[#c6c6c6] transition-colors hover:border-[#4589ff] hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/[0.12] disabled:hover:text-[#c6c6c6]'
+
+  return (
+    <OnboardingCollapseContext.Provider value={{ collapsed, toggle }}>
+      <div className="mb-3 flex flex-wrap items-center justify-end gap-2">
+        <button
+          type="button"
+          onClick={() => setCollapsed(new Set())}
+          disabled={allExpanded}
+          className={buttonClass}
+          aria-label="Expand all Onboarding Automation sections"
+        >
+          Expand all
+        </button>
+        <button
+          type="button"
+          onClick={() => setCollapsed(new Set(allOnboardingSectionIds))}
+          disabled={allCollapsed}
+          className={buttonClass}
+          aria-label="Collapse all Onboarding Automation sections"
+        >
+          Collapse all
+        </button>
+      </div>
+      <div className="grid gap-4">
+        {onboardingAutomationSections.map((section, index) => (
+          <OnboardingAutomationSectionView
+            key={section.id}
+            section={section}
+            depth={0}
+            index={index}
+            total={onboardingAutomationSections.length}
+          />
+        ))}
+      </div>
+    </OnboardingCollapseContext.Provider>
+  )
+}
+
 function OnboardingAutomationSectionView({
   section,
   depth,
@@ -1208,8 +1305,11 @@ function OnboardingAutomationSectionView({
   index: number
   total?: number
 }) {
+  const { collapsed: collapsedSections, toggle } = useContext(OnboardingCollapseContext)
+  const isCollapsed = collapsedSections.has(section.id)
   const sectionId = onboardingAutomationAnchor(section.id)
   const headingId = `${sectionId}-heading`
+  const contentId = `${sectionId}-content`
   const headingClass =
     depth === 0
       ? 'mt-2 text-lg font-semibold text-white'
@@ -1228,14 +1328,24 @@ function OnboardingAutomationSectionView({
           </p>
         )}
         <HeadingTag id={headingId} className={headingClass}>
-          {section.title}
+          <button
+            type="button"
+            onClick={() => toggle(section.id)}
+            aria-expanded={!isCollapsed}
+            aria-controls={contentId}
+            title={`${isCollapsed ? 'Expand' : 'Collapse'} ${section.title}`}
+            className="inline-flex items-center gap-2 rounded-sm text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+          >
+            <span>{section.title}</span>
+            <ChevronIcon expanded={!isCollapsed} />
+          </button>
         </HeadingTag>
       </div>
       <CopySectionLink id={sectionId} label={section.title} />
     </div>
   )
-  const body = (
-    <div className="grid gap-3">
+  const body = isCollapsed ? null : (
+    <div id={contentId} className="grid gap-3">
       {section.blocks.map((block, blockIndex) => (
         <OnboardingAutomationBlockView key={blockIndex} block={block} depth={depth} index={blockIndex} />
       ))}
@@ -1248,8 +1358,8 @@ function OnboardingAutomationSectionView({
         aria-labelledby={headingId}
         className="scroll-mt-28 overflow-hidden rounded-xl border border-white/[0.07] bg-[#262626]"
       >
-        <div className="border-b border-white/[0.06] px-5 py-4">{header}</div>
-        <div className="p-5">{body}</div>
+        <div className={`px-5 py-4 ${isCollapsed ? '' : 'border-b border-white/[0.06]'}`}>{header}</div>
+        {body && <div className="p-5">{body}</div>}
       </article>
     )
   }
@@ -1266,6 +1376,7 @@ function OnboardingAutomationSectionView({
 }
 
 function OnboardingAutomationContents() {
+  const [contentsCollapsed, setContentsCollapsed] = useState(false)
   const renderEntries = (blocks: OnboardingBlock[]): ReactNode => {
     const entries = blocks.filter((block): block is Extract<OnboardingBlock, { t: 'sec' }> => block.t === 'sec' && block.s.toc !== false)
     if (entries.length === 0) return null
@@ -1287,20 +1398,34 @@ function OnboardingAutomationContents() {
   }
   return (
     <nav aria-label="Onboarding Automation contents" className="mb-6 rounded-xl border border-[#4589ff]/30 bg-[#1c1c1c] p-4 sm:p-5">
-      <h3 className="text-base font-semibold text-white">Contents</h3>
-      <ul className="mt-3 grid gap-2 text-sm">
-        {onboardingAutomationSections.map(section => (
-          <li key={section.id}>
-            <a
-              href={`#${onboardingAutomationAnchor(section.id)}`}
-              className="font-semibold text-[#78a9ff] transition-colors hover:text-white"
-            >
-              {section.title}
-            </a>
-            {renderEntries(section.blocks)}
-          </li>
-        ))}
-      </ul>
+      <h3 className="text-base font-semibold text-white">
+        <button
+          type="button"
+          onClick={() => setContentsCollapsed(current => !current)}
+          aria-expanded={!contentsCollapsed}
+          aria-controls="onboarding-automation-contents-list"
+          title={`${contentsCollapsed ? 'Expand' : 'Collapse'} Contents`}
+          className="inline-flex items-center gap-2 rounded-sm text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+        >
+          <span>Contents</span>
+          <ChevronIcon expanded={!contentsCollapsed} />
+        </button>
+      </h3>
+      {!contentsCollapsed && (
+        <ul id="onboarding-automation-contents-list" className="mt-3 grid gap-2 text-sm">
+          {onboardingAutomationSections.map(section => (
+            <li key={section.id}>
+              <a
+                href={`#${onboardingAutomationAnchor(section.id)}`}
+                className="font-semibold text-[#78a9ff] transition-colors hover:text-white"
+              >
+                {section.title}
+              </a>
+              {renderEntries(section.blocks)}
+            </li>
+          ))}
+        </ul>
+      )}
     </nav>
   )
 }
