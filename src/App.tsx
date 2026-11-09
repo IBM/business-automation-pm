@@ -5700,7 +5700,7 @@ export default function App() {
                       <button
                         type="button"
                         onClick={() => navigateToPage('capabilities')}
-                        className="rounded-lg bg-[#0f62fe] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#0353e9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                        className="cta-bounce-glow rounded-lg bg-[#0f62fe] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#0353e9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
                       >
                         Explore the portfolio
                       </button>

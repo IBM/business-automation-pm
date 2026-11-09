@@ -42,3 +42,29 @@
   *::-webkit-scrollbar-track { background: transparent; }
   *::-webkit-scrollbar-thumb { background: #525252; border-radius: 2px; }
 }
+
+@keyframes cta-bounce-glow {
+  0%, 100% {
+    transform: translateY(0);
+    box-shadow: 0 0 8px 0 rgba(69, 137, 255, 0.45), 0 0 0 0 rgba(69, 137, 255, 0.4);
+  }
+  50% {
+    transform: translateY(-6px);
+    box-shadow: 0 0 22px 4px rgba(120, 169, 255, 0.85), 0 0 0 8px rgba(69, 137, 255, 0);
+  }
+}
+
+.cta-bounce-glow {
+  animation: cta-bounce-glow 1.6s ease-in-out 0.4s 5;
+}
+
+.cta-bounce-glow:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-bounce-glow {
+    animation: none;
+    box-shadow: 0 0 14px 2px rgba(69, 137, 255, 0.6);
+  }
+}
