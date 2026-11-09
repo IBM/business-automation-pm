@@ -5711,6 +5711,13 @@ export default function App() {
                       >
                         Visit TechXchange
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => navigateToPage('think')}
+                        className="rounded-lg border border-white/[0.14] bg-white/[0.05] px-5 py-3 text-sm font-semibold text-white transition-colors hover:border-[#4589ff]/60 hover:bg-[#0f62fe]/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                      >
+                        Visit IBM Think 2027
+                      </button>
                     </div>
                   </div>
                   <div className={`w-full ${isOverviewVideoExpanded ? '' : 'max-w-sm md:justify-self-end'}`}>
