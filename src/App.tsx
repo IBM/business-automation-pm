@@ -1265,12 +1265,14 @@ function BadgesPage() {
         : 'border-white/[0.1] bg-white/[0.03] text-[#a8a8a8] hover:border-[#4589ff]/45 hover:text-white'
     }`
   const allVisibleExpanded = visibleBadges.length > 0 && visibleBadges.every(badge => expandedBadges.has(badge.id))
-  const toggleAllBadges = () =>
+  const toggleAllBadges = () => {
+    if (!allVisibleExpanded) setIsFilterExpanded(true)
     setExpandedBadges(current => {
       const next = new Set(current)
       visibleBadges.forEach(badge => (allVisibleExpanded ? next.delete(badge.id) : next.add(badge.id)))
       return next
     })
+  }
   const countClass = (active: boolean) =>
     `rounded-full px-1.5 py-0.5 font-mono text-[9px] ${active ? 'bg-white/10 text-white' : 'bg-black/20 text-[#a8a8a8]'}`
   const checkIcon = (
@@ -1292,36 +1294,34 @@ function BadgesPage() {
       </div>
       <section aria-labelledby="badge-search-heading" className="mb-6 rounded-xl border border-white/[0.07] bg-[#262626] px-5 py-3">
         <div className={`${isFilterExpanded ? 'mb-2' : ''} flex items-start justify-between gap-3`}>
-          <h3 id="badge-search-heading" className="text-base font-semibold text-white">Badge Search</h3>
-          <div className="flex flex-col items-end gap-2">
-          <div className="flex flex-wrap items-center justify-end gap-2">
-          <button
-            type="button"
-            onClick={toggleAllBadges}
-            disabled={visibleBadges.length === 0}
-            aria-label={allVisibleExpanded ? 'Collapse all badges' : 'Expand all badges'}
-            title={allVisibleExpanded ? 'Collapse all badges' : 'Expand all badges'}
-            className="inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] disabled:opacity-40"
-          >
-            {allVisibleExpanded ? 'Collapse all' : 'Expand all'}
-            <ChevronIcon expanded={allVisibleExpanded} />
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsFilterExpanded(expanded => !expanded)}
-            aria-expanded={isFilterExpanded}
-            aria-controls="badges-filters"
-            aria-label={isFilterExpanded ? 'Collapse Badge Search filters' : 'Expand Badge Search filters'}
-            title={isFilterExpanded ? 'Collapse filters' : 'Expand filters'}
-            className="inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#ffb784] transition-colors hover:border-[#ff832b]/55 hover:bg-[#ff832b]/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb784]"
-          >
-            Filter
-            <VideoVisibilityIcon visible={isFilterExpanded} />
-          </button>
+          <div className="flex items-center gap-2">
+            <h3 id="badge-search-heading" className="text-base font-semibold text-white">Badge Search</h3>
+            <button
+              type="button"
+              onClick={() => setIsFilterExpanded(expanded => !expanded)}
+              aria-expanded={isFilterExpanded}
+              aria-controls="badges-filters"
+              aria-label={isFilterExpanded ? 'Collapse Badge Search filters' : 'Expand Badge Search filters'}
+              title={isFilterExpanded ? 'Collapse filters' : 'Expand filters'}
+              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] text-[#ffb784] transition-colors hover:border-[#ff832b]/55 hover:bg-[#ff832b]/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb784]"
+            >
+              <VideoVisibilityIcon visible={isFilterExpanded} />
+            </button>
           </div>
-          <p aria-live="polite" className="text-[11px] font-medium text-[#c6c6c6]">
-            {visibleBadges.length} of {badgeEntries.length} badges
-          </p>
+          <div className="flex flex-col items-end gap-2">
+            <button
+              type="button"
+              onClick={toggleAllBadges}
+              disabled={visibleBadges.length === 0}
+              aria-label={allVisibleExpanded ? 'Collapse all badges' : 'Expand all badges'}
+              title={allVisibleExpanded ? 'Collapse all badges' : 'Expand all badges and Badge Search'}
+              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] disabled:opacity-40"
+            >
+              <ChevronIcon expanded={allVisibleExpanded} />
+            </button>
+            <p aria-live="polite" className="text-[11px] font-medium text-[#c6c6c6]">
+              {visibleBadges.length} of {badgeEntries.length} badges
+            </p>
           </div>
         </div>
         <div id="badges-filters" hidden={!isFilterExpanded} className="grid gap-3">
