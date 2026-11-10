@@ -43,7 +43,7 @@ const pageAnchors: Record<Page, string> = {
 
 const breadcrumbLabels: Record<Page, string> = {
   overview: 'Main',
-  capabilities: 'Portfolio',
+  capabilities: 'Product',
   badges: 'Badge',
   yl: 'YL',
   'lets-create': 'Let\'s Create!',
@@ -1345,46 +1345,123 @@ const badgeEntries: BadgeEntry[] = ([
     note: 'IBMers must apply this learning with a client and complete an application form detailing their interaction.',
   },
 ] as BadgeEntry[]).sort((a, b) => a.name.localeCompare(b.name))
-const ylLevels: { level: number; courses: { code: string; title: string; owners: string[] }[] }[] = [
+type YLCourse = {
+  code: string
+  title: string
+  owners: string[]
+  url: string
+  capabilities: PortfolioResourcePage[]
+  products: string[]
+}
+
+const ylPlanUrl = (id: string) => `https://yourlearning.ibm.com/activity/${id}`
+const ylProducts = {
+  cp4ba: 'IBM Cloud Pak for Business Automation',
+  baw: 'IBM Business Automation Workflow',
+  odm: 'IBM Operational Decision Manager',
+  content: 'IBM Content Cortex',
+  mining: 'IBM Process Mining',
+  rpa: 'IBM Robotic Process Automation',
+  di: 'IBM Decision Intelligence',
+  bamoe: 'IBM Business Automation Manager Open Editions',
+}
+
+const ylLevels: { level: number; courses: YLCourse[] }[] = [
   {
     level: 1,
     courses: [
-      { code: 'CP4BA L1', title: 'Cloud Pak for Business Automation Level 1', owners: ['Shipra', 'Thomas'] },
-      { code: 'BAMOEL1', title: 'Business Automation Manager Open Editions Fundamentals Level 1', owners: ['Devidutta'] },
+      { code: 'CP4BA L1', title: 'Cloud Pak for Business Automation Level 1', owners: ['Shipra', 'Thomas'], url: ylPlanUrl('PLAN-05FAF059A5BE'), capabilities: ['cp4ba'], products: [ylProducts.cp4ba] },
+      { code: 'BAMOEL1', title: 'Business Automation Manager Open Editions Fundamentals Level 1', owners: ['Devidutta'], url: ylPlanUrl('PLAN-07C03B53EEE0'), capabilities: ['process-automation', 'decision-intelligence'], products: [ylProducts.bamoe] },
     ],
   },
   {
     level: 2,
     courses: [
-      { code: 'CP4BA L2', title: 'Cloud Pak for Business Automation Level 2', owners: ['Shipra', 'Thomas'] },
-      { code: 'CP4BA L2 CSDP', title: 'Cloud Pak for Business Automation Content Services and Document Processing Level 2', owners: ['Sydney'] },
-      { code: 'CP4BA L2 WF DM', title: 'Cloud Pak for Business Automation Workflow and Decisions Level 2', owners: ['Bibin', 'Prasoon'] },
-      { code: 'CP4BA L2 RPA PM', title: 'Learning Plan Introduction to Robotic Process Automation and Process Mining Level 2', owners: ['Suman Kalia'] },
-      { code: 'DMOEL2', title: 'Decision Manager Open Edition Level 2', owners: ['Devidutta'] },
-      { code: 'PAMOEL2', title: 'Process Automation Manager Open Edition Level 2', owners: ['Devidutta'] },
-      { code: 'DI L2', title: 'Decision Intelligence Level 2', owners: ['Prasson'] },
+      { code: 'CP4BA L2', title: 'Cloud Pak for Business Automation Level 2', owners: ['Shipra', 'Thomas'], url: ylPlanUrl('PLAN-A3C3FC6EF25E'), capabilities: ['cp4ba'], products: [ylProducts.cp4ba] },
+      { code: 'CP4BA L2 CSDP', title: 'Cloud Pak for Business Automation Content Services and Document Processing Level 2', owners: ['Sydney'], url: ylPlanUrl('PLAN-3359CF7C3B20'), capabilities: ['content-services'], products: [ylProducts.cp4ba, ylProducts.content] },
+      { code: 'CP4BA L2 WF DM', title: 'Cloud Pak for Business Automation Workflow and Decisions Level 2', owners: ['Bibin', 'Prasoon'], url: ylPlanUrl('PLAN-39D1867D913F'), capabilities: ['process-automation', 'decision-intelligence'], products: [ylProducts.cp4ba, ylProducts.baw, ylProducts.odm] },
+      { code: 'CP4BA L2 RPA PM', title: 'Learning Plan Introduction to Robotic Process Automation and Process Mining Level 2', owners: ['Suman Kalia'], url: ylPlanUrl('PLAN-29BD579C193F'), capabilities: ['process-automation'], products: [ylProducts.rpa, ylProducts.mining] },
+      { code: 'DMOEL2', title: 'Decision Manager Open Edition Level 2', owners: ['Devidutta'], url: ylPlanUrl('PLAN-7DC7C833779B'), capabilities: ['decision-intelligence'], products: [ylProducts.bamoe] },
+      { code: 'PAMOEL2', title: 'Process Automation Manager Open Edition Level 2', owners: ['Devidutta'], url: ylPlanUrl('PLAN-ED37EF999DE5'), capabilities: ['process-automation'], products: [ylProducts.bamoe] },
+      { code: 'DI L2', title: 'Decision Intelligence Level 2', owners: ['Prasson'], url: ylPlanUrl('PLAN-E3FDC6B1E778'), capabilities: ['decision-intelligence'], products: [ylProducts.di] },
     ],
   },
   {
     level: 3,
     courses: [
-      { code: 'CP4BA L3', title: 'Cloud Pak for Business Automation Demos Level 3 (FileNet, BAW, ADS, BAI)', owners: [] },
-      { code: 'RPA L3', title: 'Robotic Process Automation Level 3', owners: ['Suman Kalia'] },
-      { code: 'IPM L3', title: 'IBM Process Mining Level 3', owners: ['Lorenzo'] },
-      { code: 'PAMOEL3', title: 'Process Automation Manager Open Edition Level 3', owners: ['Devidutta'] },
-      { code: 'DMOEL3', title: 'Decision Manager Open Edition Level 3', owners: ['Devidutta'] },
+      { code: 'CP4BA L3', title: 'Cloud Pak for Business Automation Demos Level 3 (FileNet, BAW, ADS, BAI)', owners: [], url: ylPlanUrl('PLAN-53EEA5E1D574'), capabilities: ['cp4ba'], products: [ylProducts.cp4ba] },
+      { code: 'RPA L3', title: 'Robotic Process Automation Level 3', owners: ['Suman Kalia'], url: ylPlanUrl('PLAN-B196DBDC3714'), capabilities: ['process-automation'], products: [ylProducts.rpa] },
+      { code: 'IPM L3', title: 'IBM Process Mining Level 3', owners: ['Lorenzo'], url: ylPlanUrl('PLAN-DBB5BBD2F053'), capabilities: ['process-automation'], products: [ylProducts.mining] },
+      { code: 'PAMOEL3', title: 'Process Automation Manager Open Edition Level 3', owners: ['Devidutta'], url: ylPlanUrl('PLAN-ACBC2C121799'), capabilities: ['process-automation'], products: [ylProducts.bamoe] },
+      { code: 'DMOEL3', title: 'Decision Manager Open Edition Level 3', owners: ['Devidutta'], url: ylPlanUrl('PLAN-1516B2F8638E'), capabilities: ['decision-intelligence'], products: [ylProducts.bamoe] },
     ],
   },
   {
     level: 4,
     courses: [
-      { code: 'FILENET L4', title: 'FileNet Content Manager for Technical Sales Level 4', owners: ['Thomas'] },
-      { code: 'IPM L4', title: 'IBM Process Mining Level 4', owners: ['Lorenzo'] },
+      { code: 'FILENET L4', title: 'FileNet Content Manager for Technical Sales Level 4', owners: ['Thomas'], url: ylPlanUrl('PLAN-AF8DE95A7D19'), capabilities: ['content-services'], products: [ylProducts.content] },
+      { code: 'IPM L4', title: 'IBM Process Mining Level 4', owners: ['Lorenzo'], url: ylPlanUrl('PLAN-9763E3E62DE8'), capabilities: ['process-automation'], products: [ylProducts.mining] },
     ],
   },
 ]
 
 function YLPage() {
+  const allLevels = ylLevels.map(group => group.level)
+  const ylCapabilityOptions = businessAutomationCapabilityFilters.map(filter => ({ id: filter.page, label: filter.label, color: filter.color }))
+  const ylProductOptions = Array.from(new Set(ylLevels.flatMap(group => group.courses.flatMap(course => course.products))))
+    .sort((x, y) => x.localeCompare(y))
+    .map(product => ({ id: product, label: product }))
+  const [isFilterExpanded, setIsFilterExpanded] = useState(true)
+  const [selectedLevels, setSelectedLevels] = useState<Set<number>>(() => new Set(allLevels))
+  const [selectedCapabilities, setSelectedCapabilities] = useState<Set<string>>(() => new Set(ylCapabilityOptions.map(option => option.id)))
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(() => new Set(ylProductOptions.map(option => option.id)))
+  // Sections start minimized.
+  const [collapsedLevels, setCollapsedLevels] = useState<Set<number>>(() => new Set(allLevels))
+  useEffect(() => {
+    const expandFromHash = () => {
+      const match = window.location.hash.match(/^#yl-level-(\d+)/)
+      if (match) {
+        const level = Number(match[1])
+        setCollapsedLevels(current => {
+          if (!current.has(level)) return current
+          const next = new Set(current)
+          next.delete(level)
+          return next
+        })
+      }
+    }
+    expandFromHash()
+    window.addEventListener('hashchange', expandFromHash)
+    return () => window.removeEventListener('hashchange', expandFromHash)
+  }, [])
+  const matchesFilters = (course: YLCourse) =>
+    (selectedCapabilities.size === 0 || course.capabilities.some(capability => selectedCapabilities.has(capability))) &&
+    (selectedProducts.size === 0 || course.products.some(product => selectedProducts.has(product)))
+  const groupsWithCourses = ylLevels.map(group => ({ ...group, courses: group.courses.filter(matchesFilters) }))
+  const levelsToShow = groupsWithCourses.filter(
+    group => group.courses.length > 0 && (selectedLevels.size === 0 || selectedLevels.has(group.level)),
+  )
+  const totalCourses = ylLevels.reduce((total, group) => total + group.courses.length, 0)
+  const visibleCourses = levelsToShow.reduce((total, group) => total + group.courses.length, 0)
+  const allLevelsSelected = selectedLevels.size === allLevels.length
+  const allCollapsed = levelsToShow.length > 0 && levelsToShow.every(group => collapsedLevels.has(group.level))
+  const pillClass = (active: boolean) =>
+    `inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${
+      active
+        ? 'border-[#78a9ff]/70 bg-[#0f62fe]/20 text-white'
+        : 'border-white/[0.1] bg-white/[0.03] text-[#a8a8a8] hover:border-[#4589ff]/45 hover:text-white'
+    }`
+  const countClass = (active: boolean) =>
+    `rounded-full px-1.5 py-0.5 font-mono text-[9px] ${active ? 'bg-white/10 text-white' : 'bg-black/20 text-[#a8a8a8]'}`
+  const toggleLevelCollapsed = (level: number) =>
+    setCollapsedLevels(current => {
+      const next = new Set(current)
+      if (next.has(level)) next.delete(level)
+      else next.add(level)
+      return next
+    })
+  const iconButtonClass =
+    'inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]'
   return (
     <section id="yl-top" aria-labelledby="yl-heading" className="scroll-mt-28">
       <div className="mb-6 flex items-start justify-between gap-4">
@@ -1392,48 +1469,186 @@ function YLPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">IBM Data &amp; AI: Business Automation</p>
           <h2 id="yl-heading" className="mt-1 text-2xl font-semibold text-white">YL</h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#c6c6c6]">
-            Learning plan courses by level, with the owner for each course.
+            YourLearning plans by level, with the owner, capability and product for each.
           </p>
         </div>
         <CopySectionLink id="yl-top" label="YL page" />
       </div>
-      <div className="grid gap-6">
-        {ylLevels.map(group => (
-          <section
-            key={group.level}
-            id={`yl-level-${group.level}`}
-            aria-labelledby={`yl-level-${group.level}-heading`}
-            className="scroll-mt-28 rounded-xl border border-white/[0.07] bg-[#262626] p-5"
+
+      <section id="yl-filters" aria-labelledby="yl-filters-heading" className="mb-6 scroll-mt-28 rounded-xl border border-[#4589ff]/30 bg-[#1c1c1c] p-4 sm:p-5">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <h3 id="yl-filters-heading" className="text-base font-semibold text-white">Levels, Capabilities and Products</h3>
+          <button
+            type="button"
+            onClick={() => setIsFilterExpanded(expanded => !expanded)}
+            aria-expanded={isFilterExpanded}
+            aria-controls="yl-filters-body"
+            aria-label={isFilterExpanded ? 'Collapse Filters' : 'Expand Filters'}
+            title={isFilterExpanded ? 'Collapse Filters' : 'Expand Filters'}
+            className={iconButtonClass}
           >
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <h3 id={`yl-level-${group.level}-heading`} className="flex items-baseline gap-3 text-lg font-semibold text-white">
-                <span className="font-mono text-xs text-[#78a9ff]">{String(group.level).padStart(2, '0')}</span>
-                Level {group.level}
-              </h3>
-              <CopySectionLink id={`yl-level-${group.level}`} label={`Level ${group.level}`} />
-            </div>
-            <ul className="grid gap-3 sm:grid-cols-2">
-              {group.courses.map(course => (
-                <li key={course.code} className="rounded-lg border border-white/[0.06] bg-[#161616] p-4">
-                  <p className="text-sm font-semibold text-white">{course.code}</p>
-                  <p className="mt-1 text-sm leading-relaxed text-[#c6c6c6]">{course.title}</p>
-                  {course.owners.length > 0 && (
-                    <p className="mt-2 text-xs text-[#8d8d8d]">
-                      <span className="font-semibold uppercase tracking-[0.12em] text-[#78a9ff]">{course.owners.length > 1 ? 'Owners' : 'Owner'}</span>{' '}
-                      {course.owners.join(', ')}
-                    </p>
+            Filter
+            <VideoVisibilityIcon visible={isFilterExpanded} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setCollapsedLevels(allCollapsed ? new Set() : new Set(allLevels))}
+            aria-label={allCollapsed ? 'Expand all levels' : 'Collapse all levels'}
+            title={allCollapsed ? 'Expand all levels' : 'Collapse all levels'}
+            className={iconButtonClass}
+          >
+            {allCollapsed ? 'Expand all' : 'Collapse all'}
+            <VideoVisibilityIcon visible={!allCollapsed} />
+          </button>
+          <span aria-live="polite" className="text-xs font-medium text-[#c6c6c6]">
+            Levels: {levelsToShow.length} of {ylLevels.length} · Plans: {visibleCourses} of {totalCourses}
+          </span>
+          <span className="ml-auto"><CopySectionLink id="yl-filters" label="YL filters" /></span>
+        </div>
+        <div id="yl-filters-body" hidden={!isFilterExpanded} className="mt-4 grid gap-4 border-t border-white/[0.06] pt-4">
+          <div role="group" aria-label="Filter learning plans by level" className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              aria-pressed={allLevelsSelected}
+              onClick={() => setSelectedLevels(allLevelsSelected ? new Set() : new Set(allLevels))}
+              className={pillClass(allLevelsSelected)}
+            >
+              All levels
+              <span className={countClass(allLevelsSelected)}>{groupsWithCourses.reduce((total, group) => total + group.courses.length, 0)}</span>
+            </button>
+            {groupsWithCourses.map(group => {
+              const isActive = selectedLevels.has(group.level)
+              return (
+                <button
+                  key={group.level}
+                  type="button"
+                  aria-pressed={isActive}
+                  onClick={() =>
+                    setSelectedLevels(current => {
+                      const next = new Set(current)
+                      if (next.has(group.level)) next.delete(group.level)
+                      else next.add(group.level)
+                      return next
+                    })
+                  }
+                  className={pillClass(isActive)}
+                >
+                  {isActive && (
+                    <svg aria-hidden="true" viewBox="0 0 16 16" className="h-3 w-3" fill="none">
+                      <path d="m3.5 8.2 2.7 2.7 6.3-6.3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
                   )}
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
+                  Level {group.level}
+                  <span className={countClass(isActive)}>{group.courses.length}</span>
+                </button>
+              )
+            })}
+          </div>
+          <CommunityFilterGroup
+            id="yl-capability-filter"
+            title="Capabilities"
+            noun="learning plans"
+            options={ylCapabilityOptions}
+            selected={selectedCapabilities}
+            onChange={setSelectedCapabilities}
+          />
+          <CommunityFilterGroup
+            id="yl-product-filter"
+            title="Products"
+            noun="learning plans"
+            options={ylProductOptions}
+            selected={selectedProducts}
+            onChange={setSelectedProducts}
+          />
+        </div>
+      </section>
+
+      {levelsToShow.length === 0 && (
+        <p className="rounded-xl border border-white/[0.07] bg-[#262626] px-5 py-6 text-center text-sm text-[#c6c6c6]">
+          No learning plans match the selected filters.
+        </p>
+      )}
+      <div className="grid gap-6">
+        {levelsToShow.map(group => {
+          const isCollapsed = collapsedLevels.has(group.level)
+          const bodyId = `yl-level-${group.level}-body`
+          return (
+            <section
+              key={group.level}
+              id={`yl-level-${group.level}`}
+              aria-labelledby={`yl-level-${group.level}-heading`}
+              className="scroll-mt-28 rounded-xl border border-white/[0.07] bg-[#262626] p-5"
+            >
+              <div className={`${isCollapsed ? '' : 'mb-4'} flex items-center justify-between gap-3`}>
+                <h3 id={`yl-level-${group.level}-heading`} className="text-lg font-semibold text-white">
+                  <button
+                    type="button"
+                    onClick={() => toggleLevelCollapsed(group.level)}
+                    aria-expanded={!isCollapsed}
+                    aria-controls={bodyId}
+                    title={`${isCollapsed ? 'Expand' : 'Collapse'} Level ${group.level}`}
+                    className="inline-flex items-baseline gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                  >
+                    <span className="font-mono text-xs text-[#78a9ff]">{String(group.level).padStart(2, '0')}</span>
+                    Level {group.level}
+                    <span className="text-xs font-medium text-[#c6c6c6]">{group.courses.length} {group.courses.length === 1 ? 'plan' : 'plans'}</span>
+                    <span className="self-center text-[#78a9ff]"><VideoVisibilityIcon visible={!isCollapsed} /></span>
+                  </button>
+                </h3>
+                <CopySectionLink id={`yl-level-${group.level}`} label={`Level ${group.level}`} />
+              </div>
+              <ul id={bodyId} hidden={isCollapsed} className="grid gap-3 sm:grid-cols-2">
+                {group.courses.map(course => (
+                  <li key={course.code} className="flex flex-col rounded-lg border border-white/[0.06] bg-[#161616] p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-sm font-semibold text-white">{course.code}</p>
+                      <a
+                        href={course.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`Open ${course.code} learning plan in YourLearning`}
+                        className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-[#4589ff]/35 bg-[#0f62fe]/10 px-2.5 py-1.5 text-xs font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff] hover:bg-[#0f62fe]/25 hover:text-white"
+                      >
+                        Learning plan
+                        <ExternalLinkIcon />
+                      </a>
+                    </div>
+                    <p className="mt-1 text-sm leading-relaxed text-[#c6c6c6]">{course.title}</p>
+                    {course.owners.length > 0 && (
+                      <p className="mt-2 text-xs text-[#8d8d8d]">
+                        <span className="font-semibold uppercase tracking-[0.12em] text-[#78a9ff]">{course.owners.length > 1 ? 'Owners' : 'Owner'}</span>{' '}
+                        {course.owners.join(', ')}
+                      </p>
+                    )}
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {course.capabilities.map(page => {
+                        const capability = businessAutomationCapabilityFilters.find(filter => filter.page === page)
+                        return capability ? (
+                          <span
+                            key={page}
+                            className="rounded-full border px-2 py-0.5 text-[10px] font-semibold text-white"
+                            style={{ borderColor: `${capability.color}bb`, backgroundColor: `${capability.color}20` }}
+                          >
+                            {capability.label}
+                          </span>
+                        ) : null
+                      })}
+                      {course.products.map(product => (
+                        <span key={product} className="rounded-full border border-white/[0.1] bg-white/[0.03] px-2 py-0.5 text-[10px] font-medium text-[#c6c6c6]">
+                          {product}
+                        </span>
+                      ))}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        })}
       </div>
     </section>
   )
 }
-
-
 
 function BadgesPage() {
   const [isFilterExpanded, setIsFilterExpanded] = useState(true)
@@ -6122,7 +6337,7 @@ export default function App() {
               Explore references, previews, AI capabilities, demos, sales kits, demo environments, TechZone Collections, and IBM Product Hub playlists for every capability shown above. Tags identify where each resource belongs.
             </p>
           </div>
-          <CopySectionLink id="portfolio-product-resources" label="Portfolio product resources" />
+          <CopySectionLink id="portfolio-product-resources" label="Product product resources" />
         </div>
 
         {!isProductResourcesExpanded && renderCollapsedProductResourceSummary(sectionCounts, 'portfolio-product-resources')}
@@ -6147,7 +6362,7 @@ export default function App() {
               <div className="flex items-center gap-1">
                 <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts.reference)}</span>
                 <span className="font-mono text-[10px] text-[#8d8d8d]">01 / 08</span>
-                <CopySectionLink id="portfolio-product-resources-reference" label="Portfolio reference resources" />
+                <CopySectionLink id="portfolio-product-resources-reference" label="Product reference resources" />
                 <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
               </div>
             </div>
@@ -6189,7 +6404,7 @@ export default function App() {
               <div className="flex items-center gap-1">
                 <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts.previews)}</span>
                 <span className="font-mono text-[10px] text-[#8d8d8d]">02 / 08</span>
-                <CopySectionLink id="portfolio-product-resources-previews" label="Portfolio previews and trials" />
+                <CopySectionLink id="portfolio-product-resources-previews" label="Product previews and trials" />
                 <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
               </div>
             </div>
@@ -6233,7 +6448,7 @@ export default function App() {
             <div className="flex items-center gap-1">
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts.demos)}</span>
               <span className="font-mono text-[10px] text-[#8d8d8d]">03 / 08</span>
-              <CopySectionLink id="portfolio-product-resources-demos" label="Portfolio demos and videos" />
+              <CopySectionLink id="portfolio-product-resources-demos" label="Product demos and videos" />
               <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
             </div>
           </div>
@@ -6280,7 +6495,7 @@ export default function App() {
               {renderSalesKitCapabilitySortControl()}
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts['sales-kits'])}</span>
               <span className="font-mono text-[10px] text-[#8d8d8d]">04 / 08</span>
-              <CopySectionLink id="portfolio-product-resources-sales-kits" label="Portfolio sales kits" />
+              <CopySectionLink id="portfolio-product-resources-sales-kits" label="Product sales kits" />
               <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
             </div>
           </div>
@@ -6331,7 +6546,7 @@ export default function App() {
             <div className="flex items-center gap-1">
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts.environments)}</span>
               <span className="font-mono text-[10px] text-[#8d8d8d]">05 / 08</span>
-              <CopySectionLink id="portfolio-product-resources-environments" label="Portfolio demo environments" />
+              <CopySectionLink id="portfolio-product-resources-environments" label="Product demo environments" />
               <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
             </div>
           </div>
@@ -6389,7 +6604,7 @@ export default function App() {
             <div className="flex items-center gap-1">
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts['techzone-collections'])}</span>
               <span className="font-mono text-[10px] text-[#8d8d8d]">06 / 08</span>
-              <CopySectionLink id="portfolio-product-resources-techzone-collections" label="Portfolio TechZone Collections" />
+              <CopySectionLink id="portfolio-product-resources-techzone-collections" label="Product TechZone Collections" />
               <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
             </div>
           </div>
@@ -6433,7 +6648,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => toggleYoutubePlaylistFrames(playlistEmbedUrls)}
-                  aria-label={allPlaylistFramesHidden ? 'Expand all Portfolio Product Hub videos' : 'Collapse all Portfolio Product Hub videos'}
+                  aria-label={allPlaylistFramesHidden ? 'Expand all Product Hub videos' : 'Collapse all Product Hub videos'}
                   title={allPlaylistFramesHidden ? 'Expand all videos' : 'Collapse all videos'}
                   className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] text-[#c6c6c6] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
                 >
@@ -6442,7 +6657,7 @@ export default function App() {
               )}
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts['youtube-playlists'])}</span>
               <span className="font-mono text-[10px] text-[#8d8d8d]">07 / 08</span>
-              <CopySectionLink id="portfolio-product-resources-youtube-playlists" label="Portfolio IBM Product Hub YouTube playlists" />
+              <CopySectionLink id="portfolio-product-resources-youtube-playlists" label="Product IBM Product Hub YouTube playlists" />
               <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
             </div>
           </div>
@@ -6515,7 +6730,7 @@ export default function App() {
             <div className="flex items-center gap-1">
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts['ai-capabilities'])}</span>
               <span className="font-mono text-[10px] text-[#8d8d8d]">08 / 08</span>
-              <CopySectionLink id="portfolio-product-resources-ai-capabilities" label="Portfolio AI capabilities" />
+              <CopySectionLink id="portfolio-product-resources-ai-capabilities" label="Product AI capabilities" />
               <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
             </div>
           </div>
@@ -6561,7 +6776,7 @@ export default function App() {
 
     if (selectedCapabilityPages.size === allBusinessAutomationCapabilityPages.length) {
       return [
-        { id: 'capabilities-all', label: 'Portfolio overview' },
+        { id: 'capabilities-all', label: 'Product overview' },
         ...businessAutomationCapabilityFilters.map(filter => ({
           id: `capabilities-all-${filter.page}`,
           label: filter.label,
@@ -6642,9 +6857,9 @@ export default function App() {
           <h2 id="capabilities-filter-heading" className="text-lg font-semibold text-white">Business Automation Capability</h2>
           <span className="text-xs font-medium text-[#c6c6c6]">{selectedCapabilitySummary}</span>
         </div>
-        <CopySectionLink id="capabilities-top" label="Business Automation portfolio" />
+        <CopySectionLink id="capabilities-top" label="Business Automation product" />
       </div>
-      <div id="capability-filter-controls" hidden={!isCapabilityFilterExpanded} role="group" aria-label="Filter Business Automation portfolio" className="mt-4 flex flex-wrap gap-2 border-t border-white/[0.06] pt-4">
+      <div id="capability-filter-controls" hidden={!isCapabilityFilterExpanded} role="group" aria-label="Filter Business Automation product" className="mt-4 flex flex-wrap gap-2 border-t border-white/[0.06] pt-4">
         <button
           type="button"
           aria-pressed={selectedCapabilityPages.size === allBusinessAutomationCapabilityPages.length}
@@ -6745,7 +6960,7 @@ export default function App() {
   )
 
   const mainHeaderTitle = isCapabilitiesPage
-    ? 'Business Automation Portfolio'
+    ? 'Business Automation Product'
     : currentPage === 'badges'
     ? 'Badge'
     : currentPage === 'yl'
@@ -7286,7 +7501,7 @@ export default function App() {
                 <div className={`mt-4 grid gap-6 ${isOverviewVideoExpanded ? '' : 'md:grid-cols-[1fr_18rem] md:items-end'}`}>
                   <div>
                     <p className="max-w-2xl text-base leading-relaxed text-[#c6c6c6] sm:text-lg">
-                      Automate complex work, activate trusted enterprise content, and make better decisions with an integrated portfolio built for intelligent operations.
+                      Automate complex work, activate trusted enterprise content, and make better decisions with an integrated product suite built for intelligent operations.
                     </p>
                     <div className="mt-6 flex flex-wrap gap-3">
                       <button
@@ -7294,7 +7509,7 @@ export default function App() {
                         onClick={() => navigateToPage('capabilities')}
                         className="cta-bounce-glow rounded-lg bg-[#0f62fe] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#0353e9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
                       >
-                        Explore the portfolio
+                        Explore the product
                       </button>
                       <button
                         type="button"
@@ -7370,7 +7585,7 @@ export default function App() {
             <section id="overview-capabilities" className="mt-6 scroll-mt-28" aria-labelledby="overview-capabilities-heading">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">One integrated portfolio</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">One integrated product suite</p>
                 <h3 id="overview-capabilities-heading" className="mt-1 text-2xl font-semibold text-white">Transform how work gets done</h3>
                 <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#c6c6c6]">
                   Business Automation brings people, processes, content, decisions, and AI together so organizations can modernize at their own pace without losing control, trust, or visibility.
@@ -7473,10 +7688,10 @@ export default function App() {
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               {[
                 {
-                  label: 'Portfolio overview',
+                  label: 'Product overview',
                   description: 'Explore every capability with its related products, previews, trials, and demos.',
                   page: 'capabilities' as Page,
-                  action: 'Explore the portfolio',
+                  action: 'Explore the product',
                 },
                 {
                   label: 'Community',
@@ -7765,7 +7980,7 @@ export default function App() {
             <div className="rounded-xl border border-white/[0.07] bg-[#262626] p-5 sm:p-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">Portfolio Overview</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">Product Overview</p>
                   <h2 id="capabilities-all-heading" className="mt-1 text-2xl font-semibold text-white">
                     <button
                       type="button"
@@ -7806,7 +8021,7 @@ export default function App() {
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
-                  <CopySectionLink id="capabilities-all" label="Business Automation portfolio overview" />
+                  <CopySectionLink id="capabilities-all" label="Business Automation product overview" />
                   <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
                 </div>
               </div>
@@ -7893,7 +8108,7 @@ export default function App() {
                 <div className="rounded-xl border border-dashed border-white/[0.14] bg-[#262626] px-6 py-10 text-center">
                   <p className="text-base font-semibold text-white">No capabilities selected</p>
                   <p className="mt-2 text-sm text-[#c6c6c6]">
-                    Select one or more capabilities above, or use Show all to restore the complete portfolio.
+                    Select one or more capabilities above, or use Show all to restore the complete product view.
                   </p>
                 </div>
                 )}
@@ -8047,7 +8262,7 @@ export default function App() {
                 aria-labelledby={`${activeBusinessAutomationCapability.page}-products-heading`}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">IBM portfolio</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">IBM product</p>
                   <CopySectionLink id={`${activeBusinessAutomationCapability.page}-products`} label={`${activeBusinessAutomationCapability.title} products`} />
                 </div>
                 <h3 id={`${activeBusinessAutomationCapability.page}-products-heading`} className="mt-1 text-xl font-semibold text-white">
@@ -8068,7 +8283,7 @@ export default function App() {
 
             <div className="mt-8 flex flex-col justify-between gap-4 rounded-xl border border-[#4589ff]/25 bg-[#0f62fe]/10 px-6 py-5 sm:flex-row sm:items-center">
               <div>
-                <p className="text-sm font-semibold text-white">Explore the complete Business Automation portfolio</p>
+                <p className="text-sm font-semibold text-white">Explore the complete Business Automation product</p>
                 <p className="mt-1 text-xs text-[#c6c6c6]">See how all three foundations work together across your enterprise.</p>
               </div>
               <button
@@ -8758,7 +8973,7 @@ export default function App() {
                     page: 'sessions' as Page,
                     eyebrow: 'Business Automation',
                     title: `${sessions.length} focused sessions`,
-                    description: 'Find labs, breakouts, meetups, Tech Talks, and expert conversations across the automation portfolio.',
+                    description: 'Find labs, breakouts, meetups, Tech Talks, and expert conversations across the automation product suite.',
                     action: 'Explore sessions',
                     accent: '#3ddbd9',
                   },
