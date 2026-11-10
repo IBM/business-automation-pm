@@ -1,5 +1,6 @@
 import { Fragment, createContext, useContext, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react'
 import enablementData from './enablement.json'
+import { youtubePlaylistVideos } from './youtubePlaylists'
 import {
   onboardingAutomationSections,
   onboardingAutomationTagline,
@@ -1537,7 +1538,18 @@ function LetsCreateAssetCard({
 type EmbedViewState = 'normal' | 'maximized' | 'minimized'
 
 // Embedded frame as wide as its section, with a 16:10 height. Controls: minimize, maximize, open in a new window, and exit.
-function LetsCreateEmbedFrame({ asset, onExit, openUrl }: { asset: LetsCreateAsset; onExit: () => void; openUrl?: string }) {
+function LetsCreateEmbedFrame({
+  asset,
+  onExit,
+  openUrl,
+  children,
+}: {
+  asset: LetsCreateAsset
+  onExit: () => void
+  openUrl?: string
+  // Custom content shown in place of the iframe.
+  children?: ReactNode
+}) {
   const [view, setView] = useState<EmbedViewState>('normal')
   const panelRef = useRef<HTMLDivElement>(null)
 
@@ -1582,16 +1594,18 @@ function LetsCreateEmbedFrame({ asset, onExit, openUrl }: { asset: LetsCreateAss
           Exit
         </button>
       </div>
-      <div className={isMinimized ? 'hidden' : isMaximized ? 'min-h-0 flex-1' : 'aspect-[16/10] w-full'}>
-        <iframe
-          src={asset.url}
-          title={asset.name}
-          className="h-full w-full border-0 bg-white"
-          allow="fullscreen; clipboard-write; autoplay; encrypted-media; picture-in-picture"
-          sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"
-          referrerPolicy="strict-origin-when-cross-origin"
-          loading="lazy"
-        />
+      <div className={isMinimized ? 'hidden' : isMaximized ? 'min-h-0 flex-1 overflow-auto' : children ? 'w-full' : 'aspect-[16/10] w-full'}>
+        {children ?? (
+          <iframe
+            src={asset.url}
+            title={asset.name}
+            className="h-full w-full border-0 bg-white"
+            allow="fullscreen; clipboard-write; autoplay; encrypted-media; picture-in-picture"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"
+            referrerPolicy="strict-origin-when-cross-origin"
+            loading="lazy"
+          />
+        )}
       </div>
     </div>
   )
@@ -1953,6 +1967,76 @@ const businessAutomationRelatedPlaylists: { name: string; id: string; descriptio
 
 const youtubePlaylistUrl = (id: string) => `https://www.youtube.com/playlist?list=${id}`
 
+const youtubeFrameAsset = (name: string, url: string): LetsCreateAsset => ({
+  name,
+  description: '',
+  url,
+  section: 'technical-accelerators',
+  capability: 'cp4ba',
+  products: [],
+})
+
+// Frame content for a playlist: a player and the numbered list of the playlist's videos.
+function VideoPlaylistPanel({ playlist, onExit }: { playlist: (typeof businessAutomationRelatedPlaylists)[number]; onExit: () => void }) {
+  const videos = youtubePlaylistVideos[playlist.id] ?? []
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  // The player only autoplays after a video is chosen from the list.
+  const [autoplay, setAutoplay] = useState(false)
+  const current = videos.find(video => video[0] === selectedId) ?? videos[0]
+  return (
+    <LetsCreateEmbedFrame asset={youtubeFrameAsset(playlist.name, youtubePlaylistUrl(playlist.id))} openUrl={youtubePlaylistUrl(playlist.id)} onExit={onExit}>
+      {current ? (
+        <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+          <div>
+            <div className="overflow-hidden rounded-lg border border-white/[0.07] bg-black">
+              <iframe
+                key={`${current[0]}-${autoplay}`}
+                src={`https://www.youtube.com/embed/${current[0]}${autoplay ? '?autoplay=1' : ''}`}
+                title={current[1]}
+                className="aspect-video w-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
+            </div>
+            <p aria-live="polite" className="mt-2 text-sm font-semibold text-white">{current[1]}</p>
+          </div>
+          <ol className="max-h-[26rem] space-y-1 overflow-y-auto pr-1 lg:max-h-[30rem]" aria-label={`${playlist.name} videos`}>
+            {videos.map((video, index) => {
+              const isCurrent = video[0] === current[0]
+              return (
+                <li key={video[0]}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedId(video[0])
+                      setAutoplay(true)
+                    }}
+                    aria-current={isCurrent ? 'true' : undefined}
+                    title={video[1]}
+                    className={`flex w-full items-baseline gap-2.5 rounded-md border px-2.5 py-2 text-left text-xs transition-colors hover:border-[#4589ff]/50 hover:bg-[#1c1c1c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${
+                      isCurrent ? 'border-[#4589ff]/60 bg-[#0f62fe]/10 text-white' : 'border-white/[0.06] text-[#c6c6c6]'
+                    }`}
+                  >
+                    <span className="w-5 shrink-0 text-right text-[10px] text-[#8d8d8d]">{index + 1}</span>
+                    <span className="min-w-0 flex-1 font-medium leading-snug">{video[1]}</span>
+                    <span className="shrink-0 font-mono text-[10px] text-[#8d8d8d]">{video[2]}</span>
+                  </button>
+                </li>
+              )
+            })}
+          </ol>
+        </div>
+      ) : (
+        <p className="p-4 text-sm text-[#c6c6c6]">
+          No videos are listed for this playlist.{' '}
+          <a href={youtubePlaylistUrl(playlist.id)} target="_blank" rel="noreferrer" className="text-[#78a9ff] underline-offset-2 hover:underline">Open it on YouTube</a>.
+        </p>
+      )}
+    </LetsCreateEmbedFrame>
+  )
+}
+
 // Video card with a View Below button, matching the Let's Create Navattic cards.
 function VideoCard({
   title,
@@ -1991,9 +2075,7 @@ function VideoCard({
           </span>
         )}
         <span className="flex flex-1 flex-col gap-1 p-3 pb-11">
-          {index !== undefined && (
-            <span className="font-mono text-[10px] tracking-[0.14em] text-[#8d8d8d]">{String(index + 1).padStart(2, '0')}</span>
-          )}
+          {index !== undefined && <span className="text-[10px] leading-none text-[#8d8d8d]">{index + 1}</span>}
           <span className="flex items-start justify-between gap-2">
             <span className="line-clamp-3 text-[13px] font-semibold leading-snug text-white group-hover:text-[#a6c8ff]">{title}</span>
             <span className="mt-0.5 shrink-0 text-[#78a9ff]"><ExternalLinkIcon /></span>
@@ -2023,14 +2105,6 @@ function VideosPage() {
   const playlistUrl = youtubePlaylistUrl(BUSINESS_AUTOMATION_PLAYLIST_ID)
   const sectionClass = 'mt-4 scroll-mt-28 overflow-hidden rounded-xl border border-white/[0.07] bg-[#262626]'
   const toggleClass = 'inline-flex items-center gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]'
-  const youtubeFrameAsset = (name: string, url: string): LetsCreateAsset => ({
-    name,
-    description: '',
-    url,
-    section: 'technical-accelerators',
-    capability: 'cp4ba',
-    products: [],
-  })
   return (
     <section id="videos-top" aria-labelledby="videos-heading" className="scroll-mt-28">
       <div className="mb-6 flex items-start justify-between gap-4">
@@ -2134,9 +2208,10 @@ function VideosPage() {
         </div>
         <div id="videos-more-playlists-body" hidden={isMoreCollapsed} className="p-5">
           <ul className="grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3">
-            {businessAutomationRelatedPlaylists.map(playlist => (
+            {businessAutomationRelatedPlaylists.map((playlist, index) => (
               <li key={playlist.id} className="min-h-[9rem]">
                 <VideoCard
+                  index={index}
                   title={playlist.name}
                   description={playlist.description}
                   href={youtubePlaylistUrl(playlist.id)}
@@ -2147,12 +2222,7 @@ function VideosPage() {
             ))}
           </ul>
           {shownPlaylist && (
-            <LetsCreateEmbedFrame
-              key={shownPlaylist.id}
-              asset={youtubeFrameAsset(shownPlaylist.name, `https://www.youtube.com/embed/videoseries?list=${shownPlaylist.id}`)}
-              openUrl={youtubePlaylistUrl(shownPlaylist.id)}
-              onExit={() => setShownPlaylist(null)}
-            />
+            <VideoPlaylistPanel key={shownPlaylist.id} playlist={shownPlaylist} onExit={() => setShownPlaylist(null)} />
           )}
           <div className="mt-5 flex flex-wrap gap-2 border-t border-white/[0.06] pt-4">
             {[
