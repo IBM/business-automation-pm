@@ -4107,6 +4107,7 @@ export default function App() {
   const [isCapabilityFilterExpanded, setIsCapabilityFilterExpanded] = useState(true)
   const [isCapabilityContentsExpanded, setIsCapabilityContentsExpanded] = useState(true)
   const [isCapabilityOverviewExpanded, setIsCapabilityOverviewExpanded] = useState(true)
+  const [isConferenceTechxchangeExpanded, setIsConferenceTechxchangeExpanded] = useState(false)
   const [isProductResourcesExpanded, setIsProductResourcesExpanded] = useState(false)
   const [isProductResourceFiltersExpanded, setIsProductResourceFiltersExpanded] = useState(true)
   const [salesKitSortMode, setSalesKitSortMode] = useState<
@@ -7623,16 +7624,42 @@ export default function App() {
               className="mt-8 scroll-mt-28 rounded-2xl border border-white/[0.1] bg-[#262626] p-6 shadow-[0_18px_48px_rgba(0,0,0,0.2)] sm:p-7"
             >
               <div className="flex items-start justify-between gap-4">
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#c6c6c6]">Past conference</p>
-                  <h3 id="conference-techxchange-heading" className="mt-1 text-2xl font-semibold text-white">IBM TechXchange 2026</h3>
+                  <h3 id="conference-techxchange-heading" className="mt-1 text-2xl font-semibold text-white">
+                    <button
+                      type="button"
+                      onClick={() => setIsConferenceTechxchangeExpanded(expanded => !expanded)}
+                      aria-expanded={isConferenceTechxchangeExpanded}
+                      aria-controls="conference-techxchange-details"
+                      title={`${isConferenceTechxchangeExpanded ? 'Collapse' : 'Expand'} IBM TechXchange 2026`}
+                      className="inline-flex max-w-full items-center gap-3 rounded-lg border border-white/[0.1] bg-white/[0.03] px-3 py-2 text-left transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                    >
+                      <span>IBM TechXchange 2026</span>
+                      <ChevronIcon expanded={isConferenceTechxchangeExpanded} />
+                    </button>
+                  </h3>
                 </div>
                 <CopySectionLink id="conference-techxchange" label="IBM TechXchange 2026 past conference" />
               </div>
-              <p className="mt-2 text-sm font-semibold text-[#a6c8ff]">October 26-29, 2026 <span className="mx-2 text-white/30">|</span> Atlanta, Georgia</p>
-              <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#c6c6c6]">
-                Four days of technical learning, hands-on experiences, product expertise, and community for the builders shaping enterprise technology.
-              </p>
+              <div className="mt-2 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                <div>
+                  <p className="text-sm font-semibold text-[#a6c8ff]">October 26-29, 2026 <span className="mx-2 text-white/30">|</span> Atlanta, Georgia</p>
+                  <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#c6c6c6]">
+                    Four days of technical learning, hands-on experiences, product expertise, and community for the builders shaping enterprise technology.
+                  </p>
+                </div>
+                <a
+                  href="http://ibm.biz/techxchange"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-[#0f62fe] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#0353e9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                >
+                  Explore IBM TechXchange
+                  <ExternalLinkIcon />
+                </a>
+              </div>
+              <div id="conference-techxchange-details" hidden={!isConferenceTechxchangeExpanded}>
               <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {[
                   {
@@ -7704,6 +7731,7 @@ export default function App() {
                 >
                   View TechXchange overview
                 </button>
+              </div>
               </div>
             </section>
           </section>
