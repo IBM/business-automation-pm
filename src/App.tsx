@@ -2655,6 +2655,81 @@ const portfolioResources: Record<PortfolioResourcePage, {
   },
 }
 
+type TechZoneCollection = { name: string; description: string; url: string }
+
+const techZoneCollectionPriority: ((name: string) => boolean)[] = [
+  name => name === 'business automation technology journey map',
+  name => name === 'apollo business automation',
+  name => name.startsWith('business automation saas'),
+  name => name.startsWith('business automation bite-size'),
+  name => name.startsWith('cloud pak'),
+  name => name === 'content services and document processing',
+  name => name === 'decision management',
+  name => name === 'workflow automation',
+  name => name === 'process mining and modeling',
+  name => name.startsWith('robotic process automation'),
+]
+const recommendedTechZoneCollectionCount = 2
+
+function techZoneCollectionRank(name: string) {
+  const index = techZoneCollectionPriority.findIndex(matches => matches(name.trim().toLowerCase()))
+  return index === -1 ? techZoneCollectionPriority.length : index
+}
+
+function isRecommendedTechZoneCollection(name: string) {
+  return techZoneCollectionRank(name) < recommendedTechZoneCollectionCount
+}
+
+// Removes duplicate collections (by URL) and applies the requested priority order; other collections keep their original order.
+function orderTechZoneCollections<T extends { collection: TechZoneCollection }>(entries: T[]) {
+  const seen = new Set<string>()
+  return entries
+    .filter(({ collection }) => {
+      if (seen.has(collection.url)) return false
+      seen.add(collection.url)
+      return true
+    })
+    .map((entry, index) => ({ entry, index }))
+    .sort((a, b) =>
+      techZoneCollectionRank(a.entry.collection.name) - techZoneCollectionRank(b.entry.collection.name) || a.index - b.index,
+    )
+    .map(({ entry }) => entry)
+}
+
+function RecommendedCollectionIcon() {
+  return (
+    <span title="Recommended collection" className="inline-flex shrink-0 text-[#f1c21b]">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <path d="M8 1.2l1.95 4.1 4.5.62-3.28 3.14.8 4.46L8 11.35 4.03 13.52l.8-4.46L1.55 5.92l4.5-.62L8 1.2z" />
+      </svg>
+      <span className="sr-only">Recommended</span>
+    </span>
+  )
+}
+
+function TechZoneCollectionCard({ collection, tags }: { collection: TechZoneCollection; tags?: ReactNode }) {
+  return (
+    <article className="rounded-lg border border-white/[0.06] bg-[#161616] p-4">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <a
+          href={collection.url}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-start gap-2 text-sm font-semibold text-[#a6c8ff] hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+        >
+          {isRecommendedTechZoneCollection(collection.name) && <RecommendedCollectionIcon />}
+          <span>{collection.name}</span>
+          <span className="mt-0.5"><ExternalLinkIcon /></span>
+        </a>
+        {tags}
+      </div>
+      <p className="mt-2 text-xs leading-relaxed text-[#c6c6c6]">{collection.description}</p>
+    </article>
+  )
+}
+
+
+
 const surveys = [
   {
     name: 'Survey Launcher',
@@ -5396,11 +5471,10 @@ export default function App() {
                 aria-controls={`${sectionId}-reference-content`}
                 className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
               >
-                <ChevronIcon expanded={!collapsedProductResourceSections.has('reference')} />
-                Reference
+                <span>Reference</span>
+                <VideoVisibilityIcon visible={!collapsedProductResourceSections.has('reference')} />
               </button>
               <div className="flex items-center gap-1">
-                <ProductResourceSectionToggleButton expanded={!collapsedProductResourceSections.has('reference')} controls={`${sectionId}-reference-content`} label="Reference" onToggle={() => toggleProductResourceSection('reference')} />
                 <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts.reference)}</span>
                 <span className="font-mono text-[10px] text-[#8d8d8d]">01 / 08</span>
                 <CopySectionLink id={`${sectionId}-reference`} label={`${label} reference resources`} />
@@ -5434,11 +5508,10 @@ export default function App() {
                 aria-controls={`${sectionId}-previews-content`}
                 className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
               >
-                <ChevronIcon expanded={!collapsedProductResourceSections.has('previews')} />
-                Previews and trials
+                <span>Previews and trials</span>
+                <VideoVisibilityIcon visible={!collapsedProductResourceSections.has('previews')} />
               </button>
               <div className="flex items-center gap-1">
-                <ProductResourceSectionToggleButton expanded={!collapsedProductResourceSections.has('previews')} controls={`${sectionId}-previews-content`} label="Previews and trials" onToggle={() => toggleProductResourceSection('previews')} />
                 <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts.previews)}</span>
                 <span className="font-mono text-[10px] text-[#8d8d8d]">02 / 08</span>
                 <CopySectionLink id={`${sectionId}-previews`} label={`${label} previews and trials`} />
@@ -5478,11 +5551,10 @@ export default function App() {
                 aria-controls={`${sectionId}-ai-capabilities-content`}
                 className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
               >
-                <ChevronIcon expanded={!collapsedProductResourceSections.has('ai-capabilities')} />
-                AI capabilities
+                <span>AI capabilities</span>
+                <VideoVisibilityIcon visible={!collapsedProductResourceSections.has('ai-capabilities')} />
               </button>
               <div className="flex items-center gap-1">
-                <ProductResourceSectionToggleButton expanded={!collapsedProductResourceSections.has('ai-capabilities')} controls={`${sectionId}-ai-capabilities-content`} label="AI capabilities" onToggle={() => toggleProductResourceSection('ai-capabilities')} />
                 <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts['ai-capabilities'])}</span>
                 <span className="font-mono text-[10px] text-[#8d8d8d]">03 / 08</span>
                 <CopySectionLink id={`${sectionId}-ai-capabilities`} label={`${label} AI capabilities`} />
@@ -5516,11 +5588,10 @@ export default function App() {
                 aria-controls={`${sectionId}-demos-content`}
                 className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
               >
-                <ChevronIcon expanded={!collapsedProductResourceSections.has('demos')} />
-                Demos and videos
+                <span>Demos and videos</span>
+                <VideoVisibilityIcon visible={!collapsedProductResourceSections.has('demos')} />
               </button>
               <div className="flex items-center gap-1">
-                <ProductResourceSectionToggleButton expanded={!collapsedProductResourceSections.has('demos')} controls={`${sectionId}-demos-content`} label="Demos and videos" onToggle={() => toggleProductResourceSection('demos')} />
                 <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts.demos)}</span>
                 <span className="font-mono text-[10px] text-[#8d8d8d]">04 / 08</span>
                 <CopySectionLink id={`${sectionId}-demos`} label={`${label} demos and videos`} />
@@ -5561,12 +5632,11 @@ export default function App() {
               aria-controls={`${sectionId}-sales-kits-content`}
               className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
             >
-              <ChevronIcon expanded={!collapsedProductResourceSections.has('sales-kits')} />
-              Sales kits
+              <span>Sales kits</span>
+              <VideoVisibilityIcon visible={!collapsedProductResourceSections.has('sales-kits')} />
             </button>
             <div className="flex items-center gap-1">
               {renderSalesKitSortControl()}
-              <ProductResourceSectionToggleButton expanded={!collapsedProductResourceSections.has('sales-kits')} controls={`${sectionId}-sales-kits-content`} label="Sales kits" onToggle={() => toggleProductResourceSection('sales-kits')} />
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts['sales-kits'])}</span>
               <span className="font-mono text-[10px] text-[#8d8d8d]">05 / 08</span>
               <CopySectionLink id={`${sectionId}-sales-kits`} label={`${label} sales kits`} />
@@ -5600,11 +5670,10 @@ export default function App() {
               aria-controls={`${sectionId}-environments-content`}
               className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
             >
-              <ChevronIcon expanded={!collapsedProductResourceSections.has('environments')} />
-              Demo Environments
+              <span>Demo Environments</span>
+              <VideoVisibilityIcon visible={!collapsedProductResourceSections.has('environments')} />
             </button>
             <div className="flex items-center gap-1">
-              <ProductResourceSectionToggleButton expanded={!collapsedProductResourceSections.has('environments')} controls={`${sectionId}-environments-content`} label="Demo environments" onToggle={() => toggleProductResourceSection('environments')} />
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts.environments)}</span>
               <span className="font-mono text-[10px] text-[#8d8d8d]">06 / 08</span>
               <CopySectionLink id={`${sectionId}-environments`} label={`${label} demo environments`} />
@@ -5656,11 +5725,10 @@ export default function App() {
               aria-controls={`${sectionId}-techzone-collections-content`}
               className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
             >
-              <ChevronIcon expanded={!collapsedProductResourceSections.has('techzone-collections')} />
-              TechZone Collections
+              <span>TechZone Collections</span>
+              <VideoVisibilityIcon visible={!collapsedProductResourceSections.has('techzone-collections')} />
             </button>
             <div className="flex items-center gap-1">
-              <ProductResourceSectionToggleButton expanded={!collapsedProductResourceSections.has('techzone-collections')} controls={`${sectionId}-techzone-collections-content`} label="TechZone Collections" onToggle={() => toggleProductResourceSection('techzone-collections')} />
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts['techzone-collections'])}</span>
               <span className="font-mono text-[10px] text-[#8d8d8d]">07 / 08</span>
               <CopySectionLink id={`${sectionId}-techzone-collections`} label={`${label} TechZone Collections`} />
@@ -5669,20 +5737,8 @@ export default function App() {
           </div>
           {!collapsedProductResourceSections.has('techzone-collections') && (
             <div id={`${sectionId}-techzone-collections-content`} className="mt-3 grid gap-3 sm:grid-cols-2">
-              {resources.techZoneCollections.length > 0 ? resources.techZoneCollections.map(collection => (
-                <a
-                  key={collection.url}
-                  href={collection.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-lg border border-white/[0.06] bg-[#161616] p-4 transition-colors hover:border-[#4589ff]/60 hover:bg-[#0f62fe]/10"
-                >
-                  <span className="flex items-start justify-between gap-3">
-                    <span className="text-sm font-semibold text-[#a6c8ff]">{collection.name}</span>
-                    <ExternalLinkIcon />
-                  </span>
-                  <span className="mt-2 block text-xs leading-relaxed text-[#c6c6c6]">{collection.description}</span>
-                </a>
+              {resources.techZoneCollections.length > 0 ? orderTechZoneCollections(resources.techZoneCollections.map(collection => ({ collection }))).map(({ collection }) => (
+                <TechZoneCollectionCard key={collection.url} collection={collection} />
               )) : (
                 <p className="rounded-lg border border-dashed border-white/[0.1] bg-[#161616] px-4 py-5 text-sm text-[#8d8d8d] sm:col-span-2">
                   No TechZone Collections are listed for {label}.
@@ -5703,11 +5759,10 @@ export default function App() {
               aria-controls={`${sectionId}-youtube-playlists-content`}
               className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
             >
-              <ChevronIcon expanded={!collapsedProductResourceSections.has('youtube-playlists')} />
-              IBM Product Hub on YouTube
+              <span>IBM Product Hub on YouTube</span>
+              <VideoVisibilityIcon visible={!collapsedProductResourceSections.has('youtube-playlists')} />
             </button>
             <div className="flex items-center gap-1">
-              <ProductResourceSectionToggleButton expanded={!collapsedProductResourceSections.has('youtube-playlists')} controls={`${sectionId}-youtube-playlists-content`} label="IBM Product Hub on YouTube" onToggle={() => toggleProductResourceSection('youtube-playlists')} />
               {playlistEmbedUrls.length > 0 && (
                 <button
                   type="button"
@@ -5801,7 +5856,7 @@ export default function App() {
       ),
       'sales-kits': resourceGroups.reduce((total, group) => total + group.resources.salesKits.length, 0),
       environments: resourceGroups.reduce((total, group) => total + group.resources.environments.length, 0),
-      'techzone-collections': resourceGroups.reduce((total, group) => total + group.resources.techZoneCollections.length, 0),
+      'techzone-collections': new Set(resourceGroups.flatMap(group => group.resources.techZoneCollections.map(collection => collection.url))).size,
       'youtube-playlists': resourceGroups.reduce((total, group) => total + group.resources.youtubePlaylists.length, 0),
     }
     const playlistEmbedUrls = resourceGroups.flatMap(group =>
@@ -5875,11 +5930,10 @@ export default function App() {
                 aria-controls="portfolio-product-resources-reference-content"
                 className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
               >
-                <ChevronIcon expanded={!collapsedProductResourceSections.has('reference')} />
-                Reference
+                <span>Reference</span>
+                <VideoVisibilityIcon visible={!collapsedProductResourceSections.has('reference')} />
               </button>
               <div className="flex items-center gap-1">
-                <ProductResourceSectionToggleButton expanded={!collapsedProductResourceSections.has('reference')} controls="portfolio-product-resources-reference-content" label="Reference" onToggle={() => toggleProductResourceSection('reference')} />
                 <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts.reference)}</span>
                 <span className="font-mono text-[10px] text-[#8d8d8d]">01 / 08</span>
                 <CopySectionLink id="portfolio-product-resources-reference" label="Portfolio reference resources" />
@@ -5918,11 +5972,10 @@ export default function App() {
                 aria-controls="portfolio-product-resources-previews-content"
                 className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
               >
-                <ChevronIcon expanded={!collapsedProductResourceSections.has('previews')} />
-                Previews and trials
+                <span>Previews and trials</span>
+                <VideoVisibilityIcon visible={!collapsedProductResourceSections.has('previews')} />
               </button>
               <div className="flex items-center gap-1">
-                <ProductResourceSectionToggleButton expanded={!collapsedProductResourceSections.has('previews')} controls="portfolio-product-resources-previews-content" label="Previews and trials" onToggle={() => toggleProductResourceSection('previews')} />
                 <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts.previews)}</span>
                 <span className="font-mono text-[10px] text-[#8d8d8d]">02 / 08</span>
                 <CopySectionLink id="portfolio-product-resources-previews" label="Portfolio previews and trials" />
@@ -5963,11 +6016,10 @@ export default function App() {
               aria-controls="portfolio-product-resources-ai-capabilities-content"
               className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
             >
-              <ChevronIcon expanded={!collapsedProductResourceSections.has('ai-capabilities')} />
-              AI capabilities
+              <span>AI capabilities</span>
+              <VideoVisibilityIcon visible={!collapsedProductResourceSections.has('ai-capabilities')} />
             </button>
             <div className="flex items-center gap-1">
-              <ProductResourceSectionToggleButton expanded={!collapsedProductResourceSections.has('ai-capabilities')} controls="portfolio-product-resources-ai-capabilities-content" label="AI capabilities" onToggle={() => toggleProductResourceSection('ai-capabilities')} />
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts['ai-capabilities'])}</span>
               <span className="font-mono text-[10px] text-[#8d8d8d]">03 / 08</span>
               <CopySectionLink id="portfolio-product-resources-ai-capabilities" label="Portfolio AI capabilities" />
@@ -6006,11 +6058,10 @@ export default function App() {
               aria-controls="portfolio-product-resources-demos-content"
               className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
             >
-              <ChevronIcon expanded={!collapsedProductResourceSections.has('demos')} />
-              Demos and videos
+              <span>Demos and videos</span>
+              <VideoVisibilityIcon visible={!collapsedProductResourceSections.has('demos')} />
             </button>
             <div className="flex items-center gap-1">
-              <ProductResourceSectionToggleButton expanded={!collapsedProductResourceSections.has('demos')} controls="portfolio-product-resources-demos-content" label="Demos and videos" onToggle={() => toggleProductResourceSection('demos')} />
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts.demos)}</span>
               <span className="font-mono text-[10px] text-[#8d8d8d]">04 / 08</span>
               <CopySectionLink id="portfolio-product-resources-demos" label="Portfolio demos and videos" />
@@ -6052,13 +6103,12 @@ export default function App() {
               aria-controls="portfolio-product-resources-sales-kits-content"
               className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
             >
-              <ChevronIcon expanded={!collapsedProductResourceSections.has('sales-kits')} />
-              Sales kits
+              <span>Sales kits</span>
+              <VideoVisibilityIcon visible={!collapsedProductResourceSections.has('sales-kits')} />
             </button>
             <div className="flex items-center gap-1">
               {renderSalesKitSortControl()}
               {renderSalesKitCapabilitySortControl()}
-              <ProductResourceSectionToggleButton expanded={!collapsedProductResourceSections.has('sales-kits')} controls="portfolio-product-resources-sales-kits-content" label="Sales kits" onToggle={() => toggleProductResourceSection('sales-kits')} />
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts['sales-kits'])}</span>
               <span className="font-mono text-[10px] text-[#8d8d8d]">05 / 08</span>
               <CopySectionLink id="portfolio-product-resources-sales-kits" label="Portfolio sales kits" />
@@ -6106,11 +6156,10 @@ export default function App() {
               aria-controls="portfolio-product-resources-environments-content"
               className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
             >
-              <ChevronIcon expanded={!collapsedProductResourceSections.has('environments')} />
-              Demo Environments
+              <span>Demo Environments</span>
+              <VideoVisibilityIcon visible={!collapsedProductResourceSections.has('environments')} />
             </button>
             <div className="flex items-center gap-1">
-              <ProductResourceSectionToggleButton expanded={!collapsedProductResourceSections.has('environments')} controls="portfolio-product-resources-environments-content" label="Demo environments" onToggle={() => toggleProductResourceSection('environments')} />
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts.environments)}</span>
               <span className="font-mono text-[10px] text-[#8d8d8d]">06 / 08</span>
               <CopySectionLink id="portfolio-product-resources-environments" label="Portfolio demo environments" />
@@ -6165,11 +6214,10 @@ export default function App() {
               aria-controls="portfolio-product-resources-techzone-collections-content"
               className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
             >
-              <ChevronIcon expanded={!collapsedProductResourceSections.has('techzone-collections')} />
-              TechZone Collections
+              <span>TechZone Collections</span>
+              <VideoVisibilityIcon visible={!collapsedProductResourceSections.has('techzone-collections')} />
             </button>
             <div className="flex items-center gap-1">
-              <ProductResourceSectionToggleButton expanded={!collapsedProductResourceSections.has('techzone-collections')} controls="portfolio-product-resources-techzone-collections-content" label="TechZone Collections" onToggle={() => toggleProductResourceSection('techzone-collections')} />
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts['techzone-collections'])}</span>
               <span className="font-mono text-[10px] text-[#8d8d8d]">07 / 08</span>
               <CopySectionLink id="portfolio-product-resources-techzone-collections" label="Portfolio TechZone Collections" />
@@ -6178,26 +6226,17 @@ export default function App() {
           </div>
           {!collapsedProductResourceSections.has('techzone-collections') && (
             <div id="portfolio-product-resources-techzone-collections-content" className="mt-3 grid gap-3 sm:grid-cols-2">
-              {sectionCounts['techzone-collections'] > 0 ? resourceGroups.flatMap(group =>
-                group.resources.techZoneCollections.map(collection => (
-                  <a
-                    key={`${group.page}-${collection.url}`}
-                    href={collection.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="rounded-lg border border-white/[0.06] bg-[#161616] p-4 transition-colors hover:border-[#4589ff]/60 hover:bg-[#0f62fe]/10"
-                  >
-                    <span className="flex flex-wrap items-start justify-between gap-2">
-                      <span className="text-sm font-semibold text-[#a6c8ff]">{collection.name}</span>
-                      <span className="flex items-center gap-2">
-                        {capabilityTag(group.label, group.color)}
-                        <ExternalLinkIcon />
-                      </span>
-                    </span>
-                    <span className="mt-2 block text-xs leading-relaxed text-[#c6c6c6]">{collection.description}</span>
-                  </a>
-                )),
-              ) : (
+              {sectionCounts['techzone-collections'] > 0 ? orderTechZoneCollections(
+                resourceGroups.flatMap(group =>
+                  group.resources.techZoneCollections.map(collection => ({ collection, group })),
+                ),
+              ).map(({ collection, group }) => (
+                <TechZoneCollectionCard
+                  key={`${group.page}-${collection.url}`}
+                  collection={collection}
+                  tags={capabilityTag(group.label, group.color)}
+                />
+              )) : (
                 <p className="rounded-lg border border-dashed border-white/[0.1] bg-[#161616] px-4 py-5 text-sm text-[#8d8d8d] sm:col-span-2">
                   No TechZone Collections are listed for the selected capabilities.
                 </p>
@@ -6217,11 +6256,10 @@ export default function App() {
               aria-controls="portfolio-product-resources-youtube-playlists-content"
               className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
             >
-              <ChevronIcon expanded={!collapsedProductResourceSections.has('youtube-playlists')} />
-              IBM Product Hub on YouTube
+              <span>IBM Product Hub on YouTube</span>
+              <VideoVisibilityIcon visible={!collapsedProductResourceSections.has('youtube-playlists')} />
             </button>
             <div className="flex items-center gap-1">
-              <ProductResourceSectionToggleButton expanded={!collapsedProductResourceSections.has('youtube-playlists')} controls="portfolio-product-resources-youtube-playlists-content" label="IBM Product Hub on YouTube" onToggle={() => toggleProductResourceSection('youtube-playlists')} />
               {playlistEmbedUrls.length > 0 && (
                 <button
                   type="button"
