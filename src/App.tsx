@@ -1537,7 +1537,7 @@ function LetsCreateAssetCard({
 type EmbedViewState = 'normal' | 'maximized' | 'minimized'
 
 // Embedded frame as wide as its section, with a 16:10 height. Controls: minimize, maximize, open in a new window, and exit.
-function LetsCreateEmbedFrame({ asset, onExit }: { asset: LetsCreateAsset; onExit: () => void }) {
+function LetsCreateEmbedFrame({ asset, onExit, openUrl }: { asset: LetsCreateAsset; onExit: () => void; openUrl?: string }) {
   const [view, setView] = useState<EmbedViewState>('normal')
   const panelRef = useRef<HTMLDivElement>(null)
 
@@ -1575,7 +1575,7 @@ function LetsCreateEmbedFrame({ asset, onExit }: { asset: LetsCreateAsset; onExi
         <button type="button" className={letsCreateControlClass} onClick={() => setView(isMaximized ? 'normal' : 'maximized')} aria-pressed={isMaximized}>
           {isMaximized ? 'Restore' : 'Maximize'}
         </button>
-        <button type="button" className={letsCreateControlClass} onClick={() => window.open(asset.url, '_blank', 'noopener,noreferrer')}>
+        <button type="button" className={letsCreateControlClass} onClick={() => window.open(openUrl ?? asset.url, '_blank', 'noopener,noreferrer')}>
           Open in new window
         </button>
         <button type="button" className={letsCreateControlClass} onClick={onExit}>
@@ -1587,8 +1587,9 @@ function LetsCreateEmbedFrame({ asset, onExit }: { asset: LetsCreateAsset; onExi
           src={asset.url}
           title={asset.name}
           className="h-full w-full border-0 bg-white"
-          allow="fullscreen; clipboard-write"
+          allow="fullscreen; clipboard-write; autoplay; encrypted-media; picture-in-picture"
           sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"
+          referrerPolicy="strict-origin-when-cross-origin"
           loading="lazy"
         />
       </div>
@@ -1941,26 +1942,95 @@ const businessAutomationPlaylistVideos: { id: string; title: string; duration: s
 ]
 
 // Other Business Automation playlists on the IBM Product Hub channel.
-const businessAutomationRelatedPlaylists: { name: string; url: string }[] = [
-  { name: 'IBM Business Automation Workflow', url: 'https://ibm.biz/baw-playlist' },
-  { name: 'Blueworks Live', url: 'https://ibm.biz/blueworkslive-videos' },
-  { name: 'IBM Content Cortex', url: 'https://ibm.biz/content-cortex-playlist' },
-  { name: 'IBM Decision Intelligence', url: 'https://ibm.biz/decision-intelligence-playlist' },
-  { name: 'IBM Business Automation Manager Open Editions (BAMOE)', url: 'https://www.youtube.com/playlist?list=PL_4RxtD-BL5vgBNioDP4Im_IeF5AVdd1u' },
-  { name: 'Beyond the Blueprints', url: 'https://www.youtube.com/playlist?list=PL_4RxtD-BL5vIVHXcYlbtQIoY7c1qFNR_' },
+const businessAutomationRelatedPlaylists: { name: string; id: string; description: string }[] = [
+  { name: 'IBM Business Automation Workflow', id: 'PL_4RxtD-BL5sL6D6XjqTc4DPI0r6GT8yj', description: 'Workflow demos and tutorials.' },
+  { name: 'Blueworks Live', id: 'PL_4RxtD-BL5tXKORdO-gRTuaXeUU2Rxc_', description: 'Process modeling and discovery with Blueworks Live.' },
+  { name: 'IBM Content Cortex', id: 'PLLmIY2jRnXtU', description: 'Agentic content services platform.' },
+  { name: 'IBM Decision Intelligence', id: 'PLbI1TF8727f4', description: 'Decision automation with AI.' },
+  { name: 'IBM Business Automation Manager Open Editions (BAMOE)', id: 'PL_4RxtD-BL5vgBNioDP4Im_IeF5AVdd1u', description: 'Open source based process and decision automation.' },
+  { name: 'Beyond the Blueprints', id: 'PL_4RxtD-BL5vIVHXcYlbtQIoY7c1qFNR_', description: 'Going further with Blueworks Live.' },
 ]
 
+const youtubePlaylistUrl = (id: string) => `https://www.youtube.com/playlist?list=${id}`
+
+// Video card with a View Below button, matching the Let's Create Navattic cards.
+function VideoCard({
+  title,
+  description,
+  thumbnail,
+  badge,
+  index,
+  href,
+  isShown,
+  onViewBelow,
+}: {
+  title: string
+  description?: string
+  thumbnail?: string
+  badge?: string
+  index?: number
+  href: string
+  isShown: boolean
+  onViewBelow: () => void
+}) {
+  return (
+    <div className="relative h-full">
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        title={description ? `${title} — ${description}` : title}
+        className={`group flex h-full flex-col overflow-hidden rounded-lg border bg-[#161616] transition-colors hover:border-[#4589ff]/60 hover:bg-[#1c1c1c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${
+          isShown ? 'border-[#4589ff]/60' : 'border-white/[0.07]'
+        }`}
+      >
+        {thumbnail && (
+          <span className="relative block aspect-video w-full shrink-0 bg-black">
+            <img src={thumbnail} alt="" loading="lazy" className="h-full w-full object-cover" />
+            {badge && <span className="absolute bottom-1.5 right-1.5 rounded bg-black/80 px-1.5 py-0.5 font-mono text-[10px] text-white">{badge}</span>}
+          </span>
+        )}
+        <span className="flex flex-1 flex-col gap-1 p-3 pb-11">
+          {index !== undefined && (
+            <span className="font-mono text-[10px] tracking-[0.14em] text-[#8d8d8d]">{String(index + 1).padStart(2, '0')}</span>
+          )}
+          <span className="flex items-start justify-between gap-2">
+            <span className="line-clamp-3 text-[13px] font-semibold leading-snug text-white group-hover:text-[#a6c8ff]">{title}</span>
+            <span className="mt-0.5 shrink-0 text-[#78a9ff]"><ExternalLinkIcon /></span>
+          </span>
+          {description && <span className="line-clamp-2 text-[11px] leading-relaxed text-[#c6c6c6]">{description}</span>}
+        </span>
+      </a>
+      <button
+        type="button"
+        onClick={onViewBelow}
+        aria-pressed={isShown}
+        aria-label={`Show ${title} in an embedded frame`}
+        className="absolute bottom-2 left-3 inline-flex h-6 items-center rounded-md border border-white/[0.1] bg-[#262626] px-2 text-[10px] font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+      >
+        {isShown ? 'Showing below' : 'View Below'}
+      </button>
+    </div>
+  )
+}
+
 function VideosPage() {
-  const [selectedVideoId, setSelectedVideoId] = useState(businessAutomationPlaylistVideos[0].id)
-  // The player only autoplays after a video is chosen, not on page load.
-  const [shouldAutoplay, setShouldAutoplay] = useState(false)
   const [isPlaylistCollapsed, setIsPlaylistCollapsed] = useState(false)
-  const [isNavatticCollapsed, setIsNavatticCollapsed] = useState(false)
-  const navatticAssets = letsCreateAssets.filter(item => item.section === 'navattic')
-  const selectedIndex = businessAutomationPlaylistVideos.findIndex(video => video.id === selectedVideoId)
-  const selectedVideo = businessAutomationPlaylistVideos[Math.max(0, selectedIndex)]
-  const playlistUrl = `https://www.youtube.com/playlist?list=${BUSINESS_AUTOMATION_PLAYLIST_ID}`
-  const embedUrl = `https://www.youtube.com/embed/${selectedVideo.id}?list=${BUSINESS_AUTOMATION_PLAYLIST_ID}${shouldAutoplay ? '&autoplay=1' : ''}`
+  const [isMoreCollapsed, setIsMoreCollapsed] = useState(false)
+  // Each section has its own frame, shown below its cards.
+  const [shownVideo, setShownVideo] = useState<(typeof businessAutomationPlaylistVideos)[number] | null>(null)
+  const [shownPlaylist, setShownPlaylist] = useState<(typeof businessAutomationRelatedPlaylists)[number] | null>(null)
+  const playlistUrl = youtubePlaylistUrl(BUSINESS_AUTOMATION_PLAYLIST_ID)
+  const sectionClass = 'mt-4 scroll-mt-28 overflow-hidden rounded-xl border border-white/[0.07] bg-[#262626]'
+  const toggleClass = 'inline-flex items-center gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]'
+  const youtubeFrameAsset = (name: string, url: string): LetsCreateAsset => ({
+    name,
+    description: '',
+    url,
+    section: 'technical-accelerators',
+    capability: 'cp4ba',
+    products: [],
+  })
   return (
     <section id="videos-top" aria-labelledby="videos-heading" className="scroll-mt-28">
       <div className="mb-6 flex items-start justify-between gap-4">
@@ -1968,24 +2038,19 @@ function VideosPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">IBM Data &amp; AI: Business Automation</p>
           <h2 id="videos-heading" className="mt-1 text-2xl font-semibold text-white">Videos</h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#c6c6c6]">
-            Product demos, tutorials, and announcements from the IBM Product Hub channel on YouTube. Start with the Business Automation playlist below.
+            Product demos, tutorials, and announcements from the IBM Product Hub channel on YouTube. Select View Below on any card to play it on this page.
           </p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-2">
           <CopySectionLink id="videos-top" label="Videos page" />
-          <a
-            href={IBM_PRODUCT_HUB_CHANNEL_URL}
-            target="_blank"
-            rel="noreferrer"
-            className={`${letsCreateControlClass} gap-2`}
-          >
+          <a href={IBM_PRODUCT_HUB_CHANNEL_URL} target="_blank" rel="noreferrer" className={`${letsCreateControlClass} gap-2`}>
             IBM Product Hub on YouTube
             <ExternalLinkIcon />
           </a>
         </div>
       </div>
 
-      <article id="videos-business-automation" aria-labelledby="videos-business-automation-heading" className="scroll-mt-28 overflow-hidden rounded-xl border border-white/[0.07] bg-[#262626]">
+      <article id="videos-business-automation" aria-labelledby="videos-business-automation-heading" className={`${sectionClass} !mt-0`}>
         <div className={`flex items-start justify-between gap-4 px-5 py-4 ${isPlaylistCollapsed ? '' : 'border-b border-white/[0.06]'}`}>
           <div>
             <h3 id="videos-business-automation-heading" className="text-base font-semibold text-white">
@@ -1995,7 +2060,7 @@ function VideosPage() {
                 aria-expanded={!isPlaylistCollapsed}
                 aria-controls="videos-business-automation-body"
                 title={`${isPlaylistCollapsed ? 'Expand' : 'Collapse'} Business Automation playlist`}
-                className="inline-flex items-center gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                className={toggleClass}
               >
                 IBM Business Automation playlist
                 <span className="text-[#78a9ff]"><VideoVisibilityIcon visible={!isPlaylistCollapsed} /></span>
@@ -2003,7 +2068,8 @@ function VideosPage() {
             </h3>
             {!isPlaylistCollapsed && (
               <p className="mt-1 text-xs leading-relaxed text-[#c6c6c6]">
-                Workflow, Blueworks Live, Content Cortex, Decision Intelligence, watsonx Orchestrate, and FileNet. Select a video to play it.
+                Workflow, Blueworks Live, Content Cortex, Decision Intelligence, watsonx Orchestrate, and FileNet.{' '}
+                <a href={playlistUrl} target="_blank" rel="noreferrer" className="text-[#78a9ff] underline-offset-2 hover:underline">Open the playlist on YouTube</a>.
               </p>
             )}
           </div>
@@ -2013,134 +2079,93 @@ function VideosPage() {
           </div>
         </div>
         <div id="videos-business-automation-body" hidden={isPlaylistCollapsed} className="p-5">
-          <div className="overflow-hidden rounded-lg border border-white/[0.07] bg-black">
-            <iframe
-              key={`${selectedVideo.id}-${shouldAutoplay}`}
-              src={embedUrl}
-              title={selectedVideo.title}
-              className="aspect-video w-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-            />
-          </div>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <p aria-live="polite" className="min-w-0 flex-1 text-sm font-semibold text-white">{selectedVideo.title}</p>
-            <a href={`https://www.youtube.com/watch?v=${selectedVideo.id}&list=${BUSINESS_AUTOMATION_PLAYLIST_ID}`} target="_blank" rel="noreferrer" className={`${letsCreateControlClass} gap-2`}>
-              Watch on YouTube
-              <ExternalLinkIcon />
-            </a>
-            <a href={playlistUrl} target="_blank" rel="noreferrer" className={`${letsCreateControlClass} gap-2`}>
-              Open playlist
-              <ExternalLinkIcon />
-            </a>
-          </div>
-          <ul className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3">
-            {businessAutomationPlaylistVideos.map((video, index) => {
-              const isSelected = video.id === selectedVideo.id
-              return (
-                <li key={video.id}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedVideoId(video.id)
-                      setShouldAutoplay(true)
-                    }}
-                    aria-pressed={isSelected}
-                    title={video.title}
-                    className={`group flex h-full w-full flex-col overflow-hidden rounded-lg border bg-[#161616] text-left transition-colors hover:border-[#4589ff]/60 hover:bg-[#1c1c1c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${
-                      isSelected ? 'border-[#4589ff]/70' : 'border-white/[0.07]'
-                    }`}
-                  >
-                    <span className="relative block aspect-video w-full bg-black">
-                      <img
-                        src={`https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`}
-                        alt=""
-                        loading="lazy"
-                        className="h-full w-full object-cover"
-                      />
-                      <span className="absolute bottom-1.5 right-1.5 rounded bg-black/80 px-1.5 py-0.5 font-mono text-[10px] text-white">{video.duration}</span>
-                    </span>
-                    <span className="flex flex-1 flex-col gap-1 p-3">
-                      <span className="font-mono text-[10px] tracking-[0.14em] text-[#8d8d8d]">
-                        {String(index + 1).padStart(2, '0')}{isSelected ? ' · NOW PLAYING' : ''}
-                      </span>
-                      <span className="line-clamp-3 text-[13px] font-semibold leading-snug text-white group-hover:text-[#a6c8ff]">{video.title}</span>
-                    </span>
-                  </button>
-                </li>
-              )
-            })}
+          <ul className="grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3">
+            {businessAutomationPlaylistVideos.map((video, index) => (
+              <li key={video.id}>
+                <VideoCard
+                  title={video.title}
+                  thumbnail={`https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`}
+                  badge={video.duration}
+                  index={index}
+                  href={`https://www.youtube.com/watch?v=${video.id}&list=${BUSINESS_AUTOMATION_PLAYLIST_ID}`}
+                  isShown={shownVideo?.id === video.id}
+                  onViewBelow={() => setShownVideo(video)}
+                />
+              </li>
+            ))}
           </ul>
+          {shownVideo && (
+            <LetsCreateEmbedFrame
+              key={shownVideo.id}
+              asset={youtubeFrameAsset(shownVideo.title, `https://www.youtube.com/embed/${shownVideo.id}?list=${BUSINESS_AUTOMATION_PLAYLIST_ID}&autoplay=1`)}
+              openUrl={`https://www.youtube.com/watch?v=${shownVideo.id}&list=${BUSINESS_AUTOMATION_PLAYLIST_ID}`}
+              onExit={() => setShownVideo(null)}
+            />
+          )}
         </div>
       </article>
 
-      <article id="videos-navattic" aria-labelledby="videos-navattic-heading" className="mt-4 scroll-mt-28 overflow-hidden rounded-xl border border-white/[0.07] bg-[#262626]">
-        <div className={`flex items-start justify-between gap-4 px-5 py-4 ${isNavatticCollapsed ? '' : 'border-b border-white/[0.06]'}`}>
+      <article id="videos-more-playlists" aria-labelledby="videos-more-playlists-heading" className={sectionClass}>
+        <div className={`flex items-start justify-between gap-4 px-5 py-4 ${isMoreCollapsed ? '' : 'border-b border-white/[0.06]'}`}>
           <div>
-            <h3 id="videos-navattic-heading" className="text-base font-semibold text-white">
+            <h3 id="videos-more-playlists-heading" className="text-base font-semibold text-white">
               <button
                 type="button"
-                onClick={() => setIsNavatticCollapsed(value => !value)}
-                aria-expanded={!isNavatticCollapsed}
-                aria-controls="videos-navattic-body"
-                title={`${isNavatticCollapsed ? 'Expand' : 'Collapse'} Navattic`}
-                className="inline-flex items-center gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                onClick={() => setIsMoreCollapsed(value => !value)}
+                aria-expanded={!isMoreCollapsed}
+                aria-controls="videos-more-playlists-body"
+                title={`${isMoreCollapsed ? 'Expand' : 'Collapse'} More Business Automation playlists`}
+                className={toggleClass}
               >
-                Navattic
-                <span className="text-[#78a9ff]"><VideoVisibilityIcon visible={!isNavatticCollapsed} /></span>
+                More Business Automation playlists
+                <span className="text-[#78a9ff]"><VideoVisibilityIcon visible={!isMoreCollapsed} /></span>
               </button>
             </h3>
-            {!isNavatticCollapsed && (
+            {!isMoreCollapsed && (
               <p className="mt-1 text-xs leading-relaxed text-[#c6c6c6]">
-                Interactive product demos built with Navattic. Select View Below to run a demo on this page.
+                Other playlists on the IBM Product Hub channel. The channel also covers many other IBM products.
               </p>
             )}
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <span className="text-[10px] font-medium text-[#c6c6c6]">{navatticAssets.length} demos</span>
-            <CopySectionLink id="videos-navattic" label="Navattic demos" />
+            <span className="text-[10px] font-medium text-[#c6c6c6]">{businessAutomationRelatedPlaylists.length} playlists</span>
+            <CopySectionLink id="videos-more-playlists" label="More Business Automation playlists" />
           </div>
         </div>
-        <div id="videos-navattic-body" hidden={isNavatticCollapsed} className="p-5">
-          <LetsCreateAssetGrid assets={navatticAssets} embeddable onOpenPage={() => undefined} />
-        </div>
-      </article>
-
-
-      <article id="videos-more-playlists" aria-labelledby="videos-more-playlists-heading" className="mt-4 scroll-mt-28 overflow-hidden rounded-xl border border-white/[0.07] bg-[#262626]">
-        <div className="border-b border-white/[0.06] px-5 py-4">
-          <h3 id="videos-more-playlists-heading" className="text-base font-semibold text-white">More Business Automation playlists</h3>
-          <p className="mt-1 text-xs leading-relaxed text-[#c6c6c6]">
-            Other playlists on the IBM Product Hub channel. The channel also covers many other IBM products.
-          </p>
-        </div>
-        <ul className="grid gap-3 p-5 sm:grid-cols-2">
-          {businessAutomationRelatedPlaylists.map(playlist => (
-            <li key={playlist.url}>
-              <a
-                href={playlist.url}
-                target="_blank"
-                rel="noreferrer"
-                className="group flex items-center justify-between gap-3 rounded-lg border border-white/[0.07] bg-[#161616] px-4 py-3 text-[13px] font-semibold text-white transition-colors hover:border-[#4589ff]/60 hover:bg-[#1c1c1c] hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
-              >
-                {playlist.name}
-                <span className="shrink-0 text-[#78a9ff]"><ExternalLinkIcon /></span>
+        <div id="videos-more-playlists-body" hidden={isMoreCollapsed} className="p-5">
+          <ul className="grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3">
+            {businessAutomationRelatedPlaylists.map(playlist => (
+              <li key={playlist.id} className="min-h-[9rem]">
+                <VideoCard
+                  title={playlist.name}
+                  description={playlist.description}
+                  href={youtubePlaylistUrl(playlist.id)}
+                  isShown={shownPlaylist?.id === playlist.id}
+                  onViewBelow={() => setShownPlaylist(playlist)}
+                />
+              </li>
+            ))}
+          </ul>
+          {shownPlaylist && (
+            <LetsCreateEmbedFrame
+              key={shownPlaylist.id}
+              asset={youtubeFrameAsset(shownPlaylist.name, `https://www.youtube.com/embed/videoseries?list=${shownPlaylist.id}`)}
+              openUrl={youtubePlaylistUrl(shownPlaylist.id)}
+              onExit={() => setShownPlaylist(null)}
+            />
+          )}
+          <div className="mt-5 flex flex-wrap gap-2 border-t border-white/[0.06] pt-4">
+            {[
+              ['Channel home', IBM_PRODUCT_HUB_CHANNEL_URL],
+              ['All videos', `${IBM_PRODUCT_HUB_CHANNEL_URL}/videos`],
+              ['All playlists', `${IBM_PRODUCT_HUB_CHANNEL_URL}/playlists`],
+            ].map(([label, href]) => (
+              <a key={href} href={href} target="_blank" rel="noreferrer" className={`${letsCreateControlClass} gap-2`}>
+                {label}
+                <ExternalLinkIcon />
               </a>
-            </li>
-          ))}
-        </ul>
-        <div className="flex flex-wrap gap-2 border-t border-white/[0.06] px-5 py-4">
-          {[
-            ['Channel home', IBM_PRODUCT_HUB_CHANNEL_URL],
-            ['All videos', `${IBM_PRODUCT_HUB_CHANNEL_URL}/videos`],
-            ['All playlists', `${IBM_PRODUCT_HUB_CHANNEL_URL}/playlists`],
-          ].map(([label, href]) => (
-            <a key={href} href={href} target="_blank" rel="noreferrer" className={`${letsCreateControlClass} gap-2`}>
-              {label}
-              <ExternalLinkIcon />
-            </a>
-          ))}
+            ))}
+          </div>
         </div>
       </article>
     </section>
