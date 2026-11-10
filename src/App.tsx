@@ -1655,7 +1655,8 @@ function YLPage() {
 }
 
 function BadgesPage() {
-  const [isFilterExpanded, setIsFilterExpanded] = useState(true)
+  // Search starts minimized.
+  const [isFilterExpanded, setIsFilterExpanded] = useState(false)
   const [selectedCapabilities, setSelectedCapabilities] = useState<Set<PortfolioResourcePage>>(() => new Set(businessAutomationCapabilityFilters.map(filter => filter.page)))
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(() => new Set(badgeEntries.flatMap(badge => badge.products)))
   const badgeLevels = [1, 2, 3, 4, 5]
@@ -1695,8 +1696,9 @@ function BadgesPage() {
         : 'border-white/[0.1] bg-white/[0.03] text-[#a8a8a8] hover:border-[#4589ff]/45 hover:text-white'
     }`
   const allVisibleExpanded = visibleBadges.length > 0 && visibleBadges.every(badge => expandedBadges.has(badge.id))
+  const iconButtonClass =
+    'inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] disabled:opacity-40'
   const toggleAllBadges = () => {
-    if (!allVisibleExpanded) setIsFilterExpanded(true)
     setExpandedBadges(current => {
       const next = new Set(current)
       visibleBadges.forEach(badge => (allVisibleExpanded ? next.delete(badge.id) : next.add(badge.id)))
@@ -1720,41 +1722,41 @@ function BadgesPage() {
             Business Automation sales and technical badges, the earning criteria for each, and where to find the IBM and Business Partner details.
           </p>
         </div>
-        <CopySectionLink id="badges-top" label="Badge page" />
+        <div className="flex flex-col items-end gap-2">
+          <CopySectionLink id="badges-top" label="Badge page" />
+          <button
+            type="button"
+            onClick={toggleAllBadges}
+            disabled={visibleBadges.length === 0}
+            aria-label={allVisibleExpanded ? 'Collapse all badges' : 'Expand all badges'}
+            title={allVisibleExpanded ? 'Collapse all badges' : 'Expand all badges'}
+            className={iconButtonClass}
+          >
+            {allVisibleExpanded ? 'Collapse all' : 'Expand all'}
+            <VideoVisibilityIcon visible={allVisibleExpanded} />
+          </button>
+        </div>
       </div>
-      <section aria-labelledby="badge-search-heading" className="mb-6 rounded-xl border border-white/[0.07] bg-[#262626] px-5 py-3">
-        <div className={`${isFilterExpanded ? 'mb-2' : ''} flex items-start justify-between gap-3`}>
-          <div className="flex items-center gap-2">
-            <h3 id="badge-search-heading" className="text-base font-semibold text-white">Badge Search</h3>
+      <section aria-labelledby="badge-search-heading" className="mb-6 rounded-xl border border-[#4589ff]/30 bg-[#1c1c1c] p-4 sm:p-5">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <h3 id="badge-search-heading" className="text-base font-semibold text-white">
             <button
               type="button"
               onClick={() => setIsFilterExpanded(expanded => !expanded)}
               aria-expanded={isFilterExpanded}
               aria-controls="badges-filters"
-              aria-label={isFilterExpanded ? 'Collapse Badge Search filters' : 'Expand Badge Search filters'}
-              title={isFilterExpanded ? 'Collapse filters' : 'Expand filters'}
-              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] text-[#ffb784] transition-colors hover:border-[#ff832b]/55 hover:bg-[#ff832b]/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb784]"
+              title={isFilterExpanded ? 'Minimize Search' : 'Maximize Search'}
+              className="inline-flex items-center gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
             >
-              <VideoVisibilityIcon visible={isFilterExpanded} />
+              Search
+              <span className="text-[#78a9ff]"><VideoVisibilityIcon visible={isFilterExpanded} /></span>
             </button>
-          </div>
-          <div className="flex flex-col items-end gap-2">
-            <button
-              type="button"
-              onClick={toggleAllBadges}
-              disabled={visibleBadges.length === 0}
-              aria-label={allVisibleExpanded ? 'Collapse all badges' : 'Expand all badges'}
-              title={allVisibleExpanded ? 'Collapse all badges' : 'Expand all badges and Badge Search'}
-              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] disabled:opacity-40"
-            >
-              <VideoVisibilityIcon visible={allVisibleExpanded} />
-            </button>
-            <p aria-live="polite" className="text-[11px] font-medium text-[#c6c6c6]">
-              {visibleBadges.length} of {badgeEntries.length} badges
-            </p>
-          </div>
+          </h3>
+          <span aria-live="polite" className="text-xs font-medium text-[#c6c6c6]">
+            {visibleBadges.length} of {badgeEntries.length} badges
+          </span>
         </div>
-        <div id="badges-filters" hidden={!isFilterExpanded} className="grid gap-3">
+        <div id="badges-filters" hidden={!isFilterExpanded} className="mt-4 grid gap-3 border-t border-white/[0.06] pt-4">
           <div role="group" aria-label="Filter badges by capability" className="flex flex-wrap items-center gap-2">
             <span className="w-24 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8d8d8d]">Capability</span>
             <button type="button" aria-pressed={selectedCapabilities.size === businessAutomationCapabilityFilters.length} onClick={() => setSelectedCapabilities(current => (current.size === businessAutomationCapabilityFilters.length ? new Set() : new Set(businessAutomationCapabilityFilters.map(filter => filter.page))))} className={pillClass(selectedCapabilities.size === businessAutomationCapabilityFilters.length)}>
@@ -2118,45 +2120,6 @@ const onboardingAutomationDescendants = new Map<string, string[]>(
   ]),
 )
 
-const onboardingTopLevelSectionIds = onboardingAutomationSections.map(section => section.id)
-
-// Page-wide level: 0 = everything collapsed, 1 = top-level sections open with subsections collapsed, 2 = everything expanded.
-function onboardingPageLevel(collapsed: Set<string>): 0 | 1 | 2 {
-  if (collapsed.size === allOnboardingSectionIds.length) return 0
-  if (collapsed.size === 0) return 2
-  return 1
-}
-
-function nextOnboardingPageCollapsed(collapsed: Set<string>): Set<string> {
-  const level = onboardingPageLevel(collapsed)
-  if (level === 0) {
-    return new Set(allOnboardingSectionIds.filter(id => !onboardingTopLevelSectionIds.includes(id)))
-  }
-  if (level === 1) return new Set()
-  return new Set(allOnboardingSectionIds)
-}
-
-const onboardingPageCycleLabels = [
-  'Show the top-level sections of the page',
-  'Expand all content on the page',
-  'Collapse all sections on the page',
-] as const
-
-function OnboardingPageCycleButton({ collapsed, onCycle }: { collapsed: Set<string>; onCycle: () => void }) {
-  const level = onboardingPageLevel(collapsed)
-  const label = onboardingPageCycleLabels[level]
-  return (
-    <button
-      type="button"
-      onClick={onCycle}
-      aria-label={label}
-      title={label}
-      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-white/[0.12] bg-white/[0.04] text-[#c6c6c6] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
-    >
-      <ThreeLevelVisibilityIcon level={level} />
-    </button>
-  )
-}
 
 const OnboardingCollapseContext = createContext<{
   collapsed: Set<string>
@@ -3965,7 +3928,6 @@ function EnablementAddToCalendarButton({ item }: { item: EnablementItem }) {
   )
 }
 
-type EnablementViewMode = 'quarter' | 'collapsed' | 'expanded'
 type EnablementFilterKey = 'year' | 'quarter' | 'type' | 'product' | 'audience' | 'status'
 
 const enablementNow = new Date()
@@ -3991,19 +3953,7 @@ const enablementMonthKeys = Array.from(new Set(enablementItems.map(enablementMon
 )
 const enablementQuarterOfMonth = (key: string) =>
   key === 'unscheduled' ? '' : `Q${Math.floor((Number(key.slice(5, 7)) - 1) / 3) + 1}`
-const isEnablementCurrentQuarterMonth = (key: string) =>
-  key !== 'unscheduled' &&
-  key.slice(0, 4) === String(enablementNow.getFullYear()) &&
-  enablementQuarterOfMonth(key) === enablementCurrentQuarter
 const enablementAllSectionKeys = ['overview', 'activities', ...enablementMonthKeys]
-
-const enablementViewModeLabels: Record<EnablementViewMode, string> = {
-  quarter: 'Current year and quarter, first month with data expanded',
-  expanded: 'All sections expanded',
-  collapsed: 'All sections collapsed',
-}
-const enablementNextViewMode = (mode: EnablementViewMode | null): EnablementViewMode =>
-  mode === 'quarter' ? 'expanded' : mode === 'expanded' ? 'collapsed' : 'quarter'
 
 function EnablementCalendar({
   items,
@@ -4173,6 +4123,7 @@ function EnablementContainer({
   collapsed,
   onToggle,
   actions,
+  underLink,
   nested = false,
   children,
 }: {
@@ -4186,6 +4137,7 @@ function EnablementContainer({
   collapsed: boolean
   onToggle: () => void
   actions?: ReactNode
+  underLink?: ReactNode
   nested?: boolean
   children: ReactNode
 }) {
@@ -4221,9 +4173,12 @@ function EnablementContainer({
             </button>
           </Heading>
         </div>
-        <div className="flex shrink-0 items-center gap-1">
-          {actions}
-          <CopySectionLink id={linkId ?? id} label={title} />
+        <div className={`flex shrink-0 ${underLink ? 'flex-col items-end gap-2' : 'items-center gap-1'}`}>
+          <div className="flex items-center gap-1">
+            {actions}
+            <CopySectionLink id={linkId ?? id} label={title} />
+          </div>
+          {underLink}
         </div>
       </div>
       {!collapsed && (
@@ -4245,10 +4200,8 @@ function EnablementPage() {
     audience: readStringParam('ea', ''),
     status: readStringParam('es', ''),
   })
-  const [collapsed, setCollapsed] = useState<Set<string>>(
-    () => new Set(enablementMonthKeys.filter(key => !isEnablementCurrentQuarterMonth(key))),
-  )
-  const [viewMode, setViewMode] = useState<EnablementViewMode | null>(null)
+  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set())
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false)
   const [layout, setLayout] = useState<'list' | 'calendar'>(() =>
     readStringParam('elayout', 'list', ['list', 'calendar']) as 'list' | 'calendar',
   )
@@ -4309,27 +4262,8 @@ function EnablementPage() {
     return () => window.removeEventListener('hashchange', reveal)
   }, [])
 
-  const cycleViewMode = () => {
-    const next = enablementNextViewMode(viewMode)
-    setViewMode(next)
-    if (next === 'expanded') {
-      setCollapsed(new Set())
-    } else if (next === 'collapsed') {
-      setCollapsed(new Set(enablementAllSectionKeys))
-    } else {
-      // Current year and quarter; only the first month that has data stays open.
-      // The "Activities by month" container is kept open too, since the month lives inside it.
-      const nextFilters = { ...filters, year: enablementDefaultYear, quarter: enablementDefaultQuarter }
-      const firstMonthWithData = enablementMonthKeys.find(monthKey =>
-        enablementItems.some(item => enablementMonthKeyOf(item) === monthKey && matchesFilters(item, nextFilters)),
-      )
-      setFilters(nextFilters)
-      setCollapsed(
-        new Set(enablementAllSectionKeys.filter(key => key !== 'activities' && key !== firstMonthWithData)),
-      )
-    }
-  }
-  const nextViewMode = enablementNextViewMode(viewMode)
+  const toggleAllSections = () =>
+    setCollapsed(current => (current.size === 0 ? new Set(enablementAllSectionKeys) : new Set()))
 
   const optionsFor = (key: EnablementFilterKey) =>
     Array.from(new Set(enablementItems.flatMap(item => enablementValuesOf(item, key)))).sort()
@@ -4399,15 +4333,13 @@ function EnablementPage() {
         headingId="enablement-heading"
         collapsed={isCollapsed('overview')}
         onToggle={() => toggleSection('overview')}
-        actions={
+        underLink={
           <button
             type="button"
-            onClick={cycleViewMode}
-            aria-label={`View: ${viewMode ? enablementViewModeLabels[viewMode] : 'default'}. Switch to: ${enablementViewModeLabels[nextViewMode]}`}
-            title={`Switch to: ${enablementViewModeLabels[nextViewMode]}`}
-            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] text-[#c6c6c6] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+            onClick={toggleAllSections}
+            className="inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
           >
-            <ThreeLevelVisibilityIcon level={viewMode === 'expanded' ? 2 : viewMode === 'collapsed' ? 0 : 1} />
+            {collapsed.size === 0 ? 'Collapse all' : 'Expand all'}
           </button>
         }
       >
@@ -4431,6 +4363,20 @@ function EnablementPage() {
         </div>
 
         <div className="mt-4 rounded-xl border border-white/[0.07] bg-[#262626] p-4">
+          <h3 className="text-base font-semibold text-white">
+            <button
+              type="button"
+              onClick={() => setIsSearchExpanded(expanded => !expanded)}
+              aria-expanded={isSearchExpanded}
+              aria-controls="enablement-search-body"
+              title={isSearchExpanded ? 'Minimize search' : 'Maximize search'}
+              className="inline-flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+            >
+              Search
+              <span className="text-[#78a9ff]"><VideoVisibilityIcon visible={isSearchExpanded} /></span>
+            </button>
+          </h3>
+          <div id="enablement-search-body" hidden={!isSearchExpanded} className="mt-3 border-t border-white/[0.06] pt-3">
           <label className="block">
             <span className="sr-only">Search enablement activities</span>
             <input
@@ -4457,6 +4403,7 @@ function EnablementPage() {
                 </select>
               </label>
             ))}
+          </div>
           </div>
           <div className="mt-3 flex items-center justify-between gap-3 text-xs text-[#8d8d8d]">
             <span aria-live="polite">Showing {filtered.length} of {enablementItems.length} activities</span>
@@ -4988,7 +4935,18 @@ export default function App() {
     const ids = communityCapabilityOptions.map(option => option.id)
     return readSetParam('cc', ids, () => new Set(ids))
   })
-  const [isCommunityFiltersExpanded, setIsCommunityFiltersExpanded] = useState(true)
+  const [collapsedUgSections, setCollapsedUgSections] = useState<Set<string>>(new Set())
+  const [isInsightsSearchExpanded, setIsInsightsSearchExpanded] = useState(false)
+  const [collapsedInsightsSections, setCollapsedInsightsSections] = useState<Set<string>>(new Set())
+  const toggleInsightsSection = (key: string) =>
+    setCollapsedInsightsSections(current => {
+      const next = new Set(current)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  const [isCommunityFiltersExpanded, setIsCommunityFiltersExpanded] = useState(false)
+  const [collapsedCommunityCards, setCollapsedCommunityCards] = useState<Set<string>>(new Set())
   const [communityProducts, setCommunityProducts] = useState<Set<string>>(() => {
     const ids = communityProductOptions.map(option => option.id)
     return readSetParam('cp', ids, () => new Set(ids))
@@ -5024,13 +4982,13 @@ export default function App() {
     window.addEventListener('hashchange', expandFromHash)
     return () => window.removeEventListener('hashchange', expandFromHash)
   }, [])
-  const [onboardingCollapsed, setOnboardingCollapsed] = useState<Set<string>>(() => new Set(allOnboardingSectionIds))
+  const [onboardingCollapsed, setOnboardingCollapsed] = useState<Set<string>>(() => new Set())
   const [onboardingContentsCollapsed, setOnboardingContentsCollapsed] = useState(false)
-  // The header button also drives Contents: it is collapsed together with the sections, open at the other two levels.
-  const cycleOnboardingPage = () => {
-    const next = nextOnboardingPageCollapsed(onboardingCollapsed)
-    setOnboardingCollapsed(next)
-    setOnboardingContentsCollapsed(onboardingPageLevel(next) === 0)
+  // The header button collapses or expands every section; Contents is collapsed together with the sections.
+  const toggleAllOnboarding = () => {
+    const collapseAll = onboardingCollapsed.size === 0
+    setOnboardingCollapsed(collapseAll ? new Set(allOnboardingSectionIds) : new Set())
+    setOnboardingContentsCollapsed(collapseAll)
   }
   const [siteAccessCount, setSiteAccessCount] = useState<number | null>(null)
   useEffect(() => {
@@ -5096,17 +5054,18 @@ export default function App() {
     readSetParam<SessionType>('types', allTypes, () => new Set(allTypes)),
   )
   const [activeSpeakers, setActiveSpeakers] = useState<Set<string>>(() => readSetParam('sspk', null, () => new Set<string>()))
-  const [showFilters, setShowFilters] = useState(true)
+  const [showFilters, setShowFilters] = useState(false)
+  const [collapsedSessionDays, setCollapsedSessionDays] = useState<Set<string>>(new Set())
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
   const [showThomasImage, setShowThomasImage] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(() => Boolean(document.fullscreenElement))
   const [isOverviewVideoExpanded, setIsOverviewVideoExpanded] = useState(false)
-  const [isCapabilityFilterExpanded, setIsCapabilityFilterExpanded] = useState(true)
+  const [isCapabilityFilterExpanded, setIsCapabilityFilterExpanded] = useState(false)
   const [isCapabilityContentsExpanded, setIsCapabilityContentsExpanded] = useState(true)
-  const [isCapabilityOverviewExpanded, setIsCapabilityOverviewExpanded] = useState(false)
+  const [isCapabilityOverviewExpanded, setIsCapabilityOverviewExpanded] = useState(true)
   const [isConferenceTechxchangeExpanded, setIsConferenceTechxchangeExpanded] = useState(false)
-  const [isProductResourcesExpanded, setIsProductResourcesExpanded] = useState(false)
-  const [isProductResourceFiltersExpanded, setIsProductResourceFiltersExpanded] = useState(true)
+  const [isProductResourcesExpanded, setIsProductResourcesExpanded] = useState(true)
+  const [isProductResourceFiltersExpanded, setIsProductResourceFiltersExpanded] = useState(false)
   const [salesKitSortMode, setSalesKitSortMode] = useState<
     'default' | 'title-asc' | 'title-desc' | 'capability-asc' | 'capability-desc'
   >(() =>
@@ -5595,11 +5554,11 @@ export default function App() {
             onClick={() => setIsProductResourceFiltersExpanded(expanded => !expanded)}
             aria-expanded={isProductResourceFiltersExpanded}
             aria-controls="product-resource-subsection-filters"
-            aria-label={isProductResourceFiltersExpanded ? 'Collapse Product Resources filters' : 'Expand Product Resources filters'}
-            title={isProductResourceFiltersExpanded ? 'Collapse filters' : 'Expand filters'}
+            aria-label={isProductResourceFiltersExpanded ? 'Minimize Product Resources search' : 'Maximize Product Resources search'}
+            title={isProductResourceFiltersExpanded ? 'Minimize search' : 'Maximize search'}
             className="inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#ffb784] transition-colors hover:border-[#ff832b]/55 hover:bg-[#ff832b]/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb784]"
           >
-            Filter
+            Search
             <VideoVisibilityIcon visible={isProductResourceFiltersExpanded} />
           </button>
           <div id="product-resource-subsection-filters" role="group" aria-label="Filter Product Resources subsections" className={isProductResourceFiltersExpanded ? 'contents' : 'hidden'}>
@@ -6864,22 +6823,39 @@ export default function App() {
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <button
-            type="button"
-            onClick={() => setIsCapabilityFilterExpanded(expanded => !expanded)}
-            aria-expanded={isCapabilityFilterExpanded}
-            aria-controls="capability-filter-controls"
-            aria-label={isCapabilityFilterExpanded ? 'Collapse Filter' : 'Expand Filter'}
-            title={isCapabilityFilterExpanded ? 'Collapse Filter' : 'Expand Filter'}
-            className="inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
-          >
-            Filter
-            <VideoVisibilityIcon visible={isCapabilityFilterExpanded} />
-          </button>
-          <h2 id="capabilities-filter-heading" className="text-lg font-semibold text-white">Business Automation Capability</h2>
+          <h2 id="capabilities-filter-heading" className="text-lg font-semibold text-white">
+            <button
+              type="button"
+              onClick={() => setIsCapabilityFilterExpanded(expanded => !expanded)}
+              aria-expanded={isCapabilityFilterExpanded}
+              aria-controls="capability-filter-controls"
+              title={isCapabilityFilterExpanded ? 'Minimize search' : 'Maximize search'}
+              className="inline-flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+            >
+              Search
+              <span className="text-[#78a9ff]"><VideoVisibilityIcon visible={isCapabilityFilterExpanded} /></span>
+            </button>
+          </h2>
           <span className="text-xs font-medium text-[#c6c6c6]">{selectedCapabilitySummary}</span>
         </div>
-        <CopySectionLink id="capabilities-top" label="Business Automation product" />
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          <CopySectionLink id="capabilities-top" label="Business Automation product" />
+          <button
+            type="button"
+            onClick={() => {
+              if (isCapabilityOverviewExpanded || isProductResourcesExpanded) {
+                collapseCapabilitySubsections()
+              } else {
+                setIsCapabilityOverviewExpanded(true)
+                setIsProductResourcesExpanded(true)
+                setCollapsedProductResourceSections(new Set())
+              }
+            }}
+            className="inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+          >
+            {isCapabilityOverviewExpanded || isProductResourcesExpanded ? 'Collapse all' : 'Expand all'}
+          </button>
+        </div>
       </div>
       <div id="capability-filter-controls" hidden={!isCapabilityFilterExpanded} role="group" aria-label="Filter Business Automation product" className="mt-4 flex flex-wrap gap-2 border-t border-white/[0.06] pt-4">
         <button
@@ -7985,7 +7961,6 @@ export default function App() {
               <div>
                 <div className="flex items-center gap-3">
                   <h2 id="onboarding-automation-heading" className="text-2xl font-semibold text-white">Onboarding Automation</h2>
-                  <OnboardingPageCycleButton collapsed={onboardingCollapsed} onCycle={cycleOnboardingPage} />
                 </div>
                 <p className="mt-1 text-sm font-semibold text-[#c6c6c6]">{onboardingAutomationTagline}</p>
                 <p className="mt-2 text-sm leading-relaxed text-[#c6c6c6]">
@@ -8010,6 +7985,13 @@ export default function App() {
               </div>
               <div className="flex shrink-0 flex-col items-end gap-3">
                 <CopySectionLink id="onboarding-automation-top" label="Onboarding Automation page" />
+                <button
+                  type="button"
+                  onClick={toggleAllOnboarding}
+                  className="inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                >
+                  {onboardingCollapsed.size === 0 ? 'Collapse all' : 'Expand all'}
+                </button>
                 <a
                   href={onboardingAutomationSourceUrl}
                   target="_blank"
@@ -9689,7 +9671,20 @@ export default function App() {
                   Connect with IBM product leaders and fellow users to shape the roadmap, exchange practical advice, and get an early look at innovations you can put to work sooner.
                 </p>
               </div>
-              <CopySectionLink id="community-top" label="Community page" />
+              <div className="flex flex-col items-end gap-2">
+                <CopySectionLink id="community-top" label="Community page" />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCollapsedCommunityCards(current =>
+                      current.size === 0 ? new Set(userConnectCommunities.map(community => community.name)) : new Set(),
+                    )
+                  }
+                  className="inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                >
+                  {collapsedCommunityCards.size === 0 ? 'Collapse all' : 'Expand all'}
+                </button>
+              </div>
             </div>
 
             {(() => {
@@ -9719,19 +9714,19 @@ export default function App() {
               className="mb-6 scroll-mt-28 rounded-xl border border-[#4589ff]/30 bg-[#1c1c1c] p-4 sm:p-5"
             >
               <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                <h3 id="community-filters-heading" className="text-base font-semibold text-white">Capabilities and Products</h3>
-                <button
-                  type="button"
-                  onClick={() => setIsCommunityFiltersExpanded(expanded => !expanded)}
-                  aria-expanded={isCommunityFiltersExpanded}
-                  aria-controls="community-filters-body"
-                  aria-label={isCommunityFiltersExpanded ? 'Collapse Filters' : 'Expand Filters'}
-                  title={isCommunityFiltersExpanded ? 'Collapse Filters' : 'Expand Filters'}
-                  className="inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
-                >
-                  Filter
-                  <VideoVisibilityIcon visible={isCommunityFiltersExpanded} />
-                </button>
+                <h3 id="community-filters-heading" className="text-base font-semibold text-white">
+                  <button
+                    type="button"
+                    onClick={() => setIsCommunityFiltersExpanded(expanded => !expanded)}
+                    aria-expanded={isCommunityFiltersExpanded}
+                    aria-controls="community-filters-body"
+                    title={isCommunityFiltersExpanded ? 'Minimize search' : 'Maximize search'}
+                    className="inline-flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                  >
+                    Search
+                    <span className="text-[#78a9ff]"><VideoVisibilityIcon visible={isCommunityFiltersExpanded} /></span>
+                  </button>
+                </h3>
                 <span className="text-xs font-medium text-[#c6c6c6]">
                   Communities: {visibleCommunities.length} of {userConnectCommunities.length} · Product connections: {new Set(visibleCommunities.flatMap(({ community }) => community.products)).size}
                 </span>
@@ -9779,6 +9774,22 @@ export default function App() {
                       <h3 className="mt-2 text-base font-semibold text-white">{community.name}</h3>
                     </div>
                     <div className="flex shrink-0 items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCollapsedCommunityCards(current => {
+                            const next = new Set(current)
+                            if (next.has(community.name)) next.delete(community.name)
+                            else next.add(community.name)
+                            return next
+                          })
+                        }
+                        aria-expanded={!collapsedCommunityCards.has(community.name)}
+                        title={collapsedCommunityCards.has(community.name) ? 'Maximize' : 'Minimize'}
+                        className="inline-flex h-7 items-center rounded-md border border-white/[0.1] bg-white/[0.03] px-2 text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                      >
+                        <VideoVisibilityIcon visible={!collapsedCommunityCards.has(community.name)} />
+                      </button>
                       <CopySectionLink id={`community-${index + 1}`} label={community.name} />
                       <a
                         href={community.url}
@@ -9791,7 +9802,7 @@ export default function App() {
                       </a>
                     </div>
                   </div>
-                  <div className="p-5">
+                  <div hidden={collapsedCommunityCards.has(community.name)} className="p-5">
                     <p className="text-sm leading-relaxed text-[#c6c6c6]">{community.description}</p>
                     <div className="mt-5 border-t border-white/[0.06] pt-4">
                       <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff]">Related products</p>
@@ -9834,7 +9845,22 @@ export default function App() {
                     Connect with IBM product leaders and fellow users to shape the roadmap, exchange practical advice, and explore Business Automation solutions.
                   </p>
                 </div>
-                <CopySectionLink id="ug-top" label="Business Automation User Groups page" />
+                <div className="flex flex-col items-end gap-2">
+                  <CopySectionLink id="ug-top" label="Business Automation User Groups page" />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCollapsedUgSections(current =>
+                        current.size === 0
+                          ? new Set(['ug-tlk-6335', ...ugMteSessions.map(session => `ug-${session.id.toLowerCase()}`), ...ugSectionImages.map(item => item.id)])
+                          : new Set(),
+                      )
+                    }
+                    className="inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                  >
+                    {collapsedUgSections.size === 0 ? 'Collapse all' : 'Expand all'}
+                  </button>
+                </div>
               </div>
               <nav
                 aria-labelledby="ug-contents-heading"
@@ -9901,7 +9927,23 @@ export default function App() {
                                 <span className="font-mono text-xs text-[#8d8d8d]">
                                   01 / {String(ugResourceCount).padStart(2, '0')}
                                 </span>
-                                <CopySectionLink id="ug-tlk-6335" label="TLK-6335 session" />
+                                <button
+                                type="button"
+                                onClick={() =>
+                                  setCollapsedUgSections(current => {
+                                    const next = new Set(current)
+                                    if (next.has('ug-tlk-6335')) next.delete('ug-tlk-6335')
+                                    else next.add('ug-tlk-6335')
+                                    return next
+                                  })
+                                }
+                                aria-expanded={!collapsedUgSections.has('ug-tlk-6335')}
+                                title={collapsedUgSections.has('ug-tlk-6335') ? 'Maximize' : 'Minimize'}
+                                className="inline-flex h-7 items-center rounded-md border border-white/[0.1] bg-white/[0.03] px-2 text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                              >
+                                <VideoVisibilityIcon visible={!collapsedUgSections.has('ug-tlk-6335')} />
+                              </button>
+                              <CopySectionLink id="ug-tlk-6335" label="TLK-6335 session" />
                               </div>
                               <a
                                 href="#ug-top"
@@ -9927,7 +9969,7 @@ export default function App() {
                               </div>
                             </div>
                           </figcaption>
-                          <div className="grid gap-px bg-white/[0.06] md:grid-cols-3">
+                          <div hidden={collapsedUgSections.has('ug-tlk-6335')} className="grid gap-px bg-white/[0.06] md:grid-cols-3">
                             {[
                               {
                                 name: 'Matt Vest',
@@ -10019,7 +10061,23 @@ export default function App() {
                                       <span className="font-mono text-xs text-[#8d8d8d]">
                                         {String(mteIndex + 2).padStart(2, '0')} / {String(ugResourceCount).padStart(2, '0')}
                                       </span>
-                                      <CopySectionLink id={sectionId} label={`${session.id} session`} />
+                                      <button
+                                type="button"
+                                onClick={() =>
+                                  setCollapsedUgSections(current => {
+                                    const next = new Set(current)
+                                    if (next.has(sectionId)) next.delete(sectionId)
+                                    else next.add(sectionId)
+                                    return next
+                                  })
+                                }
+                                aria-expanded={!collapsedUgSections.has(sectionId)}
+                                title={collapsedUgSections.has(sectionId) ? 'Maximize' : 'Minimize'}
+                                className="inline-flex h-7 items-center rounded-md border border-white/[0.1] bg-white/[0.03] px-2 text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                              >
+                                <VideoVisibilityIcon visible={!collapsedUgSections.has(sectionId)} />
+                              </button>
+                              <CopySectionLink id={sectionId} label={`${session.id} session`} />
                                     </div>
                                     <a
                                       href="#ug-top"
@@ -10029,7 +10087,7 @@ export default function App() {
                                     </a>
                                   </div>
                                 </figcaption>
-                                <div className="bg-[#262626]">
+                                <div hidden={collapsedUgSections.has(sectionId)} className="bg-[#262626]">
                                   {!usesWideArtwork && (
                                     <p className="px-4 py-3 text-center text-xs leading-relaxed text-[#c6c6c6]">{session.speakers[0]}</p>
                                   )}
@@ -10082,6 +10140,22 @@ export default function App() {
                               <span className="font-mono text-xs text-[#8d8d8d]">
                                 {String(position).padStart(2, '0')} / {String(ugResourceCount).padStart(2, '0')}
                               </span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setCollapsedUgSections(current => {
+                                    const next = new Set(current)
+                                    if (next.has(item.id)) next.delete(item.id)
+                                    else next.add(item.id)
+                                    return next
+                                  })
+                                }
+                                aria-expanded={!collapsedUgSections.has(item.id)}
+                                title={collapsedUgSections.has(item.id) ? 'Maximize' : 'Minimize'}
+                                className="inline-flex h-7 items-center rounded-md border border-white/[0.1] bg-white/[0.03] px-2 text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                              >
+                                <VideoVisibilityIcon visible={!collapsedUgSections.has(item.id)} />
+                              </button>
                               <CopySectionLink id={item.id} label={item.title} />
                             </div>
                             <a
@@ -10093,6 +10167,7 @@ export default function App() {
                           </div>
                         </figcaption>
                         <a
+                          hidden={collapsedUgSections.has(item.id)}
                           href={item.src}
                           target="_blank"
                           rel="noreferrer"
@@ -10174,7 +10249,20 @@ export default function App() {
                   Curated IBM TechXchange insights, key takeaways, and follow-up resources for Business Automation.
                 </p>
               </div>
-              <CopySectionLink id="insights-top" label="IBM Insights page" />
+              <div className="flex flex-col items-end gap-2">
+                <CopySectionLink id="insights-top" label="IBM Insights page" />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCollapsedInsightsSections(current =>
+                      current.size === 0 ? new Set(['summary', 'registration']) : new Set(),
+                    )
+                  }
+                  className="inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                >
+                  {collapsedInsightsSections.size === 0 ? 'Collapse all' : 'Expand all'}
+                </button>
+              </div>
             </div>
             <section
               id="insights-summary"
@@ -10194,6 +10282,15 @@ export default function App() {
                       <span className="mx-2 text-[#8d8d8d]" aria-hidden="true">·</span>
                       <span className="text-[#3ddbd9]">{filteredInsightsTotalAttended.toLocaleString()} attended</span>
                     </span>
+                    <button
+                      type="button"
+                      onClick={() => toggleInsightsSection('summary')}
+                      aria-expanded={!collapsedInsightsSections.has('summary')}
+                      title={collapsedInsightsSections.has('summary') ? 'Maximize' : 'Minimize'}
+                      className="inline-flex h-7 items-center rounded-md border border-white/[0.1] bg-white/[0.03] px-2 text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                    >
+                      <VideoVisibilityIcon visible={!collapsedInsightsSections.has('summary')} />
+                    </button>
                     <CopySectionLink id="insights-summary" label="Session Summary" />
                   </div>
                   <button
@@ -10205,7 +10302,7 @@ export default function App() {
                   </button>
                 </div>
               </div>
-              <div className="bg-[#161616] p-5 sm:p-6">
+              <div hidden={collapsedInsightsSections.has('summary')} className="bg-[#161616] p-5 sm:p-6">
                 {filteredInsightsTypeSummaries.length > 0 ? (
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {filteredInsightsTypeSummaries.map(summary => (
@@ -10244,7 +10341,7 @@ export default function App() {
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#78a9ff]">Registration insights</p>
                   <h3 id="insights-registration-heading" className="mt-1 text-lg font-semibold text-white">
-                    Session Search
+                    Session Roster
                   </h3>
                   <p className="mt-1 text-xs leading-relaxed text-[#c6c6c6]">
                     Enrollment and attended-attendee counts for Business Automation user-group sessions.
@@ -10257,7 +10354,16 @@ export default function App() {
                       <span className="mx-2 text-[#8d8d8d]" aria-hidden="true">·</span>
                       <span className="text-[#3ddbd9]">{filteredInsightsTotalAttended.toLocaleString()} attended</span>
                     </span>
-                    <CopySectionLink id="insights-registration" label="Session Search" />
+                    <button
+                      type="button"
+                      onClick={() => toggleInsightsSection('registration')}
+                      aria-expanded={!collapsedInsightsSections.has('registration')}
+                      title={collapsedInsightsSections.has('registration') ? 'Maximize' : 'Minimize'}
+                      className="inline-flex h-7 items-center rounded-md border border-white/[0.1] bg-white/[0.03] px-2 text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                    >
+                      <VideoVisibilityIcon visible={!collapsedInsightsSections.has('registration')} />
+                    </button>
+                    <CopySectionLink id="insights-registration" label="Session Roster" />
                   </div>
                   <button
                     type="button"
@@ -10269,8 +10375,21 @@ export default function App() {
                   </button>
                 </div>
               </div>
-              <div className="border-b border-white/[0.06] bg-[#161616] p-5 sm:p-6">
-                <div className="grid gap-4 md:grid-cols-3">
+              <div hidden={collapsedInsightsSections.has('registration')} className="border-b border-white/[0.06] bg-[#161616] p-5 sm:p-6">
+                <h4 className="mb-4 text-base font-semibold text-white">
+                  <button
+                    type="button"
+                    onClick={() => setIsInsightsSearchExpanded(expanded => !expanded)}
+                    aria-expanded={isInsightsSearchExpanded}
+                    aria-controls="insights-search-body"
+                    title={isInsightsSearchExpanded ? 'Minimize search' : 'Maximize search'}
+                    className="inline-flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                  >
+                    Search
+                    <span className="text-[#78a9ff]"><VideoVisibilityIcon visible={isInsightsSearchExpanded} /></span>
+                  </button>
+                </h4>
+                <div id="insights-search-body" hidden={!isInsightsSearchExpanded} className="grid gap-4 md:grid-cols-3">
                   <label className="block">
                     <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#c6c6c6]">Session ID</span>
                     <select
@@ -10339,7 +10458,7 @@ export default function App() {
                   </div>
                 </div>
               </div>
-              <div className="overflow-x-auto">
+              <div hidden={collapsedInsightsSections.has('registration')} className="overflow-x-auto">
                 <table className="w-full min-w-[760px] border-collapse text-left">
                   <caption className="sr-only">
                     IBM TechXchange available session enrollment roster
@@ -10761,23 +10880,38 @@ export default function App() {
 
         {/* Agenda filters */}
         <section id="main-txc" aria-labelledby="session-filters-heading" className="mb-10 scroll-mt-28 overflow-hidden rounded-xl border border-white/[0.06] bg-[#161616]">
-          <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-5">
+          <div className="flex items-start justify-between gap-4 px-4 py-3 sm:px-5">
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <h2 id="session-filters-heading" className="text-sm font-semibold text-white">Search</h2>
+              <h2 id="session-filters-heading" className="text-sm font-semibold text-white">
+                <button
+                  type="button"
+                  onClick={() => setShowFilters(current => !current)}
+                  aria-expanded={showFilters}
+                  aria-controls="session-filter-controls"
+                  title={showFilters ? 'Minimize search' : 'Maximize search'}
+                  className="inline-flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                >
+                  Search
+                  <span className="text-[#78a9ff]"><VideoVisibilityIcon visible={showFilters} /></span>
+                </button>
+              </h2>
               <p className="flex flex-wrap items-center gap-x-2 text-xs">
                 <span className="text-[#a6c8ff]">{selectedFilterSummary}</span>
                 <span className="text-[#8d8d8d]">Showing {filtered.length} of {sessions.length} sessions</span>
               </p>
             </div>
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 flex-col items-end gap-2">
               <CopySectionLink id="main-txc" label="TechXchange overview page" />
               <button
-                onClick={() => setShowFilters(current => !current)}
-                aria-expanded={showFilters}
-                aria-controls="session-filter-controls"
-                className="shrink-0 rounded-md border border-white/[0.1] bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-[#a6c8ff] transition-colors hover:border-[#4589ff]/60 hover:bg-[#0f62fe]/15 hover:text-white"
+                type="button"
+                onClick={() =>
+                  setCollapsedSessionDays(current =>
+                    current.size === 0 ? new Set(days.filter(day => activeDays.has(day))) : new Set(),
+                  )
+                }
+                className="inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
               >
-                {showFilters ? 'Hide search' : 'Show search'}
+                {collapsedSessionDays.size === 0 ? 'Collapse all' : 'Expand all'}
               </button>
             </div>
           </div>
@@ -10977,13 +11111,29 @@ export default function App() {
                       </h2>
                     </div>
                     <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCollapsedSessionDays(current => {
+                            const next = new Set(current)
+                            if (next.has(day)) next.delete(day)
+                            else next.add(day)
+                            return next
+                          })
+                        }
+                        aria-expanded={!collapsedSessionDays.has(day)}
+                        title={collapsedSessionDays.has(day) ? 'Maximize' : 'Minimize'}
+                        className="inline-flex h-7 items-center rounded-md border border-white/[0.1] bg-white/[0.03] px-2 text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                      >
+                        <VideoVisibilityIcon visible={!collapsedSessionDays.has(day)} />
+                      </button>
                       <CopySectionLink id={dayId} label={`${dayName} sessions`} />
                       <span className="rounded-full bg-white/[0.06] px-2.5 py-1 font-mono text-xs text-[#c6c6c6]">
                         {countForDay(day)} {countForDay(day) === 1 ? 'session' : 'sessions'}
                       </span>
                     </div>
                   </div>
-                  <div className="space-y-3 p-4 sm:p-5">
+                  <div hidden={collapsedSessionDays.has(day)} className="space-y-3 p-4 sm:p-5">
                     {daySessions.map(session => (
                       <SessionCard
                         key={session.id}
