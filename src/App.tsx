@@ -11,7 +11,7 @@ import {
 const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`
 
 type SessionType = 'Lab' | 'Meet the Expert' | 'Meetup' | 'Tech Talk' | 'Breakout' | 'Client Advisory Board'
-type Page = 'overview' | 'capabilities' | 'badges' | 'yl' | 'lets-create' | 'onboarding-automation' | 'process-automation' | 'content-services' | 'decision-intelligence' | 'cp4ba' | 'conference' | 'think' | 'sessions' | 'techxchange' | 'schedule' | 'maps' | 'ibm' | 'insights' | 'info' | 'product' | 'community' | 'enablement' | 'ug' | 'surveys' | 'speaker'
+type Page = 'overview' | 'capabilities' | 'badges' | 'yl' | 'lets-create' | 'technical-accelerators' | 'onboarding-automation' | 'process-automation' | 'content-services' | 'decision-intelligence' | 'cp4ba' | 'conference' | 'think' | 'sessions' | 'techxchange' | 'schedule' | 'maps' | 'ibm' | 'insights' | 'info' | 'product' | 'community' | 'enablement' | 'ug' | 'surveys' | 'speaker'
 
 const pageAnchors: Record<Page, string> = {
   overview: 'main',
@@ -19,6 +19,7 @@ const pageAnchors: Record<Page, string> = {
   badges: 'badges-top',
   yl: 'yl-top',
   'lets-create': 'lets-create-top',
+  'technical-accelerators': 'technical-accelerators-top',
   'onboarding-automation': 'onboarding-automation-top',
   'process-automation': 'capabilities-process-automation',
   'content-services': 'capabilities-content-services',
@@ -47,6 +48,7 @@ const breadcrumbLabels: Record<Page, string> = {
   badges: 'Badge',
   yl: 'YL',
   'lets-create': 'Let\'s Create!',
+  'technical-accelerators': 'Technical Accelerators',
   'onboarding-automation': 'Onboarding Automation',
   'process-automation': 'Process Automation',
   'content-services': 'Content Services',
@@ -74,6 +76,7 @@ const breadcrumbParents: Partial<Record<Page, Page>> = {
   badges: 'overview',
   yl: 'overview',
   'lets-create': 'overview',
+  'technical-accelerators': 'lets-create',
   'onboarding-automation': 'lets-create',
   'process-automation': 'capabilities',
   'content-services': 'capabilities',
@@ -138,6 +141,7 @@ function pageForHash(hash: string): Page {
   const id = decodeURIComponent(hash.replace(/^#/, ''))
   if (id === 'main') return 'overview'
   if (id === 'onboarding-automation-top' || id.startsWith('onboarding-automation-')) return 'onboarding-automation'
+  if (id === 'technical-accelerators-top' || id.startsWith('technical-accelerators-')) return 'technical-accelerators'
   if (id === 'badges-top' || id.startsWith('badges-')) return 'badges'
   if (id === 'yl-top' || id.startsWith('yl-')) return 'yl'
   if (id === 'lets-create-top' || id.startsWith('lets-create-')) return 'lets-create'
@@ -1009,7 +1013,7 @@ const communityProductOptions = Array.from(new Set(userConnectCommunities.flatMa
   .sort((a, b) => a.localeCompare(b))
   .map(product => ({ id: product, label: product }))
 
-type LetsCreateSection = 'yourlearning' | 'navattic' | 'jam-in-a-box' | 'irt-solutions' | 'technical-accelerators'
+type LetsCreateSection = 'yourlearning' | 'navattic' | 'jam-in-a-box' | 'irt-solutions' | 'technical-accelerators' | 'content-cortex-cae'
 
 interface LetsCreateAsset {
   name: string
@@ -1022,7 +1026,19 @@ interface LetsCreateAsset {
   products: string[]
 }
 
-const letsCreateSections: { id: LetsCreateSection; label: string; description: string; details?: string[] }[] = [
+const letsCreateSections: {
+  id: LetsCreateSection
+  label: string
+  description: string
+  details?: string[]
+  // Shown as hover text on the description.
+  tooltip?: string
+  author?: string
+  // Show only this many rows of cards, with expand, paging, and full-list controls.
+  collapsedRows?: number
+  // Page that lists every asset in the section.
+  fullListPage?: Page
+}[] = [
   { id: 'yourlearning', label: 'YourLearning Enablement', description: 'Courses, learning paths, and enablement sessions in IBM YourLearning.' },
   { id: 'navattic', label: 'Navattic', description: 'Interactive product demos built with Navattic.' },
   {
@@ -1053,11 +1069,19 @@ const letsCreateSections: { id: LetsCreateSection; label: string; description: s
     id: 'technical-accelerators',
     label: 'Technical Accelerators',
     description: 'The DBA Technical Sales Accelerators Box folder (IBM Business Automation and Digital Labor): decks, labs, demos, recorded videos, code samples, toolkits, and environment images, organized by product area. IBM internal.',
-    details: [
+    tooltip: [
       'About 1,500 files in 340 folders (about 18 GB), led by recorded demos (.mp4), presentations, TWX process applications and toolkits, PDFs, and Word lab guides.',
       'Open a card to browse that product folder in Box. File counts include subfolders and reflect the last inventory.',
       'Several folders hold older content (BPM, DPA 8.5.7 and 8.6 images, deprecated Cloud Pak and Cognitive decks); check the version before using an asset with a client.',
-    ],
+    ].join('\n'),
+    author: 'Paul Pacholski',
+    collapsedRows: 2,
+    fullListPage: 'technical-accelerators',
+  },
+  {
+    id: 'content-cortex-cae',
+    label: 'IBM Content Cortex Adoption Engineering (CAE)',
+    description: 'A dedicated IBM engineering team focused on enabling your success with IBM Content Cortex — from initial evaluation to production and beyond.',
   },
 ]
 
@@ -1406,6 +1430,14 @@ const letsCreateAssets: LetsCreateAsset[] = [
     capability: 'content-services',
     products: ['IBM FileNet Content Manager'],
   },
+  {
+    name: 'IBM Content Cortex Adoption Engineering (CAE)',
+    description: 'A dedicated IBM engineering team focused on enabling your success with IBM Content Cortex — from initial evaluation to production and beyond.',
+    url: 'http://ibm.biz/content-cortex-cae',
+    section: 'content-cortex-cae',
+    capability: 'content-services',
+    products: ['IBM Content Cortex'],
+  },
   ...technicalAcceleratorFolders.map(({ folder, ...asset }): LetsCreateAsset => ({
     ...asset,
     url: folder ? `${TECHNICAL_ACCELERATORS_BOX_URL}/folder/${folder}` : TECHNICAL_ACCELERATORS_BOX_URL,
@@ -1420,6 +1452,127 @@ const letsCreateProductsByCapability = new Map<string, string[]>([
 const letsCreateProductOptions = Array.from(new Set([...letsCreateProductsByCapability.values()].flat()))
   .sort((a, b) => a.localeCompare(b))
   .map(product => ({ id: product, label: product }))
+
+function LetsCreateAssetCard({ asset, onOpenPage }: { asset: LetsCreateAsset; onOpenPage: (page: Page) => void }) {
+  const capability = businessAutomationCapabilityFilters.find(filter => filter.page === asset.capability)
+  return (
+    <a
+      href={asset.url}
+      {...(asset.page
+        ? {
+            onClick: (event: React.MouseEvent) => {
+              event.preventDefault()
+              onOpenPage(asset.page!)
+            },
+          }
+        : { target: '_blank', rel: 'noreferrer' })}
+      title={`${asset.name} — ${asset.description}`}
+      className="group flex h-full flex-col overflow-hidden rounded-lg border border-white/[0.07] bg-[#161616] p-3 transition-colors hover:border-[#4589ff]/60 hover:bg-[#1c1c1c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <h4 className="line-clamp-3 text-[13px] font-semibold leading-snug text-white group-hover:text-[#a6c8ff]">{asset.name}</h4>
+        <span className="mt-0.5 shrink-0 text-[#78a9ff]">
+          {asset.page ? <span aria-hidden="true">&rarr;</span> : <ExternalLinkIcon />}
+        </span>
+      </div>
+      <p className="mt-1.5 line-clamp-3 text-[11px] leading-relaxed text-[#c6c6c6]">{asset.description}</p>
+      <div className="mt-auto flex max-h-[3.25rem] flex-wrap gap-1 overflow-hidden pt-2">
+        {capability && (
+          <span
+            className="rounded-full border px-1.5 py-0.5 text-[9px] font-semibold text-white"
+            style={{ borderColor: `${capability.color}bb`, backgroundColor: `${capability.color}20` }}
+          >
+            {capability.label}
+          </span>
+        )}
+        {asset.products.map(product => (
+          <span key={product} className="rounded-full border border-white/[0.1] bg-white/[0.03] px-1.5 py-0.5 text-[9px] font-medium text-[#c6c6c6]">
+            {product}
+          </span>
+        ))}
+      </div>
+    </a>
+  )
+}
+
+const letsCreateGridClass = 'grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-3'
+const letsCreateControlClass =
+  'inline-flex h-7 items-center rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[11px] font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/[0.1] disabled:hover:bg-white/[0.03] disabled:hover:text-[#78a9ff]'
+
+// Card grid limited to `rows` rows, with expand, previous/next paging, and a link to a full-list page.
+function LetsCreateAssetGrid({
+  assets,
+  rows,
+  onOpenPage,
+  fullListPage,
+}: {
+  assets: LetsCreateAsset[]
+  rows?: number
+  onOpenPage: (page: Page) => void
+  fullListPage?: Page
+}) {
+  const gridRef = useRef<HTMLUListElement>(null)
+  const [columns, setColumns] = useState(1)
+  const [expanded, setExpanded] = useState(false)
+  const [pageIndex, setPageIndex] = useState(0)
+
+  useEffect(() => {
+    const grid = gridRef.current
+    if (!grid || typeof ResizeObserver === 'undefined') return
+    const measure = () => {
+      // Hidden grids report the unresolved template, so only count resolved px tracks.
+      const count = getComputedStyle(grid).gridTemplateColumns.split(' ').filter(track => track.endsWith('px')).length
+      if (count > 0) setColumns(count)
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(grid)
+    return () => observer.disconnect()
+  }, [])
+
+  const pageSize = rows ? columns * rows : assets.length
+  const pageCount = Math.max(1, Math.ceil(assets.length / pageSize))
+  const currentIndex = Math.min(pageIndex, pageCount - 1)
+  const isLimited = Boolean(rows) && !expanded && pageCount > 1
+  const shown = isLimited ? assets.slice(currentIndex * pageSize, (currentIndex + 1) * pageSize) : assets
+
+  return (
+    <>
+      <ul ref={gridRef} className={letsCreateGridClass}>
+        {shown.map(asset => (
+          <li key={`${asset.section}-${asset.name}`} className="aspect-square">
+            <LetsCreateAssetCard asset={asset} onOpenPage={onOpenPage} />
+          </li>
+        ))}
+      </ul>
+      {(rows && pageCount > 1) || expanded ? (
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/[0.06] pt-3">
+          {!expanded && (
+            <>
+              <button type="button" className={letsCreateControlClass} onClick={() => setPageIndex(currentIndex - 1)} disabled={currentIndex === 0}>
+                Previous
+              </button>
+              <span aria-live="polite" className="text-[11px] text-[#c6c6c6]">
+                Page {currentIndex + 1} of {pageCount}
+              </span>
+              <button type="button" className={letsCreateControlClass} onClick={() => setPageIndex(currentIndex + 1)} disabled={currentIndex >= pageCount - 1}>
+                Next
+              </button>
+            </>
+          )}
+          <button type="button" className={`${letsCreateControlClass} ml-auto`} onClick={() => setExpanded(value => !value)} aria-expanded={expanded}>
+            {expanded ? `Show ${rows} rows` : `Show all ${assets.length}`}
+          </button>
+          {fullListPage && (
+            <button type="button" className={letsCreateControlClass} onClick={() => onOpenPage(fullListPage)}>
+              Open full list
+            </button>
+          )}
+        </div>
+      ) : null}
+    </>
+  )
+}
 
 type BadgeEntry = {
   id: string
@@ -5688,7 +5841,7 @@ export default function App() {
     Boolean(activeBusinessAutomationCapability)
   const isCommunitySection = currentPage === 'community' || currentPage === 'enablement'
   const isBusinessAutomationSection =
-    currentPage === 'overview' || currentPage === 'badges' || currentPage === 'yl' || currentPage === 'lets-create' || currentPage === 'onboarding-automation' || isCapabilitiesPage
+    currentPage === 'overview' || currentPage === 'badges' || currentPage === 'yl' || currentPage === 'lets-create' || currentPage === 'technical-accelerators' || currentPage === 'onboarding-automation' || isCapabilitiesPage
   const isIbmSection = currentPage === 'ibm' || currentPage === 'insights' || currentPage === 'speaker'
   const isTechXchangeSection =
     currentPage === 'techxchange' ||
@@ -7513,6 +7666,8 @@ export default function App() {
               <p className="text-right text-sm text-[#8d8d8d]">
                 {activeBusinessAutomationCapability
                   ? activeBusinessAutomationCapability.tagline
+                  : currentPage === 'technical-accelerators'
+                    ? `DBA Technical Sales Accelerators · ${technicalAcceleratorFolders.length} folders`
                   : currentPage === 'onboarding-automation'
                     ? 'Employee onboarding use case · content and document services'
                   : currentPage === 'cp4ba'
@@ -8126,7 +8281,16 @@ export default function App() {
                               </h3>
                               {!isCollapsed && (
                                 <>
-                                  <p className="mt-1 text-xs leading-relaxed text-[#c6c6c6]">{section.description}</p>
+                                  <p
+                                    className={`mt-1 text-xs leading-relaxed text-[#c6c6c6] ${section.tooltip ? 'cursor-help' : ''}`}
+                                    title={section.tooltip}
+                                    tabIndex={section.tooltip ? 0 : undefined}
+                                  >
+                                    {section.description}
+                                  </p>
+                                  {section.author && (
+                                    <p className="mt-1 text-[11px] text-[#8d8d8d]">Author: {section.author}</p>
+                                  )}
                                   {section.details && (
                                     <ul className="mt-3 list-disc space-y-1.5 pl-4 text-xs leading-relaxed text-[#c6c6c6] marker:text-[#8d8d8d]">
                                       {section.details.map(detail => <li key={detail}>{detail}</li>)}
@@ -8150,57 +8314,52 @@ export default function App() {
                                   : 'No assets have been added yet.'}
                               </p>
                             ) : (
-                              <ul className="grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-3">
-                                {sectionAssets.map(asset => {
-                                  const capability = businessAutomationCapabilityFilters.find(filter => filter.page === asset.capability)
-                                  return (
-                                    <li key={`${asset.section}-${asset.name}`} className="aspect-square">
-                                      <a
-                                        href={asset.url}
-                                        {...(asset.page
-                                          ? {
-                                              onClick: (event: React.MouseEvent) => {
-                                                event.preventDefault()
-                                                navigateToPage(asset.page!)
-                                              },
-                                            }
-                                          : { target: '_blank', rel: 'noreferrer' })}
-                                        title={`${asset.name} — ${asset.description}`}
-                                        className="group flex h-full flex-col overflow-hidden rounded-lg border border-white/[0.07] bg-[#161616] p-3 transition-colors hover:border-[#4589ff]/60 hover:bg-[#1c1c1c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
-                                      >
-                                        <div className="flex items-start justify-between gap-2">
-                                          <h4 className="line-clamp-3 text-[13px] font-semibold leading-snug text-white group-hover:text-[#a6c8ff]">{asset.name}</h4>
-                                          <span className="mt-0.5 shrink-0 text-[#78a9ff]">
-                                            {asset.page ? <span aria-hidden="true">&rarr;</span> : <ExternalLinkIcon />}
-                                          </span>
-                                        </div>
-                                        <p className="mt-1.5 line-clamp-3 text-[11px] leading-relaxed text-[#c6c6c6]">{asset.description}</p>
-                                        <div className="mt-auto flex max-h-[3.25rem] flex-wrap gap-1 overflow-hidden pt-2">
-                                          {capability && (
-                                            <span
-                                              className="rounded-full border px-1.5 py-0.5 text-[9px] font-semibold text-white"
-                                              style={{ borderColor: `${capability.color}bb`, backgroundColor: `${capability.color}20` }}
-                                            >
-                                              {capability.label}
-                                            </span>
-                                          )}
-                                          {asset.products.map(product => (
-                                            <span key={product} className="rounded-full border border-white/[0.1] bg-white/[0.03] px-1.5 py-0.5 text-[9px] font-medium text-[#c6c6c6]">
-                                              {product}
-                                            </span>
-                                          ))}
-                                        </div>
-                                      </a>
-                                    </li>
-                                  )
-                                })}
-                              </ul>
+                              <LetsCreateAssetGrid
+                                assets={sectionAssets}
+                                rows={section.collapsedRows}
+                                fullListPage={section.fullListPage}
+                                onOpenPage={page => navigateToPage(page)}
+                              />
                             )}
                           </div>
                         </article>
                       )
                     })}
                   </div>
+                </>
+              )
+            })()}
+          </section>
+
+        ) : currentPage === 'technical-accelerators' ? (
+          <section id="technical-accelerators-top" aria-labelledby="technical-accelerators-heading" className="scroll-mt-28">
+            {(() => {
+              const section = letsCreateSections.find(item => item.id === 'technical-accelerators')
+              const assets = letsCreateAssets.filter(item => item.section === 'technical-accelerators')
+              return (
+                <>
+                  <div className="mb-6 flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">Let&rsquo;s Create!</p>
+                      <h2 id="technical-accelerators-heading" className="mt-1 text-2xl font-semibold text-white">Technical Accelerators</h2>
+                      <p
+                        className="mt-2 max-w-2xl cursor-help text-sm leading-relaxed text-[#c6c6c6]"
+                        title={section?.tooltip}
+                        tabIndex={0}
+                      >
+                        {section?.description}
+                      </p>
+                      {section?.author && <p className="mt-1 text-xs text-[#8d8d8d]">Author: {section.author}</p>}
+                    </div>
+                    <div className="flex shrink-0 flex-col items-end gap-3">
+                      <CopySectionLink id="technical-accelerators-top" label="Technical Accelerators page" />
+                      <button type="button" onClick={() => navigateToPage('lets-create', 'lets-create-technical-accelerators')} className={letsCreateControlClass}>
+                        Back to Let&rsquo;s Create
+                      </button>
+                    </div>
+                  </div>
+                  <p className="mb-3 text-xs font-medium text-[#c6c6c6]">{assets.length} assets</p>
+                  <LetsCreateAssetGrid assets={assets} onOpenPage={page => navigateToPage(page)} />
                 </>
               )
             })()}
