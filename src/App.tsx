@@ -43,7 +43,7 @@ const pageAnchors: Record<Page, string> = {
 const breadcrumbLabels: Record<Page, string> = {
   overview: 'Main',
   capabilities: 'Portfolio',
-  badges: 'Badges',
+  badges: 'Badge',
   'lets-create': 'Let\'s Create!',
   'onboarding-automation': 'Onboarding Automation',
   'process-automation': 'Process Automation',
@@ -1053,6 +1053,7 @@ type BadgeEntry = {
   capabilities: PortfolioResourcePage[]
   products: string[]
   levels: number[]
+  description: string
   name: string
   criteria: string[]
   note?: string
@@ -1063,7 +1064,7 @@ type BadgeEntry = {
 }
 
 // badgeUrl = badge page, ibmUrl = IBM details, bpUrl = Business Partner details (a link only shows once set).
-const badgeEntries: BadgeEntry[] = [
+const badgeEntries: BadgeEntry[] = ([
   {
     id: 'cp4ba-sales-foundation-v2',
     badgeUrl: 'https://www.credly.com/org/ibm/badge/cloud-pak-for-business-automation-sales-foundation-v2',
@@ -1072,6 +1073,7 @@ const badgeEntries: BadgeEntry[] = [
     capabilities: ['cp4ba', 'process-automation', 'content-services', 'decision-intelligence'],
     products: ['IBM Cloud Pak for Business Automation', 'IBM Business Automation Workflow', 'IBM Operational Decision Manager', 'IBM Content Cortex', 'IBM Process Mining', 'IBM Robotic Process Automation'],
     levels: [1, 2],
+    description: 'Recognizes a foundational understanding of IBM Cloud Pak for Business Automation across its process, decision, content and automation capabilities. Earned by completing the Level 1 and Level 2 learning in each area, it shows you can position the platform in sales conversations.',
     name: 'Cloud Pak for Business Automation Sales Foundation V2',
     criteria: [
       'Cloud Pak for Business Automation Fundamentals Level 1',
@@ -1089,6 +1091,7 @@ const badgeEntries: BadgeEntry[] = [
     capabilities: ['cp4ba'],
     products: ['IBM Cloud Pak for Business Automation'],
     levels: [3],
+    description: 'Recognizes the ability to demonstrate IBM Cloud Pak for Business Automation. Earned by completing the Level 3 demos learning, it builds on a sales foundation with hands-on, presentation-ready skills.',
     name: 'Cloud Pak for Business Automation Intermediate',
     criteria: ['Cloud Pak for Business Automation Demos Level 3'],
   },
@@ -1100,6 +1103,7 @@ const badgeEntries: BadgeEntry[] = [
     capabilities: ['cp4ba'],
     products: ['IBM Cloud Pak for Business Automation'],
     levels: [4],
+    description: 'Recognizes advanced, practitioner-level knowledge of IBM Cloud Pak for Business Automation. Earned by completing the Level 4 learning, it shows you can go deep on the platform with clients.',
     name: 'Cloud Pak for Business Automation Practitioner Advanced',
     criteria: ['Cloud Pak for Business Automation Level 4'],
   },
@@ -1110,6 +1114,7 @@ const badgeEntries: BadgeEntry[] = [
     capabilities: ['cp4ba'],
     products: ['IBM Cloud Pak for Business Automation'],
     levels: [5],
+    description: 'The highest Cloud Pak for Business Automation recognition. It builds on the Practitioner Advanced badge and is awarded to people who have contributed to internal and external communities beyond individual product mastery.',
     name: 'Cloud Pak for Business Automation Practitioner Mastery',
     criteria: ['Cloud Pak for Business Automation Practitioner Advanced badge'],
     note: 'Applicant must provide examples of internal and external community contributions that show that they have gone beyond individual product mastery.',
@@ -1123,6 +1128,7 @@ const badgeEntries: BadgeEntry[] = [
     capabilities: ['decision-intelligence'],
     products: ['IBM Decision Intelligence'],
     levels: [1, 2],
+    description: 'Recognizes a foundational understanding of IBM Decision Intelligence and how AI agents fit into automated decisions. Earned by completing AI Agents Level 1 and Decision Intelligence Level 2.',
     name: 'Decision Intelligence Sales Foundation',
     criteria: ['AI Agents Level 1', 'Decision Intelligence Level 2'],
   },
@@ -1134,6 +1140,7 @@ const badgeEntries: BadgeEntry[] = [
     capabilities: ['process-automation'],
     products: ['IBM Process Mining'],
     levels: [3],
+    description: 'Recognizes intermediate technical sales knowledge of IBM Process Mining. Earned by completing the Level 3 learning.',
     name: 'Process Mining Intermediate',
     criteria: ['Process Mining Level 3'],
   },
@@ -1145,6 +1152,7 @@ const badgeEntries: BadgeEntry[] = [
     capabilities: ['process-automation'],
     products: ['IBM Process Mining'],
     levels: [4],
+    description: 'Recognizes advanced, practitioner-level skills with IBM Process Mining. Earned by completing the Level 4 learning and applying it with a client.',
     name: 'Process Mining Practitioner Advanced',
     criteria: ['IBM Process Mining for Practitioner Level 4'],
     note: 'IBMers must apply this learning with a client and complete an application form detailing their interaction.',
@@ -1157,6 +1165,7 @@ const badgeEntries: BadgeEntry[] = [
     capabilities: ['process-automation'],
     products: ['IBM Robotic Process Automation'],
     levels: [3],
+    description: 'Recognizes intermediate technical sales knowledge of IBM Robotic Process Automation. Earned by completing the Level 3 learning.',
     name: 'Robotic Process Automation Intermediate',
     criteria: ['Robotic Process Automation Level 3'],
   },
@@ -1168,6 +1177,7 @@ const badgeEntries: BadgeEntry[] = [
     capabilities: ['process-automation', 'decision-intelligence'],
     products: ['IBM Business Automation Manager Open Editions'],
     levels: [1, 2],
+    description: 'Recognizes a foundational understanding of IBM Business Automation Manager Open Editions, covering both Decision Manager Open Edition and Process Automation Manager Open Edition. Earned by completing the Level 1 and Level 2 learning.',
     name: 'Business Automation Manager Open Editions Sales Foundation',
     criteria: [
       'Business Automation Manager Open Editions Fundamentals Level 1',
@@ -1183,6 +1193,7 @@ const badgeEntries: BadgeEntry[] = [
     capabilities: ['decision-intelligence'],
     products: ['IBM Business Automation Manager Open Editions'],
     levels: [3],
+    description: 'Recognizes intermediate technical sales knowledge of Decision Manager Open Edition. Earned by completing the Level 3 learning.',
     name: 'Decision Manager Open Edition Intermediate',
     criteria: ['Decision Manager Open Edition Level 3'],
   },
@@ -1194,6 +1205,7 @@ const badgeEntries: BadgeEntry[] = [
     capabilities: ['process-automation'],
     products: ['IBM Business Automation Manager Open Editions'],
     levels: [3],
+    description: 'Recognizes intermediate technical sales knowledge of Process Automation Manager Open Edition. Earned by completing the Level 3 learning.',
     name: 'Process Automation Manager Open Edition Intermediate',
     criteria: ['Process Automation Manager Open Edition Level 3'],
   },
@@ -1205,18 +1217,19 @@ const badgeEntries: BadgeEntry[] = [
     capabilities: ['content-services'],
     products: ['IBM Content Cortex'],
     levels: [4],
+    description: 'Recognizes advanced technical sales skills with Content Cortex (formerly FileNet Content Manager). Earned by completing the Level 4 learning and applying it with a client.',
     name: 'Content Cortex (formerly FileNet Content Manager) Technical Sales Advanced',
     criteria: ['Content Cortex (formerly FileNet Content Manager) for Technical Sales Level 4'],
     note: 'IBMers must apply this learning with a client and complete an application form detailing their interaction.',
   },
-]
+] as BadgeEntry[]).sort((a, b) => a.name.localeCompare(b.name))
 
 function BadgesPage() {
   const [isFilterExpanded, setIsFilterExpanded] = useState(true)
-  const [selectedCapabilities, setSelectedCapabilities] = useState<Set<PortfolioResourcePage>>(new Set())
-  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set())
-  const [selectedLevels, setSelectedLevels] = useState<Set<number>>(new Set())
+  const [selectedCapabilities, setSelectedCapabilities] = useState<Set<PortfolioResourcePage>>(() => new Set(businessAutomationCapabilityFilters.map(filter => filter.page)))
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(() => new Set(badgeEntries.flatMap(badge => badge.products)))
   const badgeLevels = [1, 2, 3, 4, 5]
+  const [selectedLevels, setSelectedLevels] = useState<Set<number>>(() => new Set(badgeLevels))
   const [expandedBadges, setExpandedBadges] = useState<Set<string>>(new Set())
   useEffect(() => {
     const expandFromHash = () => {
@@ -1241,9 +1254,9 @@ function BadgesPage() {
   const badgeProducts = Array.from(new Set(badgeEntries.flatMap(badge => badge.products))).sort((x, y) => x.localeCompare(y))
   const visibleBadges = badgeEntries.filter(
     badge =>
-      (selectedCapabilities.size === 0 || badge.capabilities.some(capability => selectedCapabilities.has(capability))) &&
-      (selectedProducts.size === 0 || badge.products.some(product => selectedProducts.has(product))) &&
-      (selectedLevels.size === 0 || badge.levels.some(level => selectedLevels.has(level))),
+      (badge.capabilities.some(capability => selectedCapabilities.has(capability))) &&
+      (badge.products.some(product => selectedProducts.has(product))) &&
+      (badge.levels.some(level => selectedLevels.has(level))),
   )
   const pillClass = (active: boolean) =>
     `inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${
@@ -1270,18 +1283,17 @@ function BadgesPage() {
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">IBM Data &amp; AI: Business Automation</p>
-          <h2 id="badges-heading" className="mt-1 text-2xl font-semibold text-white">Badges</h2>
+          <h2 id="badges-heading" className="mt-1 text-2xl font-semibold text-white">Badge</h2>
           <p className="mt-2 text-sm leading-relaxed text-[#c6c6c6]">
             Business Automation sales and technical badges, the earning criteria for each, and where to find the IBM and Business Partner details.
           </p>
         </div>
-        <CopySectionLink id="badges-top" label="Badges page" />
+        <CopySectionLink id="badges-top" label="Badge page" />
       </div>
-      <div className="mb-6 rounded-xl border border-white/[0.07] bg-[#262626] px-5 py-3">
-        <div className={`${isFilterExpanded ? 'mb-3' : ''} flex flex-col items-end gap-2`}>
-          <p aria-live="polite" className="text-[11px] font-medium text-[#c6c6c6]">
-            {visibleBadges.length} of {badgeEntries.length} badges
-          </p>
+      <section aria-labelledby="badge-search-heading" className="mb-6 rounded-xl border border-white/[0.07] bg-[#262626] px-5 py-3">
+        <div className={`${isFilterExpanded ? 'mb-2' : ''} flex items-start justify-between gap-3`}>
+          <h3 id="badge-search-heading" className="text-base font-semibold text-white">Badge Search</h3>
+          <div className="flex flex-col items-end gap-2">
           <div className="flex flex-wrap items-center justify-end gap-2">
           <button
             type="button"
@@ -1299,7 +1311,7 @@ function BadgesPage() {
             onClick={() => setIsFilterExpanded(expanded => !expanded)}
             aria-expanded={isFilterExpanded}
             aria-controls="badges-filters"
-            aria-label={isFilterExpanded ? 'Collapse Badges filters' : 'Expand Badges filters'}
+            aria-label={isFilterExpanded ? 'Collapse Badge Search filters' : 'Expand Badge Search filters'}
             title={isFilterExpanded ? 'Collapse filters' : 'Expand filters'}
             className="inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#ffb784] transition-colors hover:border-[#ff832b]/55 hover:bg-[#ff832b]/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb784]"
           >
@@ -1307,14 +1319,18 @@ function BadgesPage() {
             <VideoVisibilityIcon visible={isFilterExpanded} />
           </button>
           </div>
+          <p aria-live="polite" className="text-[11px] font-medium text-[#c6c6c6]">
+            {visibleBadges.length} of {badgeEntries.length} badges
+          </p>
+          </div>
         </div>
         <div id="badges-filters" hidden={!isFilterExpanded} className="grid gap-3">
           <div role="group" aria-label="Filter badges by capability" className="flex flex-wrap items-center gap-2">
             <span className="w-24 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8d8d8d]">Capability</span>
-            <button type="button" aria-pressed={selectedCapabilities.size === 0} onClick={() => setSelectedCapabilities(new Set())} className={pillClass(selectedCapabilities.size === 0)}>
-              {selectedCapabilities.size === 0 && checkIcon}
+            <button type="button" aria-pressed={selectedCapabilities.size === businessAutomationCapabilityFilters.length} onClick={() => setSelectedCapabilities(current => (current.size === businessAutomationCapabilityFilters.length ? new Set() : new Set(businessAutomationCapabilityFilters.map(filter => filter.page))))} className={pillClass(selectedCapabilities.size === businessAutomationCapabilityFilters.length)}>
+              {selectedCapabilities.size === businessAutomationCapabilityFilters.length && checkIcon}
               All
-              <span className={countClass(selectedCapabilities.size === 0)}>{badgeEntries.length}</span>
+              <span className={countClass(selectedCapabilities.size === businessAutomationCapabilityFilters.length)}>{badgeEntries.length}</span>
             </button>
             {businessAutomationCapabilityFilters.map(option => {
               const isActive = selectedCapabilities.has(option.page)
@@ -1330,10 +1346,10 @@ function BadgesPage() {
           </div>
           <div role="group" aria-label="Filter badges by product" className="flex flex-wrap items-center gap-2">
             <span className="w-24 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8d8d8d]">Product</span>
-            <button type="button" aria-pressed={selectedProducts.size === 0} onClick={() => setSelectedProducts(new Set())} className={pillClass(selectedProducts.size === 0)}>
-              {selectedProducts.size === 0 && checkIcon}
+            <button type="button" aria-pressed={selectedProducts.size === badgeProducts.length} onClick={() => setSelectedProducts(current => (current.size === badgeProducts.length ? new Set() : new Set(badgeProducts)))} className={pillClass(selectedProducts.size === badgeProducts.length)}>
+              {selectedProducts.size === badgeProducts.length && checkIcon}
               All
-              <span className={countClass(selectedProducts.size === 0)}>{badgeEntries.length}</span>
+              <span className={countClass(selectedProducts.size === badgeProducts.length)}>{badgeEntries.length}</span>
             </button>
             {badgeProducts.map(product => {
               const isActive = selectedProducts.has(product)
@@ -1348,10 +1364,10 @@ function BadgesPage() {
           </div>
           <div role="group" aria-label="Filter badges by level" className="flex flex-wrap items-center gap-2">
             <span className="w-24 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8d8d8d]">Level</span>
-            <button type="button" aria-pressed={selectedLevels.size === 0} onClick={() => setSelectedLevels(new Set())} className={pillClass(selectedLevels.size === 0)}>
-              {selectedLevels.size === 0 && checkIcon}
+            <button type="button" aria-pressed={selectedLevels.size === badgeLevels.length} onClick={() => setSelectedLevels(current => (current.size === badgeLevels.length ? new Set() : new Set(badgeLevels)))} className={pillClass(selectedLevels.size === badgeLevels.length)}>
+              {selectedLevels.size === badgeLevels.length && checkIcon}
               All
-              <span className={countClass(selectedLevels.size === 0)}>{badgeEntries.length}</span>
+              <span className={countClass(selectedLevels.size === badgeLevels.length)}>{badgeEntries.length}</span>
             </button>
             {badgeLevels.map(level => {
               const isActive = selectedLevels.has(level)
@@ -1365,10 +1381,11 @@ function BadgesPage() {
             })}
           </div>
         </div>
-      </div>
+      </section>
       {visibleBadges.length === 0 ? (
         <p className="rounded-xl border border-white/[0.07] bg-[#262626] px-5 py-6 text-sm text-[#c6c6c6]">No badges match the selected filters.</p>
       ) : (
+        <div className="rounded-xl border border-white/[0.07] bg-[#161616] p-3 sm:p-4">
         <ul className="grid gap-3">
           {visibleBadges.map(badge => (
             <li
@@ -1378,7 +1395,8 @@ function BadgesPage() {
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-3">
-                  <h3 className="text-base font-semibold text-white">
+                  <h3 className="flex items-center gap-3 text-base font-semibold text-white">
+                    <span className="font-mono text-xs text-[#8d8d8d]">{String(badgeEntries.indexOf(badge) + 1).padStart(2, '0')}</span>
                     <button
                       type="button"
                       onClick={() =>
@@ -1394,8 +1412,25 @@ function BadgesPage() {
                       title={`${expandedBadges.has(badge.id) ? 'Collapse' : 'Expand'} ${badge.name}`}
                       className="inline-flex items-center gap-2 rounded-sm text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
                     >
-                      <ChevronIcon expanded={expandedBadges.has(badge.id)} />
                       <span>{badge.name}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExpandedBadges(current => {
+                          const next = new Set(current)
+                          if (next.has(badge.id)) next.delete(badge.id)
+                          else next.add(badge.id)
+                          return next
+                        })
+                      }
+                      aria-expanded={expandedBadges.has(badge.id)}
+                      aria-controls={`badges-${badge.id}-details`}
+                      aria-label={`${expandedBadges.has(badge.id) ? 'Collapse' : 'Expand'} ${badge.name}`}
+                      title={`${expandedBadges.has(badge.id) ? 'Collapse' : 'Expand'} ${badge.name}`}
+                      className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] text-[#c6c6c6] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                    >
+                      <ChevronIcon expanded={expandedBadges.has(badge.id)} />
                     </button>
                   </h3>
                 </div>
@@ -1424,6 +1459,7 @@ function BadgesPage() {
                   ))}
                 </div>
                 <div id={`badges-${badge.id}-details`} hidden={!expandedBadges.has(badge.id)}>
+                <p className="mt-3 text-sm leading-relaxed text-[#e0e0e0]">{badge.description}</p>
                 <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8d8d8d]">Badge earning criteria</p>
                 <ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm leading-relaxed text-[#c6c6c6]">
                   {badge.criteria.map(item => <li key={item}>{item}</li>)}
@@ -1457,6 +1493,7 @@ function BadgesPage() {
             </li>
           ))}
         </ul>
+        </div>
       )}
           <p className="mt-6 rounded-md border border-[#4589ff]/30 bg-[#0f62fe]/10 px-3 py-2 text-sm leading-relaxed text-[#e0e0e0]">
             The latest list of badges can always be found on Seismic:{' '}
@@ -4202,7 +4239,7 @@ function buildGlobalSearchEntries(): GlobalSearchEntry[] {
     title: badge.name,
     subtitle: badge.criteria.join(' · '),
     category: 'Badge',
-  }, badge.capabilities.map(capability => businessAutomationCapabilityFilters.find(filter => filter.page === capability)?.label ?? capability), badge.levels.map(level => `Level ${level}`), badge.products, badge.criteria, badge.note))
+  }, badge.capabilities.map(capability => businessAutomationCapabilityFilters.find(filter => filter.page === capability)?.label ?? capability), badge.levels.map(level => `Level ${level}`), badge.products, badge.description, badge.criteria, badge.note))
 
   // Onboarding Automation page: index every block of text in every (nested) section.
   const plainOnboardingText = (value: string) => value.replace(/\[([^\]]+)\]\([^)\s]+\)/g, '$1').replace(/\*\*/g, '')
@@ -6457,7 +6494,7 @@ export default function App() {
   const mainHeaderTitle = isCapabilitiesPage
     ? 'Business Automation Portfolio'
     : currentPage === 'badges'
-    ? 'Badges'
+    ? 'Badge'
     : currentPage === 'lets-create'
     ? 'Let\'s Create!'
     : currentPage === 'conference'
@@ -6638,7 +6675,7 @@ export default function App() {
                   {([
                     ['overview', 'Overview'],
                     ['capabilities', 'Portfolio'],
-                    ['badges', 'Badges'],
+                    ['badges', 'Badge'],
                     ['lets-create', 'Let\'s Create!'],
                   ] as const).map(([page, label]) => {
                     const isActive = page === 'capabilities' ? isCapabilitiesPage : currentPage === page
