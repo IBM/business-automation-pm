@@ -12,11 +12,12 @@ import {
 const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`
 
 type SessionType = 'Lab' | 'Meet the Expert' | 'Meetup' | 'Tech Talk' | 'Breakout' | 'Client Advisory Board'
-type Page = 'overview' | 'capabilities' | 'videos' | 'pm-resources' | 'badges' | 'yl' | 'lets-create' | 'technical-accelerators' | 'onboarding-automation' | 'process-automation' | 'content-services' | 'decision-intelligence' | 'cp4ba' | 'conference' | 'think' | 'sessions' | 'techxchange' | 'schedule' | 'maps' | 'ibm' | 'insights' | 'info' | 'product' | 'community' | 'enablement' | 'ug' | 'surveys' | 'speaker'
+type Page = 'overview' | 'capabilities' | 'resource-table' | 'videos' | 'pm-resources' | 'badges' | 'yl' | 'lets-create' | 'technical-accelerators' | 'onboarding-automation' | 'process-automation' | 'content-services' | 'decision-intelligence' | 'cp4ba' | 'conference' | 'think' | 'sessions' | 'techxchange' | 'schedule' | 'maps' | 'ibm' | 'insights' | 'info' | 'product' | 'community' | 'enablement' | 'ug' | 'surveys' | 'speaker'
 
 const pageAnchors: Record<Page, string> = {
   overview: 'main',
   capabilities: 'capabilities-top',
+  'resource-table': 'resource-table-top',
   videos: 'videos-top',
   'pm-resources': 'pm-resources-top',
   badges: 'badges-top',
@@ -48,6 +49,7 @@ const pageAnchors: Record<Page, string> = {
 const breadcrumbLabels: Record<Page, string> = {
   overview: 'Main',
   capabilities: 'Product',
+  'resource-table': 'Resource Table View',
   videos: 'Videos',
   'pm-resources': 'Product Management Resources',
   badges: 'Badge',
@@ -78,6 +80,7 @@ const breadcrumbLabels: Record<Page, string> = {
 
 const breadcrumbParents: Partial<Record<Page, Page>> = {
   capabilities: 'overview',
+  'resource-table': 'capabilities',
   videos: 'overview',
   'pm-resources': 'overview',
   badges: 'overview',
@@ -149,6 +152,7 @@ function pageForHash(hash: string): Page {
   if (id === 'main') return 'overview'
   if (id === 'onboarding-automation-top' || id.startsWith('onboarding-automation-')) return 'onboarding-automation'
   if (id === 'technical-accelerators-top' || id.startsWith('technical-accelerators-')) return 'technical-accelerators'
+  if (id === 'resource-table-top' || id.startsWith('resource-table-')) return 'resource-table'
   if (id === 'videos-top' || id.startsWith('videos-')) return 'videos'
   if (id === 'pm-resources-top' || id.startsWith('pm-resources-')) return 'pm-resources'
   if (id === 'badges-top' || id.startsWith('badges-')) return 'badges'
@@ -2618,10 +2622,10 @@ function YLPage() {
               onClick={() => setIsSummaryCollapsed(collapsed => !collapsed)}
               aria-expanded={!isSummaryCollapsed}
               aria-controls="yl-summary-body"
-              title={`${isSummaryCollapsed ? 'Expand' : 'Collapse'} Summary`}
+              title={`${isSummaryCollapsed ? 'Expand' : 'Collapse'} YL Summary`}
               className="inline-flex items-baseline gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
             >
-              Summary
+              YL Summary
               <span className="text-xs font-medium text-[#c6c6c6]">{totalCourses} plans</span>
               <span className="self-center text-[#78a9ff]"><VideoVisibilityIcon visible={!isSummaryCollapsed} /></span>
             </button>
@@ -6201,6 +6205,10 @@ export default function App() {
   const [isConferenceTechxchangeExpanded, setIsConferenceTechxchangeExpanded] = useState(false)
   const [isProductResourcesExpanded, setIsProductResourcesExpanded] = useState(true)
   const [isProductResourceFiltersExpanded, setIsProductResourceFiltersExpanded] = useState(false)
+  const [productResourceView, setProductResourceView] = useState<'list' | 'table'>('list')
+  const [resourceTableState, setResourceTableState] = useState<EmbedViewState>('normal')
+  const [resourceTablePageSizeText, setResourceTablePageSizeText] = useState('20')
+  const [resourceTablePage, setResourceTablePage] = useState(0)
   const [salesKitSortMode, setSalesKitSortMode] = useState<
     'default' | 'title-asc' | 'title-desc' | 'capability-asc' | 'capability-desc'
   >(() =>
@@ -6225,6 +6233,15 @@ export default function App() {
       resources.youtubePlaylists.map(playlist => playlist.embedUrl),
     )),
   )
+
+  useEffect(() => {
+    if (resourceTableState !== 'maximized') return
+    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') setResourceTableState('normal')
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [resourceTableState])
 
   // Publish the filters that apply to the current page so copied section links can carry them.
   useEffect(() => {
@@ -6712,6 +6729,22 @@ export default function App() {
             Search
             <VideoVisibilityIcon visible={isProductResourceFiltersExpanded} />
           </button>
+          <button
+            type="button"
+            onClick={() => {
+              setResourceTableState('normal')
+              setProductResourceView(view => view === 'table' ? 'list' : 'table')
+            }}
+            aria-pressed={productResourceView === 'table'}
+            title={productResourceView === 'table' ? 'Return to the List View' : 'Show all resources in one table'}
+            className={`inline-flex h-7 items-center rounded-md border px-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb784] ${
+              productResourceView === 'table'
+                ? 'border-[#ffb784] bg-[#ff832b]/20 text-white'
+                : 'border-white/[0.1] bg-white/[0.03] text-[#ffb784] hover:border-[#ff832b]/55 hover:bg-[#ff832b]/10 hover:text-white'
+            }`}
+          >
+            {productResourceView === 'table' ? 'List View' : 'Table View'}
+          </button>
           <div id="product-resource-subsection-filters" role="group" aria-label="Filter Product Resources subsections" className={isProductResourceFiltersExpanded ? 'contents' : 'hidden'}>
           <button
             type="button"
@@ -7016,6 +7049,8 @@ export default function App() {
         {!isProductResourcesExpanded && renderCollapsedProductResourceSummary(sectionCounts, sectionId)}
         <div id={`${sectionId}-body`} hidden={!isProductResourcesExpanded}>
         {renderProductResourceSectionFilters(sectionCounts)}
+        {productResourceView === 'table' && renderProductResourceTable('inline')}
+        <div hidden={productResourceView === 'table'}>
 
         {(effectiveVisibleProductResourceSections.has('reference') || effectiveVisibleProductResourceSections.has('previews')) && (
         <div className="grid gap-5 p-5 sm:p-6 lg:grid-cols-2">
@@ -7386,6 +7421,7 @@ export default function App() {
           </div>
         )}
         </div>
+        </div>
       </section>
     )
   }
@@ -7475,6 +7511,8 @@ export default function App() {
         {!isProductResourcesExpanded && renderCollapsedProductResourceSummary(sectionCounts, 'portfolio-product-resources')}
         <div id="portfolio-product-resources-body" hidden={!isProductResourcesExpanded}>
         {renderProductResourceSectionFilters(sectionCounts)}
+        {productResourceView === 'table' && renderProductResourceTable('inline')}
+        <div hidden={productResourceView === 'table'}>
 
         {(effectiveVisibleProductResourceSections.has('reference') || effectiveVisibleProductResourceSections.has('previews')) && (
         <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-2">
@@ -7888,8 +7926,194 @@ export default function App() {
         </div>
         )}
         </div>
+        </div>
 
       </section>
+    )
+  }
+  const renderProductResourceTable = (mode: 'inline' | 'page') => {
+    type ResourceRow = { section: string; capability: string; color: string; name: string; detail: string; url?: string }
+    const groups = [
+      ...businessAutomationCapabilities.map(capability => ({
+        page: capability.page as PortfolioResourcePage,
+        label: capability.title,
+        color: capability.color,
+        resources: portfolioResources[capability.page],
+      })),
+      { page: 'cp4ba' as PortfolioResourcePage, label: 'CP4BA', color: '#4589ff', resources: portfolioResources.cp4ba },
+    ].filter(group => selectedCapabilityPages.has(group.page))
+    const rows: ResourceRow[] = []
+    const visible = (section: ProductResourceSection) => effectiveVisibleProductResourceSections.has(section)
+    const sectionLabel = (section: ProductResourceSection) =>
+      productResourceSectionFilters.find(filter => filter.id === section)?.label ?? section
+    for (const filter of productResourceSectionFilters) {
+      if (!visible(filter.id)) continue
+      const section = sectionLabel(filter.id)
+      if (filter.id === 'reference') {
+        groups.forEach(g => g.resources.references.forEach(r => rows.push({ section, capability: g.label, color: g.color, name: r.name, detail: '', url: r.url })))
+      } else if (filter.id === 'previews') {
+        groups.forEach(g => g.resources.previews.forEach(r => rows.push({ section, capability: g.label, color: g.color, name: r.name, detail: r.action, url: r.url })))
+      } else if (filter.id === 'demos') {
+        groups.forEach(g => g.resources.demos.forEach(d => d.links.forEach(l => rows.push({ section, capability: g.label, color: g.color, name: l.name, detail: d.title, url: l.url }))))
+      } else if (filter.id === 'sales-kits') {
+        groups
+          .flatMap(g => g.resources.salesKits.map(kit => ({ kit, g, capability: businessAutomationSalesKitNames.includes(kit.name) ? 'BA' : g.label })))
+          .sort((a, b) => compareSalesKitCards({ name: a.kit.name, capability: a.capability }, { name: b.kit.name, capability: b.capability }))
+          .forEach(({ kit, g, capability }) => rows.push({ section, capability, color: g.color, name: kit.name, detail: '', url: kit.url }))
+      } else if (filter.id === 'environments') {
+        groups.forEach(g => g.resources.environments.forEach(e => rows.push({ section, capability: g.label, color: g.color, name: `${e.recommended ? '★ ' : ''}${e.name}`, detail: e.description, url: e.url })))
+      } else if (filter.id === 'techzone-collections') {
+        orderTechZoneCollections(groups.flatMap(g => g.resources.techZoneCollections.map(collection => ({ collection, g }))))
+          .forEach(({ collection, g }) => rows.push({ section, capability: g.label, color: g.color, name: `${isRecommendedTechZoneCollection(collection.name) ? '★ ' : ''}${collection.name}`, detail: collection.description, url: collection.url }))
+      } else if (filter.id === 'youtube-playlists') {
+        groups
+          .flatMap(g => g.resources.youtubePlaylists.map(playlist => ({ playlist, g })))
+          .sort((a, b) => a.playlist.order - b.playlist.order)
+          .forEach(({ playlist, g }) => rows.push({ section, capability: g.label, color: g.color, name: playlist.name, detail: 'YouTube playlist', url: playlist.url }))
+      } else if (filter.id === 'ai-capabilities') {
+        groups.forEach(g => g.resources.aiCapabilities.forEach(c => rows.push({ section, capability: g.label, color: g.color, name: c.name, detail: `${c.area}: ${c.description}`, url: 'url' in c ? c.url : undefined })))
+      }
+    }
+
+    const parsedSize = Number.parseInt(resourceTablePageSizeText, 10)
+    const pageSize = Number.isFinite(parsedSize) ? Math.min(Math.max(parsedSize, 1), 500) : 20
+    const pageCount = Math.max(1, Math.ceil(rows.length / pageSize))
+    const pageIndex = Math.min(resourceTablePage, pageCount - 1)
+    const start = pageIndex * pageSize
+    const shown = rows.slice(start, start + pageSize)
+    const host = (url?: string) => {
+      if (!url) return ''
+      try { return new URL(url).hostname.replace(/^www\./, '') } catch { return '' }
+    }
+    const isMaximized = resourceTableState === 'maximized'
+    const isMinimized = resourceTableState === 'minimized'
+    const exitTable = () => {
+      setResourceTableState('normal')
+      setProductResourceView('list')
+      if (mode === 'page') {
+        const previous = previousPageRef.current
+        const target: Page = previous && previous !== 'resource-table' ? previous : 'capabilities'
+        const hash = `#${pageAnchors[target]}`
+        if (window.location.hash !== hash) window.history.pushState(null, '', hash)
+        setCurrentPage(target)
+        setSelectedSectionId(null)
+        window.scrollTo({ top: 0 })
+      }
+    }
+    const openAsPage = () => {
+      setResourceTableState('normal')
+      setProductResourceView('table')
+      navigateToPage('resource-table')
+    }
+    return (
+      <div
+        role="region"
+        aria-label="Product Resources table"
+        className={isMaximized ? 'fixed inset-0 z-[100] flex flex-col bg-[#161616]' : 'flex flex-col bg-[#161616]/60'}
+      >
+        <div className="flex flex-wrap items-center gap-2 border-b border-white/[0.06] bg-[#1c1c1c] px-3 py-2">
+          <button type="button" className={letsCreateControlClass} onClick={() => setResourceTablePage(pageIndex - 1)} disabled={pageIndex === 0}>
+            Previous
+          </button>
+          <span aria-live="polite" className="text-[11px] text-[#c6c6c6]">
+            {rows.length === 0 ? 'No resources' : `${start + 1}–${start + shown.length} of ${rows.length}`} · Page {pageIndex + 1} of {pageCount}
+          </span>
+          <button type="button" className={letsCreateControlClass} onClick={() => setResourceTablePage(pageIndex + 1)} disabled={pageIndex >= pageCount - 1}>
+            Next
+          </button>
+          <label className="ml-2 inline-flex items-center gap-1.5 text-[11px] text-[#c6c6c6]">
+            Rows per page
+            <input
+              type="number"
+              min={1}
+              max={500}
+              value={resourceTablePageSizeText}
+              onChange={event => {
+                setResourceTablePageSizeText(event.target.value)
+                setResourceTablePage(0)
+              }}
+              onBlur={() => setResourceTablePageSizeText(String(pageSize))}
+              className="h-7 w-16 rounded-md border border-white/[0.1] bg-white/[0.03] px-2 text-[11px] text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+            />
+          </label>
+          <span className="ml-auto flex flex-wrap items-center gap-2">
+            <button type="button" className={letsCreateControlClass} onClick={() => setResourceTableState(isMinimized ? 'normal' : 'minimized')} aria-pressed={isMinimized}>
+              {isMinimized ? 'Restore' : 'Minimize'}
+            </button>
+            <button type="button" className={letsCreateControlClass} onClick={() => setResourceTableState(isMaximized ? 'normal' : 'maximized')} aria-pressed={isMaximized}>
+              {isMaximized ? 'Restore' : 'Maximize'}
+            </button>
+            {mode === 'inline' && (
+              <button type="button" className={letsCreateControlClass} onClick={openAsPage}>
+                Open as new page
+              </button>
+            )}
+            <button type="button" className={letsCreateControlClass} onClick={exitTable}>
+              Exit to List View
+            </button>
+          </span>
+        </div>
+        {!isMinimized && (
+          <div className={isMaximized ? 'min-h-0 flex-1 overflow-auto' : 'overflow-x-auto'}>
+            <table className="w-full min-w-[960px] table-fixed border-collapse text-left text-xs">
+              <colgroup>
+                <col className="w-10" />
+                <col className="w-36" />
+                <col className="w-40" />
+                <col className="w-[26%]" />
+                <col />
+                <col className="w-44" />
+                <col className="w-10" />
+              </colgroup>
+              <thead className="sticky top-0 bg-[#262626] text-[10px] uppercase tracking-[0.1em] text-[#8d8d8d]">
+                <tr>
+                  <th className="px-3 py-2 font-semibold">#</th>
+                  <th className="px-3 py-2 font-semibold">Capability</th>
+                  <th className="px-3 py-2 font-semibold">Type</th>
+                  <th className="px-3 py-2 font-semibold">Name</th>
+                  <th className="px-3 py-2 font-semibold">Details</th>
+                  <th className="px-3 py-2 font-semibold">Site</th>
+                  <th className="px-3 py-2 font-semibold"><span className="sr-only">Open</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                {shown.map((row, offset) => (
+                  <tr key={`${start + offset}-${row.section}-${row.url ?? row.name}`} className="border-t border-white/[0.05] hover:bg-white/[0.03]">
+                    <td className="px-3 py-1.5 font-mono text-[10px] text-[#8d8d8d]">{start + offset + 1}</td>
+                    <td className="px-3 py-1.5">
+                      <span
+                        className="block truncate rounded-full border px-2 py-0.5 text-center text-[10px] font-semibold uppercase tracking-[0.06em]"
+                        title={row.capability}
+                        style={{ borderColor: `${row.color}66`, backgroundColor: `${row.color}18`, color: row.color }}
+                      >
+                        {row.capability}
+                      </span>
+                    </td>
+                    <td className="truncate px-3 py-1.5 text-[#ffb784]" title={row.section}>{row.section}</td>
+                    <td className="truncate px-3 py-1.5 font-medium text-white" title={row.name}>
+                      {row.url ? (
+                        <a href={row.url} target="_blank" rel="noreferrer" className="text-[#a6c8ff] hover:text-white hover:underline">{row.name}</a>
+                      ) : row.name}
+                    </td>
+                    <td className="truncate px-3 py-1.5 text-[#c6c6c6]" title={row.detail}>{row.detail}</td>
+                    <td className="truncate px-3 py-1.5 font-mono text-[10px] text-[#8d8d8d]" title={row.url}>{host(row.url)}</td>
+                    <td className="px-3 py-1.5 text-[#78a9ff]">
+                      {row.url && (
+                        <a href={row.url} target="_blank" rel="noreferrer" aria-label={`Open ${row.name} in a new tab`} className="inline-flex hover:text-white">
+                          <ExternalLinkIcon />
+                        </a>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {shown.length === 0 && (
+                  <tr><td colSpan={7} className="px-3 py-6 text-center text-[#8d8d8d]">No Product Resources match the current selection.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     )
   }
   const selectedCapabilityLabels = businessAutomationCapabilityFilters
@@ -8427,6 +8651,8 @@ export default function App() {
                     ? 'IBM Cloud Pak for Business Automation'
                   : currentPage === 'capabilities'
                     ? 'Process · Content · Decisions · Platform'
+                  : currentPage === 'resource-table'
+                    ? 'All Product Resources in one table'
                   : currentPage === 'pm-resources'
                     ? 'IBM internal tools and links for product managers'
                   : currentPage === 'videos'
@@ -8888,6 +9114,18 @@ export default function App() {
           <BadgesPage />
         ) : currentPage === 'pm-resources' ? (
           <ProductManagementResourcesPage />
+        ) : currentPage === 'resource-table' ? (
+          <section id="resource-table-top" aria-labelledby="resource-table-heading" className="scroll-mt-28 overflow-hidden rounded-xl border border-[#ff832b]/25 bg-[#262626]">
+            <div className="border-b border-white/[0.06] px-5 py-4 sm:px-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#ff832b]">Product resources</p>
+              <h2 id="resource-table-heading" className="mt-1 text-2xl font-semibold text-white">Table View</h2>
+              <p className="mt-2 text-xs text-[#c6c6c6]">
+                {selectedCapabilitySummary} · {productResourceSectionFilters.filter(filter => effectiveVisibleProductResourceSections.has(filter.id)).map(filter => filter.label).join(' · ')}
+              </p>
+            </div>
+            {renderProductResourceTable('page')}
+          </section>
+
         ) : currentPage === 'videos' ? (
           <VideosPage />
         ) : currentPage === 'yl' ? (
