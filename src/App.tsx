@@ -12,12 +12,13 @@ import {
 const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`
 
 type SessionType = 'Lab' | 'Meet the Expert' | 'Meetup' | 'Tech Talk' | 'Breakout' | 'Client Advisory Board'
-type Page = 'overview' | 'capabilities' | 'videos' | 'badges' | 'yl' | 'lets-create' | 'technical-accelerators' | 'onboarding-automation' | 'process-automation' | 'content-services' | 'decision-intelligence' | 'cp4ba' | 'conference' | 'think' | 'sessions' | 'techxchange' | 'schedule' | 'maps' | 'ibm' | 'insights' | 'info' | 'product' | 'community' | 'enablement' | 'ug' | 'surveys' | 'speaker'
+type Page = 'overview' | 'capabilities' | 'videos' | 'pm-resources' | 'badges' | 'yl' | 'lets-create' | 'technical-accelerators' | 'onboarding-automation' | 'process-automation' | 'content-services' | 'decision-intelligence' | 'cp4ba' | 'conference' | 'think' | 'sessions' | 'techxchange' | 'schedule' | 'maps' | 'ibm' | 'insights' | 'info' | 'product' | 'community' | 'enablement' | 'ug' | 'surveys' | 'speaker'
 
 const pageAnchors: Record<Page, string> = {
   overview: 'main',
   capabilities: 'capabilities-top',
   videos: 'videos-top',
+  'pm-resources': 'pm-resources-top',
   badges: 'badges-top',
   yl: 'yl-top',
   'lets-create': 'lets-create-top',
@@ -48,6 +49,7 @@ const breadcrumbLabels: Record<Page, string> = {
   overview: 'Main',
   capabilities: 'Product',
   videos: 'Videos',
+  'pm-resources': 'Product Management Resources',
   badges: 'Badge',
   yl: 'YL',
   'lets-create': 'Let\'s Create!',
@@ -77,6 +79,7 @@ const breadcrumbLabels: Record<Page, string> = {
 const breadcrumbParents: Partial<Record<Page, Page>> = {
   capabilities: 'overview',
   videos: 'overview',
+  'pm-resources': 'overview',
   badges: 'overview',
   yl: 'overview',
   'lets-create': 'overview',
@@ -120,7 +123,7 @@ function formatBreadcrumbSectionLabel(id: string) {
   if (id.startsWith('session-')) return id.slice('session-'.length).toUpperCase()
 
   const label = id
-    .replace(/^(capabilities-all|capabilities|portfolio|process-automation|content-services|decision-intelligence|cp4ba|conference|techxchange|think|sessions|maps|info|ug|surveys|av|enablement|onboarding-automation|badges|videos)-/, '')
+    .replace(/^(capabilities-all|capabilities|portfolio|process-automation|content-services|decision-intelligence|cp4ba|conference|techxchange|think|sessions|maps|info|ug|surveys|av|enablement|onboarding-automation|badges|videos|pm-resources)-/, '')
     .replace(/-/g, ' ')
 
   return label.replace(/\b\w+/g, word => {
@@ -147,6 +150,7 @@ function pageForHash(hash: string): Page {
   if (id === 'onboarding-automation-top' || id.startsWith('onboarding-automation-')) return 'onboarding-automation'
   if (id === 'technical-accelerators-top' || id.startsWith('technical-accelerators-')) return 'technical-accelerators'
   if (id === 'videos-top' || id.startsWith('videos-')) return 'videos'
+  if (id === 'pm-resources-top' || id.startsWith('pm-resources-')) return 'pm-resources'
   if (id === 'badges-top' || id.startsWith('badges-')) return 'badges'
   if (id === 'yl-top' || id.startsWith('yl-')) return 'yl'
   if (id === 'lets-create-top' || id.startsWith('lets-create-')) return 'lets-create'
@@ -2725,6 +2729,60 @@ function YLPage() {
           ))}
         </ul>
       </section>
+    </section>
+  )
+}
+
+const coreAccessHubUrl = 'https://ibm-support.saviyntcloud.com/'
+const productManagementResources: { name: string; url: string; tooltip: string }[] = [
+  {
+    name: 'Core PM CoE Dashboard',
+    url: 'https://core-coe-deal-management-frontend-prod.core-coe-deal-management.wdc.app.cirrus.ibm.com/product-manager',
+    tooltip: [
+      `• Go to AccessHub ${coreAccessHubUrl}`,
+      '• Select Applications',
+      '• Search for “CORE PM COE DASHBOARD”',
+      '• Choose “Member”',
+      '• Add a justification',
+      '• Select Submit',
+    ].join('\n'),
+  },
+]
+
+// Hidden page, opened by double-clicking the IBM logo in the site header.
+function ProductManagementResourcesPage() {
+  return (
+    <section id="pm-resources-top" aria-labelledby="pm-resources-heading" className="scroll-mt-28">
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">IBM Data &amp; AI: Business Automation</p>
+          <h2 id="pm-resources-heading" className="mt-1 text-2xl font-semibold text-white">Product Management Resources</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#c6c6c6]">
+            IBM internal tools and links for product managers. Hover over a link to see how to request access.
+          </p>
+        </div>
+        <CopySectionLink id="pm-resources-top" label="Product Management Resources page" />
+      </div>
+      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {productManagementResources.map((resource, index) => (
+          <li key={resource.url}>
+            <a
+              href={resource.url}
+              target="_blank"
+              rel="noreferrer"
+              title={resource.tooltip}
+              aria-describedby={`pm-resource-access-${index}`}
+              className="group flex h-full flex-col rounded-lg border border-white/[0.07] bg-[#262626] p-4 transition-colors hover:border-[#4589ff]/60 hover:bg-[#1c1c1c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+            >
+              <span className="flex items-start justify-between gap-2">
+                <span className="text-sm font-semibold text-white group-hover:text-[#a6c8ff]">{resource.name}</span>
+                <span className="shrink-0 text-[#78a9ff]"><ExternalLinkIcon /></span>
+              </span>
+              <span id={`pm-resource-access-${index}`} className="sr-only">How to request access: {resource.tooltip.replace(/\n/g, '. ')}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
     </section>
   )
 }
@@ -5667,6 +5725,8 @@ function isPageWithin(page: Page, root: Page) {
 }
 
 const globalSearchGatedPages: Page[] = ['ibm', 'insights', 'speaker']
+// Reached only by double-clicking the IBM logo, so not listed in search.
+const hiddenPages: Page[] = ['pm-resources']
 
 function buildGlobalSearchEntries(): GlobalSearchEntry[] {
   const entries: GlobalSearchEntry[] = []
@@ -5678,7 +5738,7 @@ function buildGlobalSearchEntries(): GlobalSearchEntry[] {
   }
   const hostOf = (url: string) => url.replace(/^https?:\/\//, '').split('/')[0]
 
-  ;(Object.keys(pageAnchors) as Page[]).filter(page => page !== 'product').forEach(page => {
+  ;(Object.keys(pageAnchors) as Page[]).filter(page => page !== 'product' && !hiddenPages.includes(page)).forEach(page => {
     const capability = businessAutomationCapabilities.find(item => item.page === page)
     const parents = getBreadcrumbTrail(page).slice(0, -1).map(parent => breadcrumbLabels[parent]).join(' / ')
     add({
@@ -6332,6 +6392,22 @@ export default function App() {
     window.requestAnimationFrame(() => scrollElementBelowPageHeader(id))
   }
 
+  // Single click on the IBM logo still opens its link, after a short delay; a double-click opens the hidden resources page.
+  const logoClickTimer = useRef<number | undefined>(undefined)
+  const handleLogoClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+    event.preventDefault()
+    window.clearTimeout(logoClickTimer.current)
+    if (event.detail >= 2) {
+      navigateToPage('pm-resources')
+      return
+    }
+    const href = event.currentTarget.href
+    logoClickTimer.current = window.setTimeout(() => {
+      window.location.href = href
+    }, 300)
+  }
+
   const navigateToPage = (page: Page, targetId?: string) => {
     const nextPage = page === 'product' ? 'capabilities' : page
     const selectedPage = businessAutomationCapabilityFilters.find(filter => filter.page === nextPage)?.page
@@ -6512,7 +6588,7 @@ export default function App() {
     Boolean(activeBusinessAutomationCapability)
   const isCommunitySection = currentPage === 'community' || currentPage === 'enablement'
   const isBusinessAutomationSection =
-    currentPage === 'overview' || currentPage === 'videos' || currentPage === 'badges' || currentPage === 'yl' || currentPage === 'lets-create' || currentPage === 'technical-accelerators' || currentPage === 'onboarding-automation' || isCapabilitiesPage
+    currentPage === 'overview' || currentPage === 'videos' || currentPage === 'pm-resources' || currentPage === 'badges' || currentPage === 'yl' || currentPage === 'lets-create' || currentPage === 'technical-accelerators' || currentPage === 'onboarding-automation' || isCapabilitiesPage
   const isIbmSection = currentPage === 'ibm' || currentPage === 'insights' || currentPage === 'speaker'
   const isTechXchangeSection =
     currentPage === 'techxchange' ||
@@ -8036,6 +8112,8 @@ export default function App() {
     ? 'Product Portfolio'
     : currentPage === 'videos'
     ? 'Videos'
+    : currentPage === 'pm-resources'
+    ? 'Product Management Resources'
     : currentPage === 'badges'
     ? 'Badge'
     : currentPage === 'yl'
@@ -8095,6 +8173,7 @@ export default function App() {
               ) : (
                 <a
                   href="https://ibm.biz/business-automation"
+                  onClick={handleLogoClick}
                   aria-label="IBM Business Automation"
                   className="mb-1 inline-flex items-center gap-2.5 text-[#78a9ff] transition-colors hover:text-white"
                 >
@@ -8348,6 +8427,8 @@ export default function App() {
                     ? 'IBM Cloud Pak for Business Automation'
                   : currentPage === 'capabilities'
                     ? 'Process · Content · Decisions · Platform'
+                  : currentPage === 'pm-resources'
+                    ? 'IBM internal tools and links for product managers'
                   : currentPage === 'videos'
                     ? `IBM Product Hub on YouTube · ${businessAutomationPlaylistVideos.length} Business Automation videos`
                   : currentPage === 'badges'
@@ -8401,6 +8482,7 @@ export default function App() {
                 ) : (
                   <a
                     href="https://ibm.biz/business-automation"
+                    onClick={handleLogoClick}
                     aria-label="IBM Business Automation"
                     className="flex shrink-0 items-center gap-2 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
                   >
@@ -8804,6 +8886,8 @@ export default function App() {
           </section>
         ) : currentPage === 'badges' ? (
           <BadgesPage />
+        ) : currentPage === 'pm-resources' ? (
+          <ProductManagementResourcesPage />
         ) : currentPage === 'videos' ? (
           <VideosPage />
         ) : currentPage === 'yl' ? (
