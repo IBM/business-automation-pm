@@ -1440,6 +1440,14 @@ const letsCreateAssets: LetsCreateAsset[] = [
     capability: 'content-services',
     products: ['IBM Content Cortex'],
   },
+  {
+    name: 'Product Demos',
+    description: 'Watch recorded product demos across MCP, Agents, and Content Assistant — click any video to play it instantly.',
+    url: 'https://ccx-cae-signup.2drvdr9bgznz.us-south.codeengine.appdomain.cloud/#livedemo',
+    section: 'content-cortex-cae',
+    capability: 'content-services',
+    products: ['IBM Content Cortex'],
+  },
   ...technicalAcceleratorFolders.map(({ folder, ...asset }): LetsCreateAsset => ({
     ...asset,
     url: folder ? `${TECHNICAL_ACCELERATORS_BOX_URL}/folder/${folder}` : TECHNICAL_ACCELERATORS_BOX_URL,
@@ -7460,7 +7468,7 @@ export default function App() {
   )
 
   const mainHeaderTitle = isCapabilitiesPage
-    ? 'Business Automation Product'
+    ? 'Product Portfolio'
     : currentPage === 'badges'
     ? 'Badge'
     : currentPage === 'yl'
