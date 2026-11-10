@@ -1009,7 +1009,7 @@ const communityProductOptions = Array.from(new Set(userConnectCommunities.flatMa
   .sort((a, b) => a.localeCompare(b))
   .map(product => ({ id: product, label: product }))
 
-type LetsCreateSection = 'yourlearning' | 'navattic' | 'jam-in-a-box' | 'irt-solutions'
+type LetsCreateSection = 'yourlearning' | 'navattic' | 'jam-in-a-box' | 'irt-solutions' | 'technical-accelerators'
 
 interface LetsCreateAsset {
   name: string
@@ -1048,6 +1048,252 @@ const letsCreateSections: { id: LetsCreateSection; label: string; description: s
       'Setup guide for the AI agents used by these scenarios: AI Agents Export/Import (see the repository).',
       'Questions or requests for new scenarios: Slack #irt-solution-scenarios. Contributions are managed by the IRT Team only.',
     ],
+  },
+  {
+    id: 'technical-accelerators',
+    label: 'Technical Accelerators',
+    description: 'The DBA Technical Sales Accelerators Box folder (IBM Business Automation and Digital Labor): decks, labs, demos, recorded videos, code samples, toolkits, and environment images, organized by product area. IBM internal.',
+    details: [
+      'About 1,500 files in 340 folders (about 18 GB), led by recorded demos (.mp4), presentations, TWX process applications and toolkits, PDFs, and Word lab guides.',
+      'Open a card to browse that product folder in Box. File counts include subfolders and reflect the last inventory.',
+      'Several folders hold older content (BPM, DPA 8.5.7 and 8.6 images, deprecated Cloud Pak and Cognitive decks); check the version before using an asset with a client.',
+    ],
+  },
+]
+
+const TECHNICAL_ACCELERATORS_BOX_URL = 'https://ibm.ent.box.com/v/DBATechnicalSalesAccelerators'
+
+// Folders in the DBA Technical Sales Accelerators Box share. File counts include subfolders.
+const technicalAcceleratorFolders: { name: string; description: string; folder?: string; capability: PortfolioResourcePage; products: string[] }[] = [
+  {
+    name: 'DBA Technical Sales Accelerators (all folders)',
+    description: 'Top level of the Box share: 30+ product folders plus the Technical Asset Overview deck, the BPM Summary deck, and Digital Process Automation Technical Sales Collateral.',
+    capability: 'cp4ba',
+    products: ['IBM Cloud Pak for Business Automation'],
+  },
+  {
+    name: 'IBM Business Automation Workflow',
+    description: '355 files: AI-powered automation and AI labs, BAI, BAW on containers, CI/CD, good practices, code samples, demo process apps, performance, toolkits, WfPS, dynamic teams, fault handling, and POT material.',
+    folder: '43184191746',
+    capability: 'process-automation',
+    products: ['IBM Business Automation Workflow'],
+  },
+  {
+    name: 'IBM Process Mining',
+    description: '141 files: process and task mining environments and labs (1.12-1.14 and NG), myInvenio demos, hands-on self-learning, ETL packages, and a script filters repository.',
+    folder: '125490714353',
+    capability: 'process-automation',
+    products: ['IBM Process Mining'],
+  },
+  {
+    name: 'RPA - IBM Robotic Process Automation',
+    description: '107 files: numbered hands-on labs built on a Sales Lead scenario, including starting bots from processes, queues, chatbots, SAP, and CICS, with videos and sample data.',
+    folder: '117941573691',
+    capability: 'process-automation',
+    products: ['IBM Robotic Process Automation'],
+  },
+  {
+    name: 'RPA - IBM RPA with Automation Anywhere',
+    description: '97 files: IQ Bots, labs, migration, security and Veracode reports, recorded demos, SAP, sales collateral, and v11.x and v19.x content.',
+    folder: '27955841643',
+    capability: 'process-automation',
+    products: ['IBM Robotic Process Automation'],
+  },
+  {
+    name: 'RPA - UiPath',
+    description: '2 files: a presentation and a video on RPA with UiPath.',
+    folder: '67869406724',
+    capability: 'process-automation',
+    products: ['IBM Robotic Process Automation'],
+  },
+  {
+    name: 'RPA - Blue Prism',
+    description: '6 files: PDFs and a Word document on RPA with Blue Prism.',
+    folder: '104532053258',
+    capability: 'process-automation',
+    products: ['IBM Robotic Process Automation'],
+  },
+  {
+    name: 'IBM Business Automation Manager Open Editions',
+    description: '8 files: technical introduction deck, Hello World process and DMN decision tutorials, sales demo walkthrough guide, and the TechZone environment guide.',
+    folder: '170819029423',
+    capability: 'process-automation',
+    products: ['IBM Business Automation Manager Open Editions'],
+  },
+  {
+    name: 'IBM Business Process Manager',
+    description: '18 files: BPM decks, recorded demos, PDFs, and zip packages.',
+    folder: '23239854314',
+    capability: 'process-automation',
+    products: ['IBM Business Automation Workflow'],
+  },
+  {
+    name: "What's New in IBM BPM Series",
+    description: '36 files: what-is-new decks (.ppt and .pptx), recordings, and labs for IBM BPM releases.',
+    folder: '23239764780',
+    capability: 'process-automation',
+    products: ['IBM Business Automation Workflow'],
+  },
+  {
+    name: 'BPM Advanced Technical Overview and Introduction',
+    description: '22 files: decks, Word guides, and zip packages, including the BPEL 2.0 Importer and BPM Advanced Demo.',
+    folder: '23239700876',
+    capability: 'process-automation',
+    products: ['IBM Business Automation Workflow'],
+  },
+  {
+    name: 'BPM and ODM Good Practices',
+    description: '19 files: good-practice decks, PDFs, and TWX examples for BPM and ODM.',
+    folder: '23239842531',
+    capability: 'process-automation',
+    products: ['IBM Business Automation Workflow', 'IBM Operational Decision Manager'],
+  },
+  {
+    name: 'IBM BPM for SAP',
+    description: '111 files: BPM 4 SAP blueprinting and labs, with decks, Word guides, PDFs, and zip packages.',
+    folder: '23239702423',
+    capability: 'process-automation',
+    products: ['IBM Business Automation Workflow'],
+  },
+  {
+    name: 'IBM Business Automation for SAP',
+    description: '7 files: SAP integration deck, Content Collector for SAP videos, and the SAP Investigative Case Management for Tax Audits PDF.',
+    folder: '64221338683',
+    capability: 'process-automation',
+    products: ['IBM Business Automation Workflow'],
+  },
+  {
+    name: 'Process Federation Server',
+    description: '4 files: Process Federation Server technical decks.',
+    folder: '83465457064',
+    capability: 'process-automation',
+    products: ['IBM Business Automation Workflow'],
+  },
+  {
+    name: 'IBM BPM RFP Technical Delivery Assessment and Readiness',
+    description: '7 files: Word and PDF templates for RFP technical delivery assessment and readiness.',
+    folder: '29519496423',
+    capability: 'process-automation',
+    products: ['IBM Business Automation Workflow'],
+  },
+  {
+    name: 'BPM Process Data Encryption',
+    description: '3 files: a TWX example, a Word guide, and a video on encrypting process data.',
+    folder: '23239799237',
+    capability: 'process-automation',
+    products: ['IBM Business Automation Workflow'],
+  },
+  {
+    name: 'Digital Process Automation 8.5.7 VMware Image',
+    description: '15 files: image zips and Word guides for the DPA 8.5.7 VMware image. Older release.',
+    folder: '23239706855',
+    capability: 'process-automation',
+    products: ['IBM Business Automation Workflow'],
+  },
+  {
+    name: 'IBM BPM 8.6 VMware Image',
+    description: '3 files: Word guides for the IBM BPM 8.6 VMware image. Older release.',
+    folder: '38716921729',
+    capability: 'process-automation',
+    products: ['IBM Business Automation Workflow'],
+  },
+  {
+    name: 'IBM Operational Decision Manager',
+    description: '370 files: POT 8.5.5, POT 8.7, and WODM 7.5 content with rule projects (.irl), properties files, and Word guides.',
+    folder: '23239793758',
+    capability: 'decision-intelligence',
+    products: ['IBM Operational Decision Manager'],
+  },
+  {
+    name: 'Business Automation Insights',
+    description: '48 files: learn-and-guide and visualize demos and labs, performance and tuning guidance, FS2021 material, and sample JSON.',
+    folder: '54210088000',
+    capability: 'cp4ba',
+    products: ['IBM Cloud Pak for Business Automation'],
+  },
+  {
+    name: 'IBM watsonx Orchestrate',
+    description: '27 files: ADK labs and environment guides, agent labs with tools implemented in BAW, Client Onboarding and Client Rep Agent, Langflow Hello World, demo videos, and agent zips.',
+    folder: '263014746910',
+    capability: 'cp4ba',
+    products: ['IBM Cloud Pak for Business Automation'],
+  },
+  {
+    name: 'IBM Business Automation Workstream Services',
+    description: '8 files: building custom workstreams guide, technical introduction decks, sample videos, and a work-from-home onboarding workstream.',
+    folder: '108680701341',
+    capability: 'cp4ba',
+    products: ['IBM Cloud Pak for Business Automation'],
+  },
+  {
+    name: 'Business Automation Application Designer',
+    description: '6 files: technical introduction decks (including 22.0.1 externally accessible apps) and business developer and business user videos.',
+    folder: '87739143921',
+    capability: 'cp4ba',
+    products: ['IBM Cloud Pak for Business Automation'],
+  },
+  {
+    name: 'IBM Cloud Pak for Automation',
+    description: '7 files: Cloud Pak for Automation overview and technical introduction decks for 19.0.1 to 19.0.3. Some are deprecated.',
+    folder: '60024733964',
+    capability: 'cp4ba',
+    products: ['IBM Cloud Pak for Business Automation'],
+  },
+  {
+    name: 'CP4BA Fit for Purpose',
+    description: '1 file: App Designer, Workflow, and Workstreams fit-for-purpose discussion deck.',
+    folder: '135484955806',
+    capability: 'cp4ba',
+    products: ['IBM Cloud Pak for Business Automation'],
+  },
+  {
+    name: 'Hyperautomation with IBM Business Automation',
+    description: '2 files: Cloud Pak for Business Automation high-level overview and hyperautomation decks.',
+    folder: '84559293422',
+    capability: 'cp4ba',
+    products: ['IBM Cloud Pak for Business Automation'],
+  },
+  {
+    name: 'DBA Platform Automation Pattern Demos',
+    description: '23 files: Paycheck Protection Program and Quick Pay pattern demos with PDFs, TWX apps, JARs, and videos.',
+    folder: '88557942442',
+    capability: 'cp4ba',
+    products: ['IBM Cloud Pak for Business Automation'],
+  },
+  {
+    name: 'DBA Pattern Demos',
+    description: '2 files: Quick Pay automation pattern demo deck and video.',
+    folder: '106417388343',
+    capability: 'cp4ba',
+    products: ['IBM Cloud Pak for Business Automation'],
+  },
+  {
+    name: 'Cognitive Business Operations for Digital Process Automation',
+    description: '6 files: designing and architecting cognitive business operations solutions, demo scripts, and a Watson HR demo video. Some decks are deprecated.',
+    folder: '23239772868',
+    capability: 'cp4ba',
+    products: ['IBM Cloud Pak for Business Automation'],
+  },
+  {
+    name: 'IBM Business Automation with Blockchain',
+    description: '3 files: DBA and blockchain deck, a letter-of-credit article PDF, and a demo video.',
+    folder: '32441564383',
+    capability: 'cp4ba',
+    products: ['IBM Cloud Pak for Business Automation'],
+  },
+  {
+    name: 'IBM Business Automation Story',
+    description: '2 files: the IBM Business Automation story deck and project notes.',
+    folder: '51139440450',
+    capability: 'cp4ba',
+    products: ['IBM Cloud Pak for Business Automation'],
+  },
+  {
+    name: 'IBM Digital Business Automation VMware Images',
+    description: '60 files: lab guides (mostly Word) for the DBA VMware images.',
+    folder: '48021506169',
+    capability: 'cp4ba',
+    products: ['IBM Cloud Pak for Business Automation'],
   },
 ]
 
@@ -1160,6 +1406,11 @@ const letsCreateAssets: LetsCreateAsset[] = [
     capability: 'content-services',
     products: ['IBM FileNet Content Manager'],
   },
+  ...technicalAcceleratorFolders.map(({ folder, ...asset }): LetsCreateAsset => ({
+    ...asset,
+    url: folder ? `${TECHNICAL_ACCELERATORS_BOX_URL}/folder/${folder}` : TECHNICAL_ACCELERATORS_BOX_URL,
+    section: 'technical-accelerators',
+  })),
 ]
 
 const letsCreateProductsByCapability = new Map<string, string[]>([
