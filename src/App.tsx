@@ -1,6 +1,6 @@
 import { Fragment, createContext, useContext, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react'
 import enablementData from './enablement.json'
-import { youtubePlaylistVideos } from './youtubePlaylists'
+import { youtubePlaylistVideos, type PlaylistVideo } from './youtubePlaylists'
 import {
   onboardingAutomationSections,
   onboardingAutomationTagline,
@@ -2003,6 +2003,9 @@ const businessAutomationRelatedPlaylists: { name: string; id: string; descriptio
   { name: 'Beyond the Blueprints', id: 'PL_4RxtD-BL5vIVHXcYlbtQIoY7c1qFNR_', description: 'Going further with Blueworks Live.' },
 ]
 
+// The playlist itself is the first item, followed by its videos.
+const businessAutomationItems: ('playlist' | (typeof businessAutomationPlaylistVideos)[number])[] = ['playlist', ...businessAutomationPlaylistVideos]
+
 const videoGridClass = 'grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3'
 
 const youtubePlaylistUrl = (id: string) => `https://www.youtube.com/playlist?list=${id}`
@@ -2017,8 +2020,17 @@ const youtubeFrameAsset = (name: string, url: string): LetsCreateAsset => ({
 })
 
 // Frame content for a playlist: a player and the numbered list of the playlist's videos.
-function VideoPlaylistPanel({ playlist, onExit }: { playlist: (typeof businessAutomationRelatedPlaylists)[number]; onExit: () => void }) {
-  const videos = youtubePlaylistVideos[playlist.id] ?? []
+function VideoPlaylistPanel({
+  playlist,
+  videos: providedVideos,
+  onExit,
+}: {
+  playlist: { name: string; id: string }
+  // Defaults to the captured videos for the playlist id.
+  videos?: PlaylistVideo[]
+  onExit: () => void
+}) {
+  const videos = providedVideos ?? youtubePlaylistVideos[playlist.id] ?? []
   const [selectedId, setSelectedId] = useState<string | null>(null)
   // The player only autoplays after a video is chosen from the list.
   const [autoplay, setAutoplay] = useState(false)
@@ -2147,7 +2159,8 @@ function VideosPage() {
   const [isPlaylistCollapsed, setIsPlaylistCollapsed] = useState(false)
   const [isMoreCollapsed, setIsMoreCollapsed] = useState(false)
   // Each section has its own frame, shown below its cards.
-  const [shownVideo, setShownVideo] = useState<(typeof businessAutomationPlaylistVideos)[number] | null>(null)
+  // The playlist is the first item, followed by its videos. `shownVideo` is null when the playlist is shown.
+  const [shownBaItem, setShownBaItem] = useState<'playlist' | (typeof businessAutomationPlaylistVideos)[number] | null>(null)
   const [shownPlaylist, setShownPlaylist] = useState<(typeof businessAutomationRelatedPlaylists)[number] | null>(null)
   const playlistUrl = youtubePlaylistUrl(BUSINESS_AUTOMATION_PLAYLIST_ID)
   const sectionClass = 'mt-4 scroll-mt-28 overflow-hidden rounded-xl border border-white/[0.07] bg-[#262626]'
@@ -2195,35 +2208,56 @@ function VideosPage() {
             )}
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <span className="text-[10px] font-medium text-[#c6c6c6]">{businessAutomationPlaylistVideos.length} videos</span>
+            <span className="text-[10px] font-medium text-[#c6c6c6]">1 playlist · {businessAutomationPlaylistVideos.length} videos</span>
             <CopySectionLink id="videos-business-automation" label="IBM Business Automation playlist" />
           </div>
         </div>
         <div id="videos-business-automation-body" hidden={isPlaylistCollapsed} className="p-5">
           <LimitedGrid
-            items={businessAutomationPlaylistVideos}
+            items={businessAutomationItems}
             rows={2}
             gridClass={videoGridClass}
-            itemKey={video => video.id}
-            renderItem={(video, index) => (
-              <VideoCard
-                title={video.title}
-                thumbnail={`https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`}
-                badge={video.duration}
-                index={index}
-                recommended={index < BUSINESS_AUTOMATION_RECOMMENDED_COUNT}
-                href={`https://www.youtube.com/watch?v=${video.id}&list=${BUSINESS_AUTOMATION_PLAYLIST_ID}`}
-                isShown={shownVideo?.id === video.id}
-                onViewBelow={() => setShownVideo(video)}
-              />
-            )}
+            itemKey={item => (item === 'playlist' ? 'playlist' : item.id)}
+            renderItem={(item, index) =>
+              item === 'playlist' ? (
+                <VideoCard
+                  title="IBM Business Automation playlist"
+                  description={`The full playlist, ${businessAutomationPlaylistVideos.length} videos.`}
+                  thumbnail={`https://i.ytimg.com/vi/${businessAutomationPlaylistVideos[0].id}/hqdefault.jpg`}
+                  badge={`${businessAutomationPlaylistVideos.length} videos`}
+                  index={index}
+                  href={playlistUrl}
+                  isShown={shownBaItem === 'playlist'}
+                  onViewBelow={() => setShownBaItem('playlist')}
+                />
+              ) : (
+                <VideoCard
+                  title={item.title}
+                  thumbnail={`https://i.ytimg.com/vi/${item.id}/hqdefault.jpg`}
+                  badge={item.duration}
+                  index={index}
+                  recommended={index - 1 < BUSINESS_AUTOMATION_RECOMMENDED_COUNT}
+                  href={`https://www.youtube.com/watch?v=${item.id}&list=${BUSINESS_AUTOMATION_PLAYLIST_ID}`}
+                  isShown={typeof shownBaItem === 'object' && shownBaItem?.id === item.id}
+                  onViewBelow={() => setShownBaItem(item)}
+                />
+              )
+            }
           />
-          {shownVideo && (
+          {shownBaItem === 'playlist' && (
+            <VideoPlaylistPanel
+              key="ba-playlist"
+              playlist={{ name: 'IBM Business Automation playlist', id: BUSINESS_AUTOMATION_PLAYLIST_ID }}
+              videos={businessAutomationPlaylistVideos.map(video => [video.id, video.title, video.duration] as const)}
+              onExit={() => setShownBaItem(null)}
+            />
+          )}
+          {shownBaItem && shownBaItem !== 'playlist' && (
             <LetsCreateEmbedFrame
-              key={shownVideo.id}
-              asset={youtubeFrameAsset(shownVideo.title, `https://www.youtube.com/embed/${shownVideo.id}?list=${BUSINESS_AUTOMATION_PLAYLIST_ID}&autoplay=1`)}
-              openUrl={`https://www.youtube.com/watch?v=${shownVideo.id}&list=${BUSINESS_AUTOMATION_PLAYLIST_ID}`}
-              onExit={() => setShownVideo(null)}
+              key={shownBaItem.id}
+              asset={youtubeFrameAsset(shownBaItem.title, `https://www.youtube.com/embed/${shownBaItem.id}?list=${BUSINESS_AUTOMATION_PLAYLIST_ID}&autoplay=1`)}
+              openUrl={`https://www.youtube.com/watch?v=${shownBaItem.id}&list=${BUSINESS_AUTOMATION_PLAYLIST_ID}`}
+              onExit={() => setShownBaItem(null)}
             />
           )}
         </div>
