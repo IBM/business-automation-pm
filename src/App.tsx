@@ -1254,9 +1254,9 @@ function BadgesPage() {
   const badgeProducts = Array.from(new Set(badgeEntries.flatMap(badge => badge.products))).sort((x, y) => x.localeCompare(y))
   const visibleBadges = badgeEntries.filter(
     badge =>
-      (badge.capabilities.some(capability => selectedCapabilities.has(capability))) &&
-      (badge.products.some(product => selectedProducts.has(product))) &&
-      (badge.levels.some(level => selectedLevels.has(level))),
+      (selectedCapabilities.size === 0 || badge.capabilities.some(capability => selectedCapabilities.has(capability))) &&
+      (selectedProducts.size === 0 || badge.products.some(product => selectedProducts.has(product))) &&
+      (selectedLevels.size === 0 || badge.levels.some(level => selectedLevels.has(level))),
   )
   const pillClass = (active: boolean) =>
     `inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${
@@ -1430,7 +1430,7 @@ function BadgesPage() {
                       title={`${expandedBadges.has(badge.id) ? 'Collapse' : 'Expand'} ${badge.name}`}
                       className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] text-[#c6c6c6] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
                     >
-                      <ChevronIcon expanded={expandedBadges.has(badge.id)} />
+                      <VideoVisibilityIcon visible={expandedBadges.has(badge.id)} />
                     </button>
                   </h3>
                 </div>
