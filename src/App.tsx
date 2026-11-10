@@ -11,11 +11,12 @@ import {
 const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`
 
 type SessionType = 'Lab' | 'Meet the Expert' | 'Meetup' | 'Tech Talk' | 'Breakout' | 'Client Advisory Board'
-type Page = 'overview' | 'capabilities' | 'lets-create' | 'onboarding-automation' | 'process-automation' | 'content-services' | 'decision-intelligence' | 'cp4ba' | 'conference' | 'think' | 'sessions' | 'techxchange' | 'schedule' | 'maps' | 'ibm' | 'insights' | 'info' | 'product' | 'community' | 'enablement' | 'ug' | 'surveys' | 'speaker'
+type Page = 'overview' | 'capabilities' | 'badges' | 'lets-create' | 'onboarding-automation' | 'process-automation' | 'content-services' | 'decision-intelligence' | 'cp4ba' | 'conference' | 'think' | 'sessions' | 'techxchange' | 'schedule' | 'maps' | 'ibm' | 'insights' | 'info' | 'product' | 'community' | 'enablement' | 'ug' | 'surveys' | 'speaker'
 
 const pageAnchors: Record<Page, string> = {
   overview: 'main',
   capabilities: 'capabilities-top',
+  badges: 'badges-top',
   'lets-create': 'lets-create-top',
   'onboarding-automation': 'onboarding-automation-top',
   'process-automation': 'capabilities-process-automation',
@@ -42,6 +43,7 @@ const pageAnchors: Record<Page, string> = {
 const breadcrumbLabels: Record<Page, string> = {
   overview: 'Main',
   capabilities: 'Portfolio',
+  badges: 'Badges',
   'lets-create': 'Let\'s Create!',
   'onboarding-automation': 'Onboarding Automation',
   'process-automation': 'Process Automation',
@@ -67,6 +69,7 @@ const breadcrumbLabels: Record<Page, string> = {
 
 const breadcrumbParents: Partial<Record<Page, Page>> = {
   capabilities: 'overview',
+  badges: 'overview',
   'lets-create': 'overview',
   'onboarding-automation': 'lets-create',
   'process-automation': 'capabilities',
@@ -107,7 +110,7 @@ function formatBreadcrumbSectionLabel(id: string) {
   if (id.startsWith('session-')) return id.slice('session-'.length).toUpperCase()
 
   const label = id
-    .replace(/^(capabilities-all|capabilities|portfolio|process-automation|content-services|decision-intelligence|cp4ba|conference|techxchange|think|sessions|maps|info|ug|surveys|av|enablement|onboarding-automation)-/, '')
+    .replace(/^(capabilities-all|capabilities|portfolio|process-automation|content-services|decision-intelligence|cp4ba|conference|techxchange|think|sessions|maps|info|ug|surveys|av|enablement|onboarding-automation|badges)-/, '')
     .replace(/-/g, ' ')
 
   return label.replace(/\b\w+/g, word => {
@@ -132,6 +135,7 @@ function pageForHash(hash: string): Page {
   const id = decodeURIComponent(hash.replace(/^#/, ''))
   if (id === 'main') return 'overview'
   if (id === 'onboarding-automation-top' || id.startsWith('onboarding-automation-')) return 'onboarding-automation'
+  if (id === 'badges-top' || id.startsWith('badges-')) return 'badges'
   if (id === 'lets-create-top' || id.startsWith('lets-create-')) return 'lets-create'
   if (id === 'capabilities-top') return 'capabilities'
   if (id === 'capabilities-all') return 'capabilities'
@@ -1043,6 +1047,216 @@ const letsCreateProductsByCapability = new Map<string, string[]>([
 const letsCreateProductOptions = Array.from(new Set([...letsCreateProductsByCapability.values()].flat()))
   .sort((a, b) => a.localeCompare(b))
   .map(product => ({ id: product, label: product }))
+
+type BadgeEntry = {
+  id: string
+  group: string
+  name: string
+  criteria: string[]
+  note?: string
+  badgeUrl?: string
+  ibmUrl?: string
+  bpUrl?: string
+  bpAvailable?: boolean
+}
+
+// badgeUrl = badge page, ibmUrl = IBM details, bpUrl = Business Partner details (a link only shows once set).
+const badgeEntries: BadgeEntry[] = [
+  {
+    id: 'cp4ba-sales-foundation-v2',
+    badgeUrl: 'https://www.credly.com/org/ibm/badge/cloud-pak-for-business-automation-sales-foundation-v2',
+    ibmUrl: 'https://yourlearning.ibm.com/activity/PLAN-9EFCCE0B38A9',
+    bpUrl: 'https://learn.ibm.com/course/view.php?id=10693',
+    group: 'Cloud Pak for Business Automation',
+    name: 'Cloud Pak for Business Automation Sales Foundation V2',
+    criteria: [
+      'Cloud Pak for Business Automation Fundamentals Level 1',
+      'Cloud Pak for Business Automation Level 2',
+      'Cloud Pak for Business Automation Workflow and Decisions Level 2',
+      'Cloud Pak for Business Automation Content Services and Document Processing Level 2',
+      'Introduction to Robotic Process Automation and Process Mining Level 2',
+    ],
+  },
+  {
+    id: 'cp4ba-intermediate',
+    badgeUrl: 'https://www.credly.com/org/ibm/badge/cloud-pak-for-business-automation-technical-sales-intermediate',
+    ibmUrl: 'https://yourlearning.ibm.com/activity/PLAN-53EEA5E1D574',
+    bpUrl: 'https://learn.ibm.com/course/view.php?id=10559',
+    group: 'Cloud Pak for Business Automation',
+    name: 'Cloud Pak for Business Automation Intermediate',
+    criteria: ['Cloud Pak for Business Automation Demos Level 3'],
+  },
+  {
+    id: 'cp4ba-practitioner-advanced',
+    badgeUrl: 'https://w3.ibm.com/hr/badge-me/badge/6a7f5015ea32c286d576b426',
+    ibmUrl: 'https://yourlearning.ibm.com/activity/PLAN-42B11C97C724',
+    bpUrl: 'https://www.ibm.com/training/learning-path/cloud-pak-for-business-automation-level-4-1150',
+    group: 'Cloud Pak for Business Automation',
+    name: 'Cloud Pak for Business Automation Practitioner Advanced',
+    criteria: ['Cloud Pak for Business Automation Level 4'],
+  },
+  {
+    id: 'cp4ba-practitioner-mastery',
+    badgeUrl: 'https://www.credly.com/org/ibm/badge/cloud-pak-for-business-automation-practitioner-mast',
+    ibmUrl: 'https://w3.ibm.com/hr/badge-me/badge/6ab171653a52acd3d387ccfd',
+    group: 'Cloud Pak for Business Automation',
+    name: 'Cloud Pak for Business Automation Practitioner Mastery',
+    criteria: ['Cloud Pak for Business Automation Practitioner Advanced badge'],
+    note: 'Applicant must provide examples of internal and external community contributions that show that they have gone beyond individual product mastery.',
+    bpAvailable: false,
+  },
+  {
+    id: 'decision-intelligence-sales-foundation',
+    badgeUrl: 'https://www.credly.com/org/ibm/badge/decision-intelligence-sales-foundation',
+    ibmUrl: 'https://yourlearning.ibm.com/activity/PLAN-C3AC3CC70D46',
+    bpUrl: 'https://learn.ibm.com/course/view.php?id=18216',
+    group: 'Decision Intelligence',
+    name: 'Decision Intelligence Sales Foundation',
+    criteria: ['AI Agents Level 1', 'Decision Intelligence Level 2'],
+  },
+  {
+    id: 'process-mining-intermediate',
+    badgeUrl: 'https://www.credly.com/org/ibm/badge/process-mining-technical-sales-intermediate',
+    ibmUrl: 'https://yourlearning.ibm.com/activity/PLAN-DBB5BBD2F053',
+    bpUrl: 'https://learn.ibm.com/course/view.php?id=11750',
+    group: 'Process Mining',
+    name: 'Process Mining Intermediate',
+    criteria: ['Process Mining Level 3'],
+  },
+  {
+    id: 'process-mining-practitioner-advanced',
+    badgeUrl: 'https://www.credly.com/org/ibm/badge/ibm-process-mining-practitioner-advanced',
+    ibmUrl: 'https://yourlearning.ibm.com/activity/PLAN-9763E3E62DE8',
+    bpUrl: 'https://www.ibm.com/training/learning-path/ibm-process-mining-for-practitioner-level-4-823',
+    group: 'Process Mining',
+    name: 'Process Mining Practitioner Advanced',
+    criteria: ['IBM Process Mining for Practitioner Level 4'],
+    note: 'IBMers must apply this learning with a client and complete an application form detailing their interaction.',
+  },
+  {
+    id: 'rpa-intermediate',
+    badgeUrl: 'https://www.credly.com/org/ibm/badge/robotic-process-automation-technical-sales-intermediate',
+    ibmUrl: 'https://yourlearning.ibm.com/activity/PLAN-B196DBDC3714',
+    bpUrl: 'https://learn.ibm.com/course/view.php?id=11649',
+    group: 'Robotic Process Automation',
+    name: 'Robotic Process Automation Intermediate',
+    criteria: ['Robotic Process Automation Level 3'],
+  },
+  {
+    id: 'bamoe-sales-foundation',
+    badgeUrl: 'https://www.credly.com/org/ibm/badge/business-automation-manager-open-editions-sales-foundation',
+    ibmUrl: 'https://yourlearning.ibm.com/activity/PLAN-A6DD18069FE4',
+    bpUrl: 'https://learn.ibm.com/course/view.php?id=11956',
+    group: 'Business Automation Manager Open Editions',
+    name: 'Business Automation Manager Open Editions Sales Foundation',
+    criteria: [
+      'Business Automation Manager Open Editions Fundamentals Level 1',
+      'Decision Manager Open Edition Level 2',
+      'Process Automation Manager Open Edition Level 2',
+    ],
+  },
+  {
+    id: 'decision-manager-oe-intermediate',
+    badgeUrl: 'https://www.credly.com/org/ibm/badge/decision-manager-open-edition-technical-sales-intermediate',
+    ibmUrl: 'https://yourlearning.ibm.com/activity/PLAN-1516B2F8638E',
+    bpUrl: 'https://learn.ibm.com/course/view.php?id=12239',
+    group: 'Business Automation Manager Open Editions',
+    name: 'Decision Manager Open Edition Intermediate',
+    criteria: ['Decision Manager Open Edition Level 3'],
+  },
+  {
+    id: 'process-automation-manager-oe-intermediate',
+    badgeUrl: 'https://www.credly.com/org/ibm/badge/process-automation-manager-open-edition-technical-sales-intermediate',
+    ibmUrl: 'https://yourlearning.ibm.com/activity/PLAN-ACBC2C121799',
+    bpUrl: 'https://learn.ibm.com/course/view.php?id=12296',
+    group: 'Business Automation Manager Open Editions',
+    name: 'Process Automation Manager Open Edition Intermediate',
+    criteria: ['Process Automation Manager Open Edition Level 3'],
+  },
+  {
+    id: 'filenet-technical-sales-advanced',
+    badgeUrl: 'https://www.credly.com/org/ibm/badge/filenet-content-manager-technical-sales-advanced',
+    ibmUrl: 'https://yourlearning.ibm.com/activity/PLAN-AF8DE95A7D19',
+    bpUrl: 'https://www.ibm.com/training/learning-path/filenet-content-manager-for-technical-sales-level-4-915',
+    group: 'FileNet',
+    name: 'FileNet Content Manager Technical Sales Advanced',
+    criteria: ['FileNet Content Manager for Technical Sales Level 4'],
+    note: 'IBMers must apply this learning with a client and complete an application form detailing their interaction.',
+  },
+]
+
+const badgeGroups = Array.from(new Set(badgeEntries.map(badge => badge.group)))
+
+function BadgesPage() {
+  const linkClass =
+    'inline-flex items-center gap-1.5 rounded-md border border-[#4589ff]/35 bg-[#0f62fe]/10 px-2.5 py-1.5 text-xs font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff] hover:bg-[#0f62fe]/25 hover:text-white'
+  return (
+    <section id="badges-top" aria-labelledby="badges-heading" className="scroll-mt-28">
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">IBM Data &amp; AI: Business Automation</p>
+          <h2 id="badges-heading" className="mt-1 text-2xl font-semibold text-white">Badges</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#c6c6c6]">
+            Business Automation sales and technical badges, the earning criteria for each, and where to find the IBM and Business Partner details.
+          </p>
+          <p className="mt-3 max-w-2xl rounded-md border border-[#4589ff]/30 bg-[#0f62fe]/10 px-3 py-2 text-sm leading-relaxed text-[#e0e0e0]">
+            The latest list of badges can always be found on Seismic:{' '}
+            <a
+              href="https://ibm.biz/BadgeBA"
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-[#78a9ff] underline-offset-2 transition-colors hover:text-white hover:underline"
+            >
+              ibm.biz/BadgeBA
+            </a>
+          </p>
+        </div>
+        <CopySectionLink id="badges-top" label="Badges page" />
+      </div>
+      <div className="grid gap-8">
+        {badgeGroups.map(group => (
+          <section key={group} id={`badges-group-${group.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} aria-label={group} className="scroll-mt-28">
+            <h3 className="text-lg font-semibold text-white">{group}</h3>
+            <div className="mt-3 grid gap-4 md:grid-cols-2">
+              {badgeEntries.filter(badge => badge.group === group).map(badge => (
+                <article
+                  key={badge.id}
+                  id={`badges-${badge.id}`}
+                  className="scroll-mt-28 flex flex-col rounded-xl border border-white/[0.07] bg-[#262626] p-5"
+                >
+                  <h4 className="text-base font-semibold text-white">{badge.name}</h4>
+                  <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8d8d8d]">Badge earning criteria</p>
+                  <ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm leading-relaxed text-[#c6c6c6]">
+                    {badge.criteria.map(item => <li key={item}>{item}</li>)}
+                  </ul>
+                  {badge.note && (
+                    <p className="mt-3 rounded-md border border-[#f1c21b]/25 bg-[#f1c21b]/[0.06] px-3 py-2 text-xs leading-relaxed text-[#e0e0e0]">
+                      <span className="font-semibold">Note:</span> {badge.note}
+                    </p>
+                  )}
+                  <div className="mt-auto flex flex-wrap items-center gap-2 pt-4">
+                    {badge.badgeUrl && (
+                      <a href={badge.badgeUrl} target="_blank" rel="noreferrer" className={linkClass}>Badge<ExternalLinkIcon /></a>
+                    )}
+                    {badge.ibmUrl && (
+                      <a href={badge.ibmUrl} target="_blank" rel="noreferrer" className={linkClass}>IBM details<ExternalLinkIcon /></a>
+                    )}
+                    {badge.bpUrl && (
+                      <a href={badge.bpUrl} target="_blank" rel="noreferrer" className={linkClass}>BP details<ExternalLinkIcon /></a>
+                    )}
+                    {badge.bpAvailable === false && (
+                      <span className="text-xs text-[#8d8d8d]">BP details: not available</span>
+                    )}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    </section>
+  )
+}
 
 const onboardingAutomationSourceUrl = 'https://ibm-cloud-architecture.github.io/refarch-dba/use-cases/onboarding-automation'
 
@@ -3767,6 +3981,14 @@ function buildGlobalSearchEntries(): GlobalSearchEntry[] {
     category: 'Enablement',
   }, item.type, item.product, item.audience, item.quarter))
 
+  badgeEntries.forEach(badge => add({
+    id: `badges-${badge.id}`,
+    pages: ['badges'],
+    title: badge.name,
+    subtitle: badge.criteria.join(' · '),
+    category: 'Badge',
+  }, badge.group, badge.criteria, badge.note))
+
   // Onboarding Automation page: index every block of text in every (nested) section.
   const plainOnboardingText = (value: string) => value.replace(/\[([^\]]+)\]\([^)\s]+\)/g, '$1').replace(/\*\*/g, '')
   const indexOnboardingSections = (sectionList: OnboardingSection[], trail: string[]) => {
@@ -4475,7 +4697,7 @@ export default function App() {
     Boolean(activeBusinessAutomationCapability)
   const isCommunitySection = currentPage === 'community' || currentPage === 'enablement'
   const isBusinessAutomationSection =
-    currentPage === 'overview' || currentPage === 'lets-create' || currentPage === 'onboarding-automation' || isCapabilitiesPage
+    currentPage === 'overview' || currentPage === 'badges' || currentPage === 'lets-create' || currentPage === 'onboarding-automation' || isCapabilitiesPage
   const isIbmSection = currentPage === 'ibm' || currentPage === 'insights' || currentPage === 'speaker'
   const isTechXchangeSection =
     currentPage === 'techxchange' ||
@@ -6019,6 +6241,8 @@ export default function App() {
 
   const mainHeaderTitle = isCapabilitiesPage
     ? 'Business Automation Portfolio'
+    : currentPage === 'badges'
+    ? 'Badges'
     : currentPage === 'lets-create'
     ? 'Let\'s Create!'
     : currentPage === 'conference'
@@ -6199,6 +6423,7 @@ export default function App() {
                   {([
                     ['overview', 'Overview'],
                     ['capabilities', 'Portfolio'],
+                    ['badges', 'Badges'],
                     ['lets-create', 'Let\'s Create!'],
                   ] as const).map(([page, label]) => {
                     const isActive = page === 'capabilities' ? isCapabilitiesPage : currentPage === page
@@ -6322,6 +6547,8 @@ export default function App() {
                     ? 'IBM Cloud Pak for Business Automation'
                   : currentPage === 'capabilities'
                     ? 'Process · Content · Decisions · Platform'
+                  : currentPage === 'badges'
+                    ? `${badgeEntries.length} Business Automation badges`
                   : currentPage === 'lets-create'
                     ? 'Learn, demo, and build with Business Automation'
                   : currentPage === 'overview'
@@ -6770,6 +6997,9 @@ export default function App() {
               ))}
             </div>
           </section>
+        ) : currentPage === 'badges' ? (
+          <BadgesPage />
+
         ) : currentPage === 'lets-create' ? (
           <section id="lets-create-top" aria-labelledby="lets-create-heading" className="scroll-mt-28">
             {(() => {
