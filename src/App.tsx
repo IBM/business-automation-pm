@@ -1046,7 +1046,7 @@ const letsCreateSections: {
   // Cards get an Embed button that opens the link in an in-page frame.
   embeddable?: boolean
 }[] = [
-  { id: 'yourlearning', label: 'YourLearning Enablement', description: 'Courses, learning paths, and enablement sessions in IBM YourLearning.' },
+  { id: 'yourlearning', label: 'YL Demos', description: 'Courses, learning paths, and enablement sessions in IBM YourLearning.' },
   { id: 'navattic', label: 'Navattic', description: 'Interactive product demos built with Navattic.', embeddable: true },
   {
     id: 'jam-in-a-box',
@@ -1913,6 +1913,7 @@ const badgeEntries: BadgeEntry[] = ([
 type YLCourse = {
   code: string
   title: string
+  description?: string
   owners: string[]
   url: string
   capabilities: PortfolioResourcePage[]
@@ -1964,6 +1965,15 @@ const ylLevels: { level: number; courses: YLCourse[] }[] = [
   {
     level: 4,
     courses: [
+      {
+        code: 'CP4BA L4',
+        title: 'Cloud Pak for Business Automation Level 4',
+        description: 'This course provides a collection of hands-on labs for IBM Cloud Pak for Business Automation (CP4BA), covering the platform’s core capabilities for workflow automation, business rules, content management, process insights, low-code application development, and AI-powered automation.',
+        owners: ['Vlad', 'Thomas'],
+        url: ylPlanUrl('PLAN-42B11C97C724'),
+        capabilities: ['cp4ba'],
+        products: [ylProducts.cp4ba],
+      },
       { code: 'FILENET L4', title: 'FileNet Content Manager for Technical Sales Level 4', owners: ['Thomas'], url: ylPlanUrl('PLAN-AF8DE95A7D19'), capabilities: ['content-services'], products: [ylProducts.content] },
       { code: 'IPM L4', title: 'IBM Process Mining Level 4', owners: ['Lorenzo'], url: ylPlanUrl('PLAN-9763E3E62DE8'), capabilities: ['process-automation'], products: [ylProducts.mining] },
     ],
@@ -2132,7 +2142,13 @@ function VideoCard({
           {index !== undefined && (
             <span className="flex items-center gap-1.5 text-[10px] leading-none text-[#8d8d8d]">
               {index + 1}
-              {recommended && <span className="font-semibold text-[#78a9ff]">· Recommended</span>}
+              {recommended && (
+                <span role="img" aria-label="Recommended" title="Recommended" className="text-[#f1c21b]">
+                  <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                    <path d="M8 1.2l2.1 4.3 4.7.7-3.4 3.3.8 4.7L8 11.9l-4.2 2.2.8-4.7L1.2 6.2l4.7-.7L8 1.2z" />
+                  </svg>
+                </span>
+              )}
             </span>
           )}
           <span className="flex items-start justify-between gap-2">
@@ -2348,6 +2364,7 @@ function YLPage() {
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(() => new Set(ylProductOptions.map(option => option.id)))
   // Sections start maximized.
   const [collapsedLevels, setCollapsedLevels] = useState<Set<number>>(() => new Set())
+  const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(false)
   const [isAdministrationCollapsed, setIsAdministrationCollapsed] = useState(false)
   useEffect(() => {
     const expandFromHash = () => {
@@ -2549,6 +2566,9 @@ function YLPage() {
                       </a>
                     </div>
                     <p className="mt-1 text-xs leading-snug text-[#c6c6c6]">{course.title}</p>
+                    {course.description && (
+                      <p className="mt-1.5 line-clamp-4 text-[11px] leading-snug text-[#8d8d8d]" title={course.description}>{course.description}</p>
+                    )}
                     {course.owners.length > 0 && (
                       <p className="mt-1.5 text-[11px] text-[#8d8d8d]">
                         <span className="font-semibold uppercase tracking-[0.12em] text-[#78a9ff]">{course.owners.length > 1 ? 'Owners' : 'Owner'}</span>{' '}
@@ -2581,6 +2601,87 @@ function YLPage() {
           )
         })}
       </div>
+
+      <section
+        id="yl-summary"
+        aria-labelledby="yl-summary-heading"
+        className="mt-6 scroll-mt-28 rounded-xl border border-white/[0.07] bg-[#262626] p-5"
+      >
+        <div className={`${isSummaryCollapsed ? '' : 'mb-4'} flex items-center justify-between gap-3`}>
+          <h3 id="yl-summary-heading" className="text-lg font-semibold text-white">
+            <button
+              type="button"
+              onClick={() => setIsSummaryCollapsed(collapsed => !collapsed)}
+              aria-expanded={!isSummaryCollapsed}
+              aria-controls="yl-summary-body"
+              title={`${isSummaryCollapsed ? 'Expand' : 'Collapse'} Summary`}
+              className="inline-flex items-baseline gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+            >
+              Summary
+              <span className="text-xs font-medium text-[#c6c6c6]">{totalCourses} plans</span>
+              <span className="self-center text-[#78a9ff]"><VideoVisibilityIcon visible={!isSummaryCollapsed} /></span>
+            </button>
+          </h3>
+          <CopySectionLink id="yl-summary" label="YL Summary" />
+        </div>
+        <div id="yl-summary-body" hidden={isSummaryCollapsed} className="overflow-x-auto rounded-lg border border-white/[0.06]">
+          <table className="w-full min-w-[1000px] table-fixed border-collapse text-left text-xs">
+            <caption className="sr-only">All learning plans, ordered by level</caption>
+            <colgroup>
+              <col className="w-[3.5rem]" />
+              <col className="w-[9rem]" />
+              <col />
+              <col className="w-[9rem]" />
+              <col className="w-[10rem]" />
+              <col className="w-[15rem]" />
+              <col className="w-[4.5rem]" />
+            </colgroup>
+            <thead className="bg-[#1c1c1c] text-[10px] uppercase tracking-[0.12em] text-[#78a9ff]">
+              <tr>
+                {['Level', 'Code', 'Plan', 'Owners', 'Capabilities', 'Products', 'Link'].map(heading => (
+                  <th key={heading} scope="col" className="whitespace-nowrap px-3 py-2 font-semibold">{heading}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {ylLevels.flatMap(group =>
+                group.courses.map(course => {
+                  const capabilityLabels = course.capabilities
+                    .map(page => businessAutomationCapabilityFilters.find(filter => filter.page === page)?.label)
+                    .filter(Boolean)
+                    .join(', ')
+                  const owners = course.owners.join(', ')
+                  const products = course.products.join(', ')
+                  const cell = 'truncate whitespace-nowrap px-3 py-1.5'
+                  return (
+                    <tr key={course.code} className="border-t border-white/[0.06] bg-[#161616] text-[#c6c6c6] hover:bg-[#1c1c1c]">
+                      <td className={`${cell} font-mono text-[#78a9ff]`}>{group.level}</td>
+                      <td className={`${cell} font-semibold text-white`} title={course.code}>{course.code}</td>
+                      <td className={cell} title={course.title}>{course.title}</td>
+                      <td className={cell} title={owners}>{owners || '—'}</td>
+                      <td className={cell} title={capabilityLabels}>{capabilityLabels || '—'}</td>
+                      <td className={cell} title={products}>{products || '—'}</td>
+                      <td className="whitespace-nowrap px-3 py-1.5">
+                        <a
+                          href={course.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Open ${course.code} learning plan in YourLearning`}
+                          title="Open learning plan in YourLearning"
+                          className="inline-flex items-center gap-1 font-semibold text-[#78a9ff] transition-colors hover:text-white"
+                        >
+                          Plan
+                          <ExternalLinkIcon />
+                        </a>
+                      </td>
+                    </tr>
+                  )
+                }),
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <section
         id="yl-administration"
@@ -8118,9 +8219,9 @@ export default function App() {
                 <nav aria-label="Business Automation subpages" className="flex w-full flex-wrap items-center gap-1.5 sm:justify-end">
                   {([
                     ['overview', 'Overview'],
-                    ['badges', 'Badge'],
                     ['capabilities', 'Product'],
                     ['videos', 'Videos'],
+                    ['badges', 'Badge'],
                     ['yl', 'YL'],
                     ['lets-create', 'Let\'s Create!'],
                   ] as const).map(([page, label]) => {
@@ -8488,7 +8589,7 @@ export default function App() {
                         onClick={() => navigateToPage('capabilities')}
                         className="cta-bounce-glow rounded-lg bg-[#0f62fe] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#0353e9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
                       >
-                        Explore the product
+                        Explore
                       </button>
                       <button
                         type="button"
@@ -8670,7 +8771,7 @@ export default function App() {
                   label: 'Product overview',
                   description: 'Explore every capability with its related products, previews, trials, and demos.',
                   page: 'capabilities' as Page,
-                  action: 'Explore the product',
+                  action: 'Explore the portfolio',
                 },
                 {
                   label: 'Community',
