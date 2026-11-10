@@ -1038,9 +1038,11 @@ const letsCreateSections: {
   collapsedRows?: number
   // Page that lists every asset in the section.
   fullListPage?: Page
+  // Cards get an Embed button that opens the link in an in-page frame.
+  embeddable?: boolean
 }[] = [
   { id: 'yourlearning', label: 'YourLearning Enablement', description: 'Courses, learning paths, and enablement sessions in IBM YourLearning.' },
-  { id: 'navattic', label: 'Navattic', description: 'Interactive product demos built with Navattic.' },
+  { id: 'navattic', label: 'Navattic', description: 'Interactive product demos built with Navattic.', embeddable: true },
   {
     id: 'jam-in-a-box',
     label: 'Jam-in-a-Box',
@@ -1453,9 +1455,20 @@ const letsCreateProductOptions = Array.from(new Set([...letsCreateProductsByCapa
   .sort((a, b) => a.localeCompare(b))
   .map(product => ({ id: product, label: product }))
 
-function LetsCreateAssetCard({ asset, onOpenPage }: { asset: LetsCreateAsset; onOpenPage: (page: Page) => void }) {
+function LetsCreateAssetCard({
+  asset,
+  onOpenPage,
+  onEmbed,
+  isEmbedded,
+}: {
+  asset: LetsCreateAsset
+  onOpenPage: (page: Page) => void
+  onEmbed?: () => void
+  isEmbedded?: boolean
+}) {
   const capability = businessAutomationCapabilityFilters.find(filter => filter.page === asset.capability)
   return (
+    <div className="relative h-full">
     <a
       href={asset.url}
       {...(asset.page
@@ -1467,7 +1480,9 @@ function LetsCreateAssetCard({ asset, onOpenPage }: { asset: LetsCreateAsset; on
           }
         : { target: '_blank', rel: 'noreferrer' })}
       title={`${asset.name} — ${asset.description}`}
-      className="group flex h-full flex-col overflow-hidden rounded-lg border border-white/[0.07] bg-[#161616] p-3 transition-colors hover:border-[#4589ff]/60 hover:bg-[#1c1c1c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+      className={`group flex h-full flex-col overflow-hidden rounded-lg border bg-[#161616] p-3 transition-colors hover:border-[#4589ff]/60 hover:bg-[#1c1c1c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${
+        isEmbedded ? 'border-[#4589ff]/60' : 'border-white/[0.07]'
+      } ${onEmbed ? 'pb-10' : ''}`}
     >
       <div className="flex items-start justify-between gap-2">
         <h4 className="line-clamp-3 text-[13px] font-semibold leading-snug text-white group-hover:text-[#a6c8ff]">{asset.name}</h4>
@@ -1492,6 +1507,80 @@ function LetsCreateAssetCard({ asset, onOpenPage }: { asset: LetsCreateAsset; on
         ))}
       </div>
     </a>
+    {onEmbed && (
+      <button
+        type="button"
+        onClick={onEmbed}
+        aria-pressed={isEmbedded}
+        aria-label={`Show ${asset.name} in an embedded frame`}
+        className="absolute bottom-2 left-3 inline-flex h-6 items-center rounded-md border border-white/[0.1] bg-[#262626] px-2 text-[10px] font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+      >
+        {isEmbedded ? 'Showing below' : 'Embed'}
+      </button>
+    )}
+    </div>
+  )
+}
+
+type EmbedViewState = 'normal' | 'maximized' | 'minimized'
+
+// Embedded frame as wide as its section, with a 16:10 height. Controls: minimize, maximize, open in a new window, and exit.
+function LetsCreateEmbedFrame({ asset, onExit }: { asset: LetsCreateAsset; onExit: () => void }) {
+  const [view, setView] = useState<EmbedViewState>('normal')
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }, [asset.url])
+
+  useEffect(() => {
+    if (view !== 'maximized') return
+    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') setView('normal')
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [view])
+
+  const isMaximized = view === 'maximized'
+  const isMinimized = view === 'minimized'
+  return (
+    <div
+      ref={panelRef}
+      role="region"
+      aria-label={`${asset.name} embedded frame`}
+      className={
+        isMaximized
+          ? 'fixed inset-0 z-[100] flex flex-col bg-[#161616]'
+          : 'mt-4 flex scroll-mt-28 flex-col overflow-hidden rounded-lg border border-[#4589ff]/40 bg-[#161616]'
+      }
+    >
+      <div className="flex items-center gap-2 border-b border-white/[0.06] bg-[#1c1c1c] px-3 py-2">
+        <h4 className="min-w-0 flex-1 truncate text-xs font-semibold text-white" title={asset.name}>{asset.name}</h4>
+        <button type="button" className={letsCreateControlClass} onClick={() => setView(isMinimized ? 'normal' : 'minimized')} aria-pressed={isMinimized}>
+          {isMinimized ? 'Restore' : 'Minimize'}
+        </button>
+        <button type="button" className={letsCreateControlClass} onClick={() => setView(isMaximized ? 'normal' : 'maximized')} aria-pressed={isMaximized}>
+          {isMaximized ? 'Restore' : 'Maximize'}
+        </button>
+        <button type="button" className={letsCreateControlClass} onClick={() => window.open(asset.url, '_blank', 'noopener,noreferrer')}>
+          Open in new window
+        </button>
+        <button type="button" className={letsCreateControlClass} onClick={onExit}>
+          Exit
+        </button>
+      </div>
+      <div className={isMinimized ? 'hidden' : isMaximized ? 'min-h-0 flex-1' : 'aspect-[16/10] w-full'}>
+        <iframe
+          src={asset.url}
+          title={asset.name}
+          className="h-full w-full border-0 bg-white"
+          allow="fullscreen; clipboard-write"
+          sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"
+          loading="lazy"
+        />
+      </div>
+    </div>
   )
 }
 
@@ -1505,13 +1594,16 @@ function LetsCreateAssetGrid({
   rows,
   onOpenPage,
   fullListPage,
+  embeddable,
 }: {
   assets: LetsCreateAsset[]
   rows?: number
   onOpenPage: (page: Page) => void
   fullListPage?: Page
+  embeddable?: boolean
 }) {
   const gridRef = useRef<HTMLUListElement>(null)
+  const [embeddedAsset, setEmbeddedAsset] = useState<LetsCreateAsset | null>(null)
   const [columns, setColumns] = useState(1)
   const [expanded, setExpanded] = useState(false)
   const [pageIndex, setPageIndex] = useState(0)
@@ -1541,7 +1633,12 @@ function LetsCreateAssetGrid({
       <ul ref={gridRef} className={letsCreateGridClass}>
         {shown.map(asset => (
           <li key={`${asset.section}-${asset.name}`} className="aspect-square">
-            <LetsCreateAssetCard asset={asset} onOpenPage={onOpenPage} />
+            <LetsCreateAssetCard
+              asset={asset}
+              onOpenPage={onOpenPage}
+              onEmbed={embeddable && !asset.page ? () => setEmbeddedAsset(asset) : undefined}
+              isEmbedded={embeddedAsset?.name === asset.name}
+            />
           </li>
         ))}
       </ul>
@@ -1570,6 +1667,7 @@ function LetsCreateAssetGrid({
           )}
         </div>
       ) : null}
+      {embeddedAsset && <LetsCreateEmbedFrame key={embeddedAsset.url} asset={embeddedAsset} onExit={() => setEmbeddedAsset(null)} />}
     </>
   )
 }
@@ -8318,6 +8416,7 @@ export default function App() {
                                 assets={sectionAssets}
                                 rows={section.collapsedRows}
                                 fullListPage={section.fullListPage}
+                                embeddable={section.embeddable}
                                 onOpenPage={page => navigateToPage(page)}
                               />
                             )}
