@@ -5005,7 +5005,25 @@ export default function App() {
     const ids = letsCreateProductOptions.map(option => option.id)
     return readSetParam('lcp', ids, () => new Set(ids))
   })
+  // Search starts minimized; sections start maximized.
   const [isLetsCreateFiltersExpanded, setIsLetsCreateFiltersExpanded] = useState(false)
+  const [collapsedLetsCreateSections, setCollapsedLetsCreateSections] = useState<Set<string>>(() => new Set())
+  useEffect(() => {
+    const expandFromHash = () => {
+      const match = window.location.hash.match(/^#lets-create-([a-z-]+)/)
+      const id = match?.[1]
+      if (!id || !letsCreateSections.some(section => section.id === id)) return
+      setCollapsedLetsCreateSections(current => {
+        if (!current.has(id)) return current
+        const next = new Set(current)
+        next.delete(id)
+        return next
+      })
+    }
+    expandFromHash()
+    window.addEventListener('hashchange', expandFromHash)
+    return () => window.removeEventListener('hashchange', expandFromHash)
+  }, [])
   const [onboardingCollapsed, setOnboardingCollapsed] = useState<Set<string>>(() => new Set(allOnboardingSectionIds))
   const [onboardingContentsCollapsed, setOnboardingContentsCollapsed] = useState(false)
   // The header button also drives Contents: it is collapsed together with the sections, open at the other two levels.
@@ -7752,6 +7770,16 @@ export default function App() {
                 setLetsCreateCapabilities(next)
               }
               const shownSections = letsCreateSections.filter(section => effectiveLetsCreateSections.has(section.id))
+              const allSectionsCollapsed = shownSections.length > 0 && shownSections.every(section => collapsedLetsCreateSections.has(section.id))
+              const toggleSectionCollapsed = (id: string) =>
+                setCollapsedLetsCreateSections(current => {
+                  const next = new Set(current)
+                  if (next.has(id)) next.delete(id)
+                  else next.add(id)
+                  return next
+                })
+              const iconButtonClass =
+                'inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]'
               return (
                 <>
                   <div className="mb-6 flex items-start justify-between gap-4">
@@ -7762,7 +7790,19 @@ export default function App() {
                         Learn, demo, and build with Business Automation. Filter by section, capability, or product to find the right asset.
                       </p>
                     </div>
-                    <CopySectionLink id="lets-create-top" label="Let's Create page" />
+                    <div className="flex flex-col items-end gap-2">
+                      <CopySectionLink id="lets-create-top" label="Let's Create page" />
+                      <button
+                        type="button"
+                        onClick={() => setCollapsedLetsCreateSections(allSectionsCollapsed ? new Set() : new Set(letsCreateSections.map(section => section.id)))}
+                        aria-label={allSectionsCollapsed ? 'Expand all sections' : 'Collapse all sections'}
+                        title={allSectionsCollapsed ? 'Expand all sections' : 'Collapse all sections'}
+                        className={iconButtonClass}
+                      >
+                        {allSectionsCollapsed ? 'Expand all' : 'Collapse all'}
+                        <VideoVisibilityIcon visible={!allSectionsCollapsed} />
+                      </button>
+                    </div>
                   </div>
 
                   <section
@@ -7771,19 +7811,19 @@ export default function App() {
                     className="mb-6 scroll-mt-28 rounded-xl border border-[#4589ff]/30 bg-[#1c1c1c] p-4 sm:p-5"
                   >
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                      <h3 id="lets-create-filters-heading" className="text-base font-semibold text-white">Sections, Capabilities and Products</h3>
-                      <button
-                        type="button"
-                        onClick={() => setIsLetsCreateFiltersExpanded(expanded => !expanded)}
-                        aria-expanded={isLetsCreateFiltersExpanded}
-                        aria-controls="lets-create-filters-body"
-                        aria-label={isLetsCreateFiltersExpanded ? 'Collapse Filters' : 'Expand Filters'}
-                        title={isLetsCreateFiltersExpanded ? 'Collapse Filters' : 'Expand Filters'}
-                        className="inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
-                      >
-                        Filter
-                        <VideoVisibilityIcon visible={isLetsCreateFiltersExpanded} />
-                      </button>
+                      <h3 id="lets-create-filters-heading" className="text-base font-semibold text-white">
+                        <button
+                          type="button"
+                          onClick={() => setIsLetsCreateFiltersExpanded(expanded => !expanded)}
+                          aria-expanded={isLetsCreateFiltersExpanded}
+                          aria-controls="lets-create-filters-body"
+                          title={isLetsCreateFiltersExpanded ? 'Minimize Search' : 'Maximize Search'}
+                          className="inline-flex items-center gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                        >
+                          Search
+                          <span className="text-[#78a9ff]"><VideoVisibilityIcon visible={isLetsCreateFiltersExpanded} /></span>
+                        </button>
+                      </h3>
                       <span aria-live="polite" className="text-xs font-medium text-[#c6c6c6]">
                         Sections: {shownSections.length} of {letsCreateSections.length} · Assets: {visibleAssets.length} of {letsCreateAssets.length}
                       </span>
@@ -7830,6 +7870,8 @@ export default function App() {
                     {shownSections.map((section, sectionIndex) => {
                       const sectionAssets = visibleAssets.filter(asset => asset.section === section.id)
                       const sectionId = `lets-create-${section.id}`
+                      const isCollapsed = collapsedLetsCreateSections.has(section.id)
+                      const bodyId = `${sectionId}-body`
                       return (
                         <article
                           key={section.id}
@@ -7837,17 +7879,33 @@ export default function App() {
                           aria-labelledby={`${sectionId}-heading`}
                           className="scroll-mt-28 overflow-hidden rounded-xl border border-white/[0.07] bg-[#262626]"
                         >
-                          <div className="flex items-start justify-between gap-4 border-b border-white/[0.06] px-5 py-4">
+                          <div className={`flex items-start justify-between gap-4 px-5 py-4 ${isCollapsed ? '' : 'border-b border-white/[0.06]'}`}>
                             <div>
                               <p className="font-mono text-[10px] font-semibold tracking-[0.14em] text-[#8d8d8d]">
                                 {String(sectionIndex + 1).padStart(2, '0')} / {String(shownSections.length).padStart(2, '0')}
                               </p>
-                              <h3 id={`${sectionId}-heading`} className="mt-2 text-base font-semibold text-white">{section.label}</h3>
-                              <p className="mt-1 text-xs leading-relaxed text-[#c6c6c6]">{section.description}</p>
-                              {section.details && (
-                                <ul className="mt-3 list-disc space-y-1.5 pl-4 text-xs leading-relaxed text-[#c6c6c6] marker:text-[#8d8d8d]">
-                                  {section.details.map(detail => <li key={detail}>{detail}</li>)}
-                                </ul>
+                              <h3 id={`${sectionId}-heading`} className="mt-2 text-base font-semibold text-white">
+                                <button
+                                  type="button"
+                                  onClick={() => toggleSectionCollapsed(section.id)}
+                                  aria-expanded={!isCollapsed}
+                                  aria-controls={bodyId}
+                                  title={`${isCollapsed ? 'Expand' : 'Collapse'} ${section.label}`}
+                                  className="inline-flex items-center gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                                >
+                                  {section.label}
+                                  <span className="text-[#78a9ff]"><VideoVisibilityIcon visible={!isCollapsed} /></span>
+                                </button>
+                              </h3>
+                              {!isCollapsed && (
+                                <>
+                                  <p className="mt-1 text-xs leading-relaxed text-[#c6c6c6]">{section.description}</p>
+                                  {section.details && (
+                                    <ul className="mt-3 list-disc space-y-1.5 pl-4 text-xs leading-relaxed text-[#c6c6c6] marker:text-[#8d8d8d]">
+                                      {section.details.map(detail => <li key={detail}>{detail}</li>)}
+                                    </ul>
+                                  )}
+                                </>
                               )}
                             </div>
                             <div className="flex shrink-0 items-center gap-2">
@@ -7857,7 +7915,7 @@ export default function App() {
                               <CopySectionLink id={sectionId} label={section.label} />
                             </div>
                           </div>
-                          <div className="p-5">
+                          <div id={bodyId} hidden={isCollapsed} className="p-5">
                             {sectionAssets.length === 0 ? (
                               <p className="text-sm text-[#8d8d8d]">
                                 {letsCreateAssets.some(asset => asset.section === section.id)
