@@ -3767,6 +3767,44 @@ function buildGlobalSearchEntries(): GlobalSearchEntry[] {
     category: 'Enablement',
   }, item.type, item.product, item.audience, item.quarter))
 
+  // Onboarding Automation page: index every block of text in every (nested) section.
+  const plainOnboardingText = (value: string) => value.replace(/\[([^\]]+)\]\([^)\s]+\)/g, '$1').replace(/\*\*/g, '')
+  const indexOnboardingSections = (sectionList: OnboardingSection[], trail: string[]) => {
+    sectionList.forEach(section => {
+      const path = [...trail, section.title]
+      const sectionSubtitle = trail.length > 0 ? trail.join(' / ') : 'Onboarding Automation'
+      add({
+        id: onboardingAutomationAnchor(section.id),
+        pages: ['onboarding-automation'],
+        title: section.title,
+        subtitle: sectionSubtitle,
+        category: 'Onboarding Automation',
+      })
+      section.blocks.forEach(block => {
+        if (block.t === 'sec') {
+          indexOnboardingSections([block.s], path)
+          return
+        }
+        let content = ''
+        if (block.t === 'p' || block.t === 'note') content = block.x
+        else if (block.t === 'step') content = `${block.n} ${block.x}`
+        else if (block.t === 'list') content = [...(block.labels ?? []), ...block.items].join(' ')
+        else if (block.t === 'table') content = [...(block.head ?? []), ...block.rows.flat()].join(' ')
+        else if (block.t === 'img') content = block.alt
+        content = plainOnboardingText(content).replace(/\s+/g, ' ').trim()
+        if (!content) return
+        add({
+          id: onboardingAutomationAnchor(section.id),
+          pages: ['onboarding-automation'],
+          title: section.title,
+          subtitle: content.length > 160 ? `${content.slice(0, 160)}…` : content,
+          category: 'Onboarding Automation',
+        }, content)
+      })
+    })
+  }
+  indexOnboardingSections(onboardingAutomationSections, [])
+
   return entries
 }
 
@@ -4288,6 +4326,7 @@ export default function App() {
       setExpandedIds(current => new Set(current).add(sessionId))
     }
     if (window.location.hash === `#${entry.id}`) {
+      if (entry.pages.includes('onboarding-automation')) window.dispatchEvent(new Event('hashchange'))
       scrollElementBelowPageHeader(entry.id)
     } else {
       window.location.hash = entry.id
@@ -6273,12 +6312,11 @@ export default function App() {
                   })}
                 </nav>
               )}
-              {currentPage === 'onboarding-automation' ? (
-                <OnboardingPageCycleButton collapsed={onboardingCollapsed} onCycle={cycleOnboardingPage} />
-              ) : (
               <p className="text-right text-sm text-[#8d8d8d]">
                 {activeBusinessAutomationCapability
                   ? activeBusinessAutomationCapability.tagline
+                  : currentPage === 'onboarding-automation'
+                    ? 'Employee onboarding use case · content and document services'
                   : currentPage === 'cp4ba'
                     ? 'IBM Cloud Pak for Business Automation'
                   : currentPage === 'capabilities'
@@ -6318,7 +6356,6 @@ export default function App() {
                             ? 'Presenter setup · AV support'
                             : `${sessions.length} sessions · Oct 26–29, Atlanta, GA`}
               </p>
-              )}
             </div>
           </div>
           ) : (
@@ -6923,7 +6960,10 @@ export default function App() {
           <section id="onboarding-automation-top" aria-labelledby="onboarding-automation-heading" className="scroll-mt-28">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <h2 id="onboarding-automation-heading" className="text-2xl font-semibold text-white">Onboarding Automation</h2>
+                <div className="flex items-center gap-3">
+                  <h2 id="onboarding-automation-heading" className="text-2xl font-semibold text-white">Onboarding Automation</h2>
+                  <OnboardingPageCycleButton collapsed={onboardingCollapsed} onCycle={cycleOnboardingPage} />
+                </div>
                 <p className="mt-1 text-sm font-semibold text-[#c6c6c6]">{onboardingAutomationTagline}</p>
                 <p className="mt-2 text-sm leading-relaxed text-[#c6c6c6]">
                   Content and document services demo: help Lucy, an HR onboarding specialist at Focus Corp, review applicant John Doe&rsquo;s materials in a secure teamspace and launch the onboarding process.
