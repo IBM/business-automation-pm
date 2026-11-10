@@ -11,11 +11,12 @@ import {
 const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`
 
 type SessionType = 'Lab' | 'Meet the Expert' | 'Meetup' | 'Tech Talk' | 'Breakout' | 'Client Advisory Board'
-type Page = 'overview' | 'capabilities' | 'badges' | 'yl' | 'lets-create' | 'technical-accelerators' | 'onboarding-automation' | 'process-automation' | 'content-services' | 'decision-intelligence' | 'cp4ba' | 'conference' | 'think' | 'sessions' | 'techxchange' | 'schedule' | 'maps' | 'ibm' | 'insights' | 'info' | 'product' | 'community' | 'enablement' | 'ug' | 'surveys' | 'speaker'
+type Page = 'overview' | 'capabilities' | 'videos' | 'badges' | 'yl' | 'lets-create' | 'technical-accelerators' | 'onboarding-automation' | 'process-automation' | 'content-services' | 'decision-intelligence' | 'cp4ba' | 'conference' | 'think' | 'sessions' | 'techxchange' | 'schedule' | 'maps' | 'ibm' | 'insights' | 'info' | 'product' | 'community' | 'enablement' | 'ug' | 'surveys' | 'speaker'
 
 const pageAnchors: Record<Page, string> = {
   overview: 'main',
   capabilities: 'capabilities-top',
+  videos: 'videos-top',
   badges: 'badges-top',
   yl: 'yl-top',
   'lets-create': 'lets-create-top',
@@ -45,6 +46,7 @@ const pageAnchors: Record<Page, string> = {
 const breadcrumbLabels: Record<Page, string> = {
   overview: 'Main',
   capabilities: 'Product',
+  videos: 'Videos',
   badges: 'Badge',
   yl: 'YL',
   'lets-create': 'Let\'s Create!',
@@ -73,6 +75,7 @@ const breadcrumbLabels: Record<Page, string> = {
 
 const breadcrumbParents: Partial<Record<Page, Page>> = {
   capabilities: 'overview',
+  videos: 'overview',
   badges: 'overview',
   yl: 'overview',
   'lets-create': 'overview',
@@ -116,7 +119,7 @@ function formatBreadcrumbSectionLabel(id: string) {
   if (id.startsWith('session-')) return id.slice('session-'.length).toUpperCase()
 
   const label = id
-    .replace(/^(capabilities-all|capabilities|portfolio|process-automation|content-services|decision-intelligence|cp4ba|conference|techxchange|think|sessions|maps|info|ug|surveys|av|enablement|onboarding-automation|badges)-/, '')
+    .replace(/^(capabilities-all|capabilities|portfolio|process-automation|content-services|decision-intelligence|cp4ba|conference|techxchange|think|sessions|maps|info|ug|surveys|av|enablement|onboarding-automation|badges|videos)-/, '')
     .replace(/-/g, ' ')
 
   return label.replace(/\b\w+/g, word => {
@@ -142,6 +145,7 @@ function pageForHash(hash: string): Page {
   if (id === 'main') return 'overview'
   if (id === 'onboarding-automation-top' || id.startsWith('onboarding-automation-')) return 'onboarding-automation'
   if (id === 'technical-accelerators-top' || id.startsWith('technical-accelerators-')) return 'technical-accelerators'
+  if (id === 'videos-top' || id.startsWith('videos-')) return 'videos'
   if (id === 'badges-top' || id.startsWith('badges-')) return 'badges'
   if (id === 'yl-top' || id.startsWith('yl-')) return 'yl'
   if (id === 'lets-create-top' || id.startsWith('lets-create-')) return 'lets-create'
@@ -1914,6 +1918,199 @@ const ylLevels: { level: number; courses: YLCourse[] }[] = [
     ],
   },
 ]
+
+const IBM_PRODUCT_HUB_CHANNEL_URL = 'https://www.youtube.com/@IBMProductHub'
+const BUSINESS_AUTOMATION_PLAYLIST_ID = 'PL_4RxtD-BL5vuomQEnSVy1qoWY5FOG0Aw'
+
+// Videos in the IBM Business Automation playlist on the IBM Product Hub channel, in playlist order.
+const businessAutomationPlaylistVideos: { id: string; title: string; duration: string }[] = [
+  { id: 'ZTvbegjd0wc', title: 'IBM named a Leader in the 2026 IDC MarketScape for Decision Intelligence Platforms', duration: '3:50' },
+  { id: 'exj7qyVNcBE', title: 'IBM Decision Intelligence Enterprise Edition - Every Decision Matters', duration: '1:13' },
+  { id: 'et3MY7M04c8', title: 'Blueworks Live IQ – Describe your Process and Let AI Build it!', duration: '4:55' },
+  { id: 'TIflVIDgcS4', title: 'Blueworks Live IQ – Transform any Image and Diagram into a Process Map!', duration: '3:57' },
+  { id: 'bsQnnNIcFEc', title: 'IBM Content Cortex: Agentic Content Services Platform', duration: '2:39' },
+  { id: 'KpjL5EXQ-Bo', title: 'IBM Decision Intelligence - Transform Decision Automation with AI', duration: '2:16' },
+  { id: '6am17ENg5k4', title: 'IBM Content Cortex: AI‑Driven Content, Reimagined', duration: '1:09' },
+  { id: 'CuxTmVCbG80', title: 'IBM Business Automation', duration: '1:45' },
+  { id: 'glyzVCScdg0', title: 'IBM Recognized as a Leader in the 2026 Gartner Magic Quadrant for Decision Intelligence Platforms', duration: '3:04' },
+  { id: 'aBABtIhka-8', title: 'Blueworks Live IQ Public Preview - Your Blueprints Can Now Analyze Themselves!', duration: '5:06' },
+  { id: 'ep7sByXUaFc', title: 'Invoking IBM watsonx Orchestrate Agents from Workflow', duration: '3:16' },
+  { id: '7feBwKkR1bQ', title: 'Triggering workflow automations using a local MCP Server', duration: '3:58' },
+  { id: 'AD5GFMbH2ok', title: 'Connect Salesforce CRM Content to FileNet', duration: '6:30' },
+  { id: 'N9j0DBxC2PM', title: 'Simplify Development using the FileNet GraphQL API', duration: '7:19' },
+]
+
+// Other Business Automation playlists on the IBM Product Hub channel.
+const businessAutomationRelatedPlaylists: { name: string; url: string }[] = [
+  { name: 'IBM Business Automation Workflow', url: 'https://ibm.biz/baw-playlist' },
+  { name: 'Blueworks Live', url: 'https://ibm.biz/blueworkslive-videos' },
+  { name: 'IBM Content Cortex', url: 'https://ibm.biz/content-cortex-playlist' },
+  { name: 'IBM Decision Intelligence', url: 'https://ibm.biz/decision-intelligence-playlist' },
+  { name: 'IBM Business Automation Manager Open Editions (BAMOE)', url: 'https://www.youtube.com/playlist?list=PL_4RxtD-BL5vgBNioDP4Im_IeF5AVdd1u' },
+  { name: 'Beyond the Blueprints', url: 'https://www.youtube.com/playlist?list=PL_4RxtD-BL5vIVHXcYlbtQIoY7c1qFNR_' },
+]
+
+function VideosPage() {
+  const [selectedVideoId, setSelectedVideoId] = useState(businessAutomationPlaylistVideos[0].id)
+  // The player only autoplays after a video is chosen, not on page load.
+  const [shouldAutoplay, setShouldAutoplay] = useState(false)
+  const [isPlaylistCollapsed, setIsPlaylistCollapsed] = useState(false)
+  const selectedIndex = businessAutomationPlaylistVideos.findIndex(video => video.id === selectedVideoId)
+  const selectedVideo = businessAutomationPlaylistVideos[Math.max(0, selectedIndex)]
+  const playlistUrl = `https://www.youtube.com/playlist?list=${BUSINESS_AUTOMATION_PLAYLIST_ID}`
+  const embedUrl = `https://www.youtube.com/embed/${selectedVideo.id}?list=${BUSINESS_AUTOMATION_PLAYLIST_ID}${shouldAutoplay ? '&autoplay=1' : ''}`
+  return (
+    <section id="videos-top" aria-labelledby="videos-heading" className="scroll-mt-28">
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">IBM Data &amp; AI: Business Automation</p>
+          <h2 id="videos-heading" className="mt-1 text-2xl font-semibold text-white">Videos</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#c6c6c6]">
+            Product demos, tutorials, and announcements from the IBM Product Hub channel on YouTube. Start with the Business Automation playlist below.
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          <CopySectionLink id="videos-top" label="Videos page" />
+          <a
+            href={IBM_PRODUCT_HUB_CHANNEL_URL}
+            target="_blank"
+            rel="noreferrer"
+            className={`${letsCreateControlClass} gap-2`}
+          >
+            IBM Product Hub on YouTube
+            <ExternalLinkIcon />
+          </a>
+        </div>
+      </div>
+
+      <article id="videos-business-automation" aria-labelledby="videos-business-automation-heading" className="scroll-mt-28 overflow-hidden rounded-xl border border-white/[0.07] bg-[#262626]">
+        <div className={`flex items-start justify-between gap-4 px-5 py-4 ${isPlaylistCollapsed ? '' : 'border-b border-white/[0.06]'}`}>
+          <div>
+            <h3 id="videos-business-automation-heading" className="text-base font-semibold text-white">
+              <button
+                type="button"
+                onClick={() => setIsPlaylistCollapsed(value => !value)}
+                aria-expanded={!isPlaylistCollapsed}
+                aria-controls="videos-business-automation-body"
+                title={`${isPlaylistCollapsed ? 'Expand' : 'Collapse'} Business Automation playlist`}
+                className="inline-flex items-center gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+              >
+                IBM Business Automation playlist
+                <span className="text-[#78a9ff]"><VideoVisibilityIcon visible={!isPlaylistCollapsed} /></span>
+              </button>
+            </h3>
+            {!isPlaylistCollapsed && (
+              <p className="mt-1 text-xs leading-relaxed text-[#c6c6c6]">
+                Workflow, Blueworks Live, Content Cortex, Decision Intelligence, watsonx Orchestrate, and FileNet. Select a video to play it.
+              </p>
+            )}
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <span className="text-[10px] font-medium text-[#c6c6c6]">{businessAutomationPlaylistVideos.length} videos</span>
+            <CopySectionLink id="videos-business-automation" label="IBM Business Automation playlist" />
+          </div>
+        </div>
+        <div id="videos-business-automation-body" hidden={isPlaylistCollapsed} className="p-5">
+          <div className="overflow-hidden rounded-lg border border-white/[0.07] bg-black">
+            <iframe
+              key={`${selectedVideo.id}-${shouldAutoplay}`}
+              src={embedUrl}
+              title={selectedVideo.title}
+              className="aspect-video w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <p aria-live="polite" className="min-w-0 flex-1 text-sm font-semibold text-white">{selectedVideo.title}</p>
+            <a href={`https://www.youtube.com/watch?v=${selectedVideo.id}&list=${BUSINESS_AUTOMATION_PLAYLIST_ID}`} target="_blank" rel="noreferrer" className={`${letsCreateControlClass} gap-2`}>
+              Watch on YouTube
+              <ExternalLinkIcon />
+            </a>
+            <a href={playlistUrl} target="_blank" rel="noreferrer" className={`${letsCreateControlClass} gap-2`}>
+              Open playlist
+              <ExternalLinkIcon />
+            </a>
+          </div>
+          <ul className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3">
+            {businessAutomationPlaylistVideos.map((video, index) => {
+              const isSelected = video.id === selectedVideo.id
+              return (
+                <li key={video.id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedVideoId(video.id)
+                      setShouldAutoplay(true)
+                    }}
+                    aria-pressed={isSelected}
+                    title={video.title}
+                    className={`group flex h-full w-full flex-col overflow-hidden rounded-lg border bg-[#161616] text-left transition-colors hover:border-[#4589ff]/60 hover:bg-[#1c1c1c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${
+                      isSelected ? 'border-[#4589ff]/70' : 'border-white/[0.07]'
+                    }`}
+                  >
+                    <span className="relative block aspect-video w-full bg-black">
+                      <img
+                        src={`https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`}
+                        alt=""
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                      />
+                      <span className="absolute bottom-1.5 right-1.5 rounded bg-black/80 px-1.5 py-0.5 font-mono text-[10px] text-white">{video.duration}</span>
+                    </span>
+                    <span className="flex flex-1 flex-col gap-1 p-3">
+                      <span className="font-mono text-[10px] tracking-[0.14em] text-[#8d8d8d]">
+                        {String(index + 1).padStart(2, '0')}{isSelected ? ' · NOW PLAYING' : ''}
+                      </span>
+                      <span className="line-clamp-3 text-[13px] font-semibold leading-snug text-white group-hover:text-[#a6c8ff]">{video.title}</span>
+                    </span>
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      </article>
+
+      <article id="videos-more-playlists" aria-labelledby="videos-more-playlists-heading" className="mt-4 scroll-mt-28 overflow-hidden rounded-xl border border-white/[0.07] bg-[#262626]">
+        <div className="border-b border-white/[0.06] px-5 py-4">
+          <h3 id="videos-more-playlists-heading" className="text-base font-semibold text-white">More Business Automation playlists</h3>
+          <p className="mt-1 text-xs leading-relaxed text-[#c6c6c6]">
+            Other playlists on the IBM Product Hub channel. The channel also covers many other IBM products.
+          </p>
+        </div>
+        <ul className="grid gap-3 p-5 sm:grid-cols-2">
+          {businessAutomationRelatedPlaylists.map(playlist => (
+            <li key={playlist.url}>
+              <a
+                href={playlist.url}
+                target="_blank"
+                rel="noreferrer"
+                className="group flex items-center justify-between gap-3 rounded-lg border border-white/[0.07] bg-[#161616] px-4 py-3 text-[13px] font-semibold text-white transition-colors hover:border-[#4589ff]/60 hover:bg-[#1c1c1c] hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+              >
+                {playlist.name}
+                <span className="shrink-0 text-[#78a9ff]"><ExternalLinkIcon /></span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <div className="flex flex-wrap gap-2 border-t border-white/[0.06] px-5 py-4">
+          {[
+            ['Channel home', IBM_PRODUCT_HUB_CHANNEL_URL],
+            ['All videos', `${IBM_PRODUCT_HUB_CHANNEL_URL}/videos`],
+            ['All playlists', `${IBM_PRODUCT_HUB_CHANNEL_URL}/playlists`],
+          ].map(([label, href]) => (
+            <a key={href} href={href} target="_blank" rel="noreferrer" className={`${letsCreateControlClass} gap-2`}>
+              {label}
+              <ExternalLinkIcon />
+            </a>
+          ))}
+        </div>
+      </article>
+    </section>
+  )
+}
 
 function YLPage() {
   const allLevels = ylLevels.map(group => group.level)
@@ -5947,7 +6144,7 @@ export default function App() {
     Boolean(activeBusinessAutomationCapability)
   const isCommunitySection = currentPage === 'community' || currentPage === 'enablement'
   const isBusinessAutomationSection =
-    currentPage === 'overview' || currentPage === 'badges' || currentPage === 'yl' || currentPage === 'lets-create' || currentPage === 'technical-accelerators' || currentPage === 'onboarding-automation' || isCapabilitiesPage
+    currentPage === 'overview' || currentPage === 'videos' || currentPage === 'badges' || currentPage === 'yl' || currentPage === 'lets-create' || currentPage === 'technical-accelerators' || currentPage === 'onboarding-automation' || isCapabilitiesPage
   const isIbmSection = currentPage === 'ibm' || currentPage === 'insights' || currentPage === 'speaker'
   const isTechXchangeSection =
     currentPage === 'techxchange' ||
@@ -7469,6 +7666,8 @@ export default function App() {
 
   const mainHeaderTitle = isCapabilitiesPage
     ? 'Product Portfolio'
+    : currentPage === 'videos'
+    ? 'Videos'
     : currentPage === 'badges'
     ? 'Badge'
     : currentPage === 'yl'
@@ -7654,6 +7853,7 @@ export default function App() {
                     ['overview', 'Overview'],
                     ['badges', 'Badge'],
                     ['capabilities', 'Product'],
+                    ['videos', 'Videos'],
                     ['yl', 'YL'],
                     ['lets-create', 'Let\'s Create!'],
                   ] as const).map(([page, label]) => {
@@ -7780,6 +7980,8 @@ export default function App() {
                     ? 'IBM Cloud Pak for Business Automation'
                   : currentPage === 'capabilities'
                     ? 'Process · Content · Decisions · Platform'
+                  : currentPage === 'videos'
+                    ? `IBM Product Hub on YouTube · ${businessAutomationPlaylistVideos.length} Business Automation videos`
                   : currentPage === 'badges'
                     ? `${badgeEntries.length} Business Automation badges`
                   : currentPage === 'yl'
@@ -8234,6 +8436,8 @@ export default function App() {
           </section>
         ) : currentPage === 'badges' ? (
           <BadgesPage />
+        ) : currentPage === 'videos' ? (
+          <VideosPage />
         ) : currentPage === 'yl' ? (
           <YLPage />
 
