@@ -1615,22 +1615,27 @@ const letsCreateGridClass = 'grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))
 const letsCreateControlClass =
   'inline-flex h-7 items-center rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[11px] font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/[0.1] disabled:hover:bg-white/[0.03] disabled:hover:text-[#78a9ff]'
 
-// Card grid limited to `rows` rows, with expand, previous/next paging, and a link to a full-list page.
-function LetsCreateAssetGrid({
-  assets,
+// Grid limited to `rows` rows, with previous/next paging, show all, and an optional link to a full-list page.
+// Shared by the Let's Create sections and the Videos page.
+function LimitedGrid<T>({
+  items,
   rows,
-  onOpenPage,
-  fullListPage,
-  embeddable,
+  gridClass = letsCreateGridClass,
+  itemKey,
+  itemClassName,
+  renderItem,
+  onOpenFullList,
 }: {
-  assets: LetsCreateAsset[]
+  items: T[]
   rows?: number
-  onOpenPage: (page: Page) => void
-  fullListPage?: Page
-  embeddable?: boolean
+  gridClass?: string
+  itemKey: (item: T) => string
+  itemClassName?: string
+  // `index` is the position in the full list, so numbers stay stable across pages.
+  renderItem: (item: T, index: number) => ReactNode
+  onOpenFullList?: () => void
 }) {
   const gridRef = useRef<HTMLUListElement>(null)
-  const [embeddedAsset, setEmbeddedAsset] = useState<LetsCreateAsset | null>(null)
   const [columns, setColumns] = useState(1)
   const [expanded, setExpanded] = useState(false)
   const [pageIndex, setPageIndex] = useState(0)
@@ -1649,23 +1654,19 @@ function LetsCreateAssetGrid({
     return () => observer.disconnect()
   }, [])
 
-  const pageSize = rows ? columns * rows : assets.length
-  const pageCount = Math.max(1, Math.ceil(assets.length / pageSize))
+  const pageSize = rows ? columns * rows : items.length
+  const pageCount = Math.max(1, Math.ceil(items.length / pageSize))
   const currentIndex = Math.min(pageIndex, pageCount - 1)
   const isLimited = Boolean(rows) && !expanded && pageCount > 1
-  const shown = isLimited ? assets.slice(currentIndex * pageSize, (currentIndex + 1) * pageSize) : assets
+  const start = isLimited ? currentIndex * pageSize : 0
+  const shown = isLimited ? items.slice(start, start + pageSize) : items
 
   return (
     <>
-      <ul ref={gridRef} className={letsCreateGridClass}>
-        {shown.map(asset => (
-          <li key={`${asset.section}-${asset.name}`} className="aspect-square">
-            <LetsCreateAssetCard
-              asset={asset}
-              onOpenPage={onOpenPage}
-              onEmbed={embeddable && !asset.page ? () => setEmbeddedAsset(asset) : undefined}
-              isEmbedded={embeddedAsset?.name === asset.name}
-            />
+      <ul ref={gridRef} className={gridClass}>
+        {shown.map((item, offset) => (
+          <li key={itemKey(item)} className={itemClassName}>
+            {renderItem(item, start + offset)}
           </li>
         ))}
       </ul>
@@ -1685,15 +1686,50 @@ function LetsCreateAssetGrid({
             </>
           )}
           <button type="button" className={`${letsCreateControlClass} ml-auto`} onClick={() => setExpanded(value => !value)} aria-expanded={expanded}>
-            {expanded ? `Show ${rows} rows` : `Show all ${assets.length}`}
+            {expanded ? `Show ${rows} rows` : `Show all ${items.length}`}
           </button>
-          {fullListPage && (
-            <button type="button" className={letsCreateControlClass} onClick={() => onOpenPage(fullListPage)}>
+          {onOpenFullList && (
+            <button type="button" className={letsCreateControlClass} onClick={onOpenFullList}>
               Open full list
             </button>
           )}
         </div>
       ) : null}
+    </>
+  )
+}
+
+function LetsCreateAssetGrid({
+  assets,
+  rows,
+  onOpenPage,
+  fullListPage,
+  embeddable,
+}: {
+  assets: LetsCreateAsset[]
+  rows?: number
+  onOpenPage: (page: Page) => void
+  fullListPage?: Page
+  embeddable?: boolean
+}) {
+  const [embeddedAsset, setEmbeddedAsset] = useState<LetsCreateAsset | null>(null)
+  return (
+    <>
+      <LimitedGrid
+        items={assets}
+        rows={rows}
+        itemKey={asset => `${asset.section}-${asset.name}`}
+        itemClassName="aspect-square"
+        onOpenFullList={fullListPage ? () => onOpenPage(fullListPage) : undefined}
+        renderItem={asset => (
+          <LetsCreateAssetCard
+            asset={asset}
+            onOpenPage={onOpenPage}
+            onEmbed={embeddable && !asset.page ? () => setEmbeddedAsset(asset) : undefined}
+            isEmbedded={embeddedAsset?.name === asset.name}
+          />
+        )}
+      />
       {embeddedAsset && <LetsCreateEmbedFrame key={embeddedAsset.url} asset={embeddedAsset} onExit={() => setEmbeddedAsset(null)} />}
     </>
   )
@@ -1965,6 +2001,8 @@ const businessAutomationRelatedPlaylists: { name: string; id: string; descriptio
   { name: 'Beyond the Blueprints', id: 'PL_4RxtD-BL5vIVHXcYlbtQIoY7c1qFNR_', description: 'Going further with Blueworks Live.' },
 ]
 
+const videoGridClass = 'grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3'
+
 const youtubePlaylistUrl = (id: string) => `https://www.youtube.com/playlist?list=${id}`
 
 const youtubeFrameAsset = (name: string, url: string): LetsCreateAsset => ({
@@ -2153,21 +2191,23 @@ function VideosPage() {
           </div>
         </div>
         <div id="videos-business-automation-body" hidden={isPlaylistCollapsed} className="p-5">
-          <ul className="grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3">
-            {businessAutomationPlaylistVideos.map((video, index) => (
-              <li key={video.id}>
-                <VideoCard
-                  title={video.title}
-                  thumbnail={`https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`}
-                  badge={video.duration}
-                  index={index}
-                  href={`https://www.youtube.com/watch?v=${video.id}&list=${BUSINESS_AUTOMATION_PLAYLIST_ID}`}
-                  isShown={shownVideo?.id === video.id}
-                  onViewBelow={() => setShownVideo(video)}
-                />
-              </li>
-            ))}
-          </ul>
+          <LimitedGrid
+            items={businessAutomationPlaylistVideos}
+            rows={2}
+            gridClass={videoGridClass}
+            itemKey={video => video.id}
+            renderItem={(video, index) => (
+              <VideoCard
+                title={video.title}
+                thumbnail={`https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`}
+                badge={video.duration}
+                index={index}
+                href={`https://www.youtube.com/watch?v=${video.id}&list=${BUSINESS_AUTOMATION_PLAYLIST_ID}`}
+                isShown={shownVideo?.id === video.id}
+                onViewBelow={() => setShownVideo(video)}
+              />
+            )}
+          />
           {shownVideo && (
             <LetsCreateEmbedFrame
               key={shownVideo.id}
