@@ -1018,10 +1018,21 @@ interface LetsCreateAsset {
   products: string[]
 }
 
-const letsCreateSections: { id: LetsCreateSection; label: string; description: string }[] = [
+const letsCreateSections: { id: LetsCreateSection; label: string; description: string; details?: string[] }[] = [
   { id: 'yourlearning', label: 'YourLearning Enablement', description: 'Courses, learning paths, and enablement sessions in IBM YourLearning.' },
   { id: 'navattic', label: 'Navattic', description: 'Interactive product demos built with Navattic.' },
-  { id: 'jam-in-a-box', label: 'Jam-in-a-Box', description: 'Jam-in-a-Box assets.' },
+  {
+    id: 'jam-in-a-box',
+    label: 'Jam-in-a-Box',
+    description: 'Self-provisionable TechZone environments and hands-on labs for Cloud Pak for Business Automation (CP4BA 25.0.1), built around the Client Onboarding scenario.',
+    details: [
+      'Client Onboarding is an end-to-end demo covering Automation Decision Services, Automation Document Processing, Business Automation Applications, Workflow, Content, RPA, and Business Automation Insights.',
+      'Use it for self-enablement or to host a mini-Tech Jam for clients, demo the out-of-box solution, or extend it as a base for a PoX.',
+      'One pre-deployed TechZone environment (based on Apollo Business Automation CP4BA Demos) covers all core labs: 20 users for mini-Tech Jams of 10-20 participants, accessible from any browser. Provisioning takes 5-7 hours.',
+      'The watsonx Orchestrate lab also needs a separate watsonx Orchestrate ADK environment. TechZone environments are for Business Partners and IBMers only.',
+      'Support: IBMers and Business Partners use #jam-in-a-box-ba-dl; everyone else can open an issue on the GitHub repository.',
+    ],
+  },
   { id: 'irt-solutions', label: 'IRT Solutions', description: 'IRT Solutions assets.' },
 ]
 
@@ -1029,6 +1040,22 @@ const letsCreateSections: { id: LetsCreateSection; label: string; description: s
 // and the products it relates to; the filters on the page use those tags.
 // Products must match names in letsCreateProductsByCapability below.
 const letsCreateAssets: LetsCreateAsset[] = [
+  {
+    name: 'Jam-in-a-Box for Business Automation (CP4BA 25.0.1)',
+    description: 'Quick start, use cases, and the labs-to-environments mapping for the Client Onboarding demo: Application, Decision Services, Insights, Workflow, FileNet Content Services, and watsonx Orchestrate with CP4BA.',
+    url: 'https://ibm.github.io/cp4ba-jam-in-a-box/',
+    section: 'jam-in-a-box',
+    capability: 'cp4ba',
+    products: ['IBM Cloud Pak for Business Automation'],
+  },
+  {
+    name: 'Client Onboarding demo environment (TechZone)',
+    description: 'Pre-deployed Client Onboarding based on Apollo Business Automation CP4BA Demos. Includes 20 users for mini-Tech Jams; provisioning takes 5-7 hours. IBMers and Business Partners only.',
+    url: 'https://techzone.ibm.com/collection/apollo-business-automation/journey-cp4ba-demos',
+    section: 'jam-in-a-box',
+    capability: 'cp4ba',
+    products: ['IBM Cloud Pak for Business Automation'],
+  },
   {
     name: 'Onboarding Automation',
     description: 'Content and document services demo: Focus Corp accelerates employee onboarding with teamspaces, redaction, video bookmarks, and secure external file sharing, then launches a workflow to complete the process.',
@@ -7407,6 +7434,11 @@ export default function App() {
                               </p>
                               <h3 id={`${sectionId}-heading`} className="mt-2 text-base font-semibold text-white">{section.label}</h3>
                               <p className="mt-1 text-xs leading-relaxed text-[#c6c6c6]">{section.description}</p>
+                              {section.details && (
+                                <ul className="mt-3 list-disc space-y-1.5 pl-4 text-xs leading-relaxed text-[#c6c6c6] marker:text-[#8d8d8d]">
+                                  {section.details.map(detail => <li key={detail}>{detail}</li>)}
+                                </ul>
+                              )}
                             </div>
                             <div className="flex shrink-0 items-center gap-2">
                               <span className="text-[10px] font-medium text-[#c6c6c6]">
