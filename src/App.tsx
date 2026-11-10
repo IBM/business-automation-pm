@@ -1317,7 +1317,7 @@ function BadgesPage() {
               title={allVisibleExpanded ? 'Collapse all badges' : 'Expand all badges and Badge Search'}
               className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.03] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] disabled:opacity-40"
             >
-              <ChevronIcon expanded={allVisibleExpanded} />
+              <VideoVisibilityIcon visible={allVisibleExpanded} />
             </button>
             <p aria-live="polite" className="text-[11px] font-medium text-[#c6c6c6]">
               {visibleBadges.length} of {badgeEntries.length} badges
