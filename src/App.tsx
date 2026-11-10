@@ -1973,18 +1973,20 @@ const ylLevels: { level: number; courses: YLCourse[] }[] = [
 const IBM_PRODUCT_HUB_CHANNEL_URL = 'https://www.youtube.com/@IBMProductHub'
 const BUSINESS_AUTOMATION_PLAYLIST_ID = 'PL_4RxtD-BL5vuomQEnSVy1qoWY5FOG0Aw'
 
-// Videos in the IBM Business Automation playlist on the IBM Product Hub channel, in playlist order.
+// Videos in the IBM Business Automation playlist on the IBM Product Hub channel, in the order shown on the Videos page.
+// The first BUSINESS_AUTOMATION_RECOMMENDED_COUNT videos are tagged Recommended.
+const BUSINESS_AUTOMATION_RECOMMENDED_COUNT = 4
 const businessAutomationPlaylistVideos: { id: string; title: string; duration: string }[] = [
-  { id: 'ZTvbegjd0wc', title: 'IBM named a Leader in the 2026 IDC MarketScape for Decision Intelligence Platforms', duration: '3:50' },
-  { id: 'exj7qyVNcBE', title: 'IBM Decision Intelligence Enterprise Edition - Every Decision Matters', duration: '1:13' },
-  { id: 'et3MY7M04c8', title: 'Blueworks Live IQ – Describe your Process and Let AI Build it!', duration: '4:55' },
-  { id: 'TIflVIDgcS4', title: 'Blueworks Live IQ – Transform any Image and Diagram into a Process Map!', duration: '3:57' },
-  { id: 'bsQnnNIcFEc', title: 'IBM Content Cortex: Agentic Content Services Platform', duration: '2:39' },
-  { id: 'KpjL5EXQ-Bo', title: 'IBM Decision Intelligence - Transform Decision Automation with AI', duration: '2:16' },
-  { id: '6am17ENg5k4', title: 'IBM Content Cortex: AI‑Driven Content, Reimagined', duration: '1:09' },
   { id: 'CuxTmVCbG80', title: 'IBM Business Automation', duration: '1:45' },
-  { id: 'glyzVCScdg0', title: 'IBM Recognized as a Leader in the 2026 Gartner Magic Quadrant for Decision Intelligence Platforms', duration: '3:04' },
+  { id: '6am17ENg5k4', title: 'IBM Content Cortex: AI‑Driven Content, Reimagined', duration: '1:09' },
+  { id: 'bsQnnNIcFEc', title: 'IBM Content Cortex: Agentic Content Services Platform', duration: '2:39' },
+  { id: 'exj7qyVNcBE', title: 'IBM Decision Intelligence Enterprise Edition - Every Decision Matters', duration: '1:13' },
+  { id: 'KpjL5EXQ-Bo', title: 'IBM Decision Intelligence - Transform Decision Automation with AI', duration: '2:16' },
+  { id: 'ZTvbegjd0wc', title: 'IBM named a Leader in the 2026 IDC MarketScape for Decision Intelligence Platforms', duration: '3:50' },
   { id: 'aBABtIhka-8', title: 'Blueworks Live IQ Public Preview - Your Blueprints Can Now Analyze Themselves!', duration: '5:06' },
+  { id: 'TIflVIDgcS4', title: 'Blueworks Live IQ – Transform any Image and Diagram into a Process Map!', duration: '3:57' },
+  { id: 'et3MY7M04c8', title: 'Blueworks Live IQ – Describe your Process and Let AI Build it!', duration: '4:55' },
+  { id: 'glyzVCScdg0', title: 'IBM Recognized as a Leader in the 2026 Gartner Magic Quadrant for Decision Intelligence Platforms', duration: '3:04' },
   { id: 'ep7sByXUaFc', title: 'Invoking IBM watsonx Orchestrate Agents from Workflow', duration: '3:16' },
   { id: '7feBwKkR1bQ', title: 'Triggering workflow automations using a local MCP Server', duration: '3:58' },
   { id: 'AD5GFMbH2ok', title: 'Connect Salesforce CRM Content to FileNet', duration: '6:30' },
@@ -1993,10 +1995,10 @@ const businessAutomationPlaylistVideos: { id: string; title: string; duration: s
 
 // Other Business Automation playlists on the IBM Product Hub channel.
 const businessAutomationRelatedPlaylists: { name: string; id: string; description: string }[] = [
-  { name: 'IBM Business Automation Workflow', id: 'PL_4RxtD-BL5sL6D6XjqTc4DPI0r6GT8yj', description: 'Workflow demos and tutorials.' },
-  { name: 'Blueworks Live', id: 'PL_4RxtD-BL5tXKORdO-gRTuaXeUU2Rxc_', description: 'Process modeling and discovery with Blueworks Live.' },
   { name: 'IBM Content Cortex', id: 'PLLmIY2jRnXtU', description: 'Agentic content services platform.' },
   { name: 'IBM Decision Intelligence', id: 'PLbI1TF8727f4', description: 'Decision automation with AI.' },
+  { name: 'IBM Business Automation Workflow', id: 'PL_4RxtD-BL5sL6D6XjqTc4DPI0r6GT8yj', description: 'Workflow demos and tutorials.' },
+  { name: 'Blueworks Live', id: 'PL_4RxtD-BL5tXKORdO-gRTuaXeUU2Rxc_', description: 'Process modeling and discovery with Blueworks Live.' },
   { name: 'IBM Business Automation Manager Open Editions (BAMOE)', id: 'PL_4RxtD-BL5vgBNioDP4Im_IeF5AVdd1u', description: 'Open source based process and decision automation.' },
   { name: 'Beyond the Blueprints', id: 'PL_4RxtD-BL5vIVHXcYlbtQIoY7c1qFNR_', description: 'Going further with Blueworks Live.' },
 ]
@@ -2082,6 +2084,7 @@ function VideoCard({
   thumbnail,
   badge,
   index,
+  recommended,
   href,
   isShown,
   onViewBelow,
@@ -2091,6 +2094,7 @@ function VideoCard({
   thumbnail?: string
   badge?: string
   index?: number
+  recommended?: boolean
   href: string
   isShown: boolean
   onViewBelow: () => void
@@ -2113,7 +2117,12 @@ function VideoCard({
           </span>
         )}
         <span className="flex flex-1 flex-col gap-1 p-3 pb-11">
-          {index !== undefined && <span className="text-[10px] leading-none text-[#8d8d8d]">{index + 1}</span>}
+          {index !== undefined && (
+            <span className="flex items-center gap-1.5 text-[10px] leading-none text-[#8d8d8d]">
+              {index + 1}
+              {recommended && <span className="font-semibold text-[#78a9ff]">· Recommended</span>}
+            </span>
+          )}
           <span className="flex items-start justify-between gap-2">
             <span className="line-clamp-3 text-[13px] font-semibold leading-snug text-white group-hover:text-[#a6c8ff]">{title}</span>
             <span className="mt-0.5 shrink-0 text-[#78a9ff]"><ExternalLinkIcon /></span>
@@ -2202,6 +2211,7 @@ function VideosPage() {
                 thumbnail={`https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`}
                 badge={video.duration}
                 index={index}
+                recommended={index < BUSINESS_AUTOMATION_RECOMMENDED_COUNT}
                 href={`https://www.youtube.com/watch?v=${video.id}&list=${BUSINESS_AUTOMATION_PLAYLIST_ID}`}
                 isShown={shownVideo?.id === video.id}
                 onViewBelow={() => setShownVideo(video)}
@@ -2282,6 +2292,15 @@ function VideosPage() {
   )
 }
 
+// Tools for administering the learning plans. Shown below the levels and not part of the YL Search filters.
+const ylAdministrationTools: { name: string; description: string; url: string }[] = [
+  {
+    name: 'Course Hub',
+    description: "What's in a course, how healthy it is, and what needs attention",
+    url: 'https://course-hub.27wse7hi1avv.us-east.codeengine.appdomain.cloud/',
+  },
+]
+
 function YLPage() {
   const allLevels = ylLevels.map(group => group.level)
   const ylCapabilityOptions = businessAutomationCapabilityFilters.map(filter => ({ id: filter.page, label: filter.label, color: filter.color }))
@@ -2295,6 +2314,7 @@ function YLPage() {
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(() => new Set(ylProductOptions.map(option => option.id)))
   // Sections start maximized.
   const [collapsedLevels, setCollapsedLevels] = useState<Set<number>>(() => new Set())
+  const [isAdministrationCollapsed, setIsAdministrationCollapsed] = useState(false)
   useEffect(() => {
     const expandFromHash = () => {
       const match = window.location.hash.match(/^#yl-level-(\d+)/)
@@ -2527,6 +2547,49 @@ function YLPage() {
           )
         })}
       </div>
+
+      <section
+        id="yl-administration"
+        aria-labelledby="yl-administration-heading"
+        className="mt-6 scroll-mt-28 rounded-xl border border-white/[0.07] bg-[#262626] p-5"
+      >
+        <div className={`${isAdministrationCollapsed ? '' : 'mb-4'} flex items-center justify-between gap-3`}>
+          <h3 id="yl-administration-heading" className="text-lg font-semibold text-white">
+            <button
+              type="button"
+              onClick={() => setIsAdministrationCollapsed(collapsed => !collapsed)}
+              aria-expanded={!isAdministrationCollapsed}
+              aria-controls="yl-administration-body"
+              title={`${isAdministrationCollapsed ? 'Expand' : 'Collapse'} Administration`}
+              className="inline-flex items-baseline gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+            >
+              Administration
+              <span className="text-xs font-medium text-[#c6c6c6]">{ylAdministrationTools.length} {ylAdministrationTools.length === 1 ? 'tool' : 'tools'}</span>
+              <span className="self-center text-[#78a9ff]"><VideoVisibilityIcon visible={!isAdministrationCollapsed} /></span>
+            </button>
+          </h3>
+          <CopySectionLink id="yl-administration" label="YL Administration" />
+        </div>
+        <ul id="yl-administration-body" hidden={isAdministrationCollapsed} className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {ylAdministrationTools.map(tool => (
+            <li key={tool.url}>
+              <a
+                href={tool.url}
+                target="_blank"
+                rel="noreferrer"
+                title={`${tool.name} — ${tool.description}`}
+                className="group flex h-full flex-col rounded-lg border border-white/[0.06] bg-[#161616] p-3 transition-colors hover:border-[#4589ff]/60 hover:bg-[#1c1c1c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+              >
+                <span className="flex items-start justify-between gap-2">
+                  <span className="text-xs font-semibold text-white group-hover:text-[#a6c8ff]">{tool.name}</span>
+                  <span className="shrink-0 text-[#78a9ff]"><ExternalLinkIcon /></span>
+                </span>
+                <span className="mt-1 text-xs leading-snug text-[#c6c6c6]">{tool.description}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
     </section>
   )
 }
