@@ -7607,7 +7607,7 @@ export default function App() {
                       No sections are selected.
                     </p>
                   )}
-                  <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="grid gap-4">
                     {shownSections.map((section, sectionIndex) => {
                       const sectionAssets = visibleAssets.filter(asset => asset.section === section.id)
                       const sectionId = `lets-create-${section.id}`
@@ -7646,53 +7646,47 @@ export default function App() {
                                   : 'No assets have been added yet.'}
                               </p>
                             ) : (
-                              <ul className="grid gap-3">
+                              <ul className="grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-3">
                                 {sectionAssets.map(asset => {
                                   const capability = businessAutomationCapabilityFilters.find(filter => filter.page === asset.capability)
                                   return (
-                                    <li key={`${asset.section}-${asset.name}`} className="rounded-lg border border-white/[0.07] bg-[#161616] p-4">
-                                      <div className="flex items-start justify-between gap-3">
-                                        <h4 className="text-sm font-semibold text-white">{asset.name}</h4>
-                                        {asset.page ? (
-                                          <a
-                                            href={asset.url}
-                                            onClick={event => {
-                                              event.preventDefault()
-                                              navigateToPage(asset.page!)
-                                            }}
-                                            className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-[#4589ff]/35 bg-[#0f62fe]/10 px-2.5 py-1.5 text-xs font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff] hover:bg-[#0f62fe]/25 hover:text-white"
-                                          >
-                                            View
-                                            <span aria-hidden="true">&rarr;</span>
-                                          </a>
-                                        ) : (
-                                          <a
-                                            href={asset.url}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-[#4589ff]/35 bg-[#0f62fe]/10 px-2.5 py-1.5 text-xs font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff] hover:bg-[#0f62fe]/25 hover:text-white"
-                                          >
-                                            Open
-                                            <ExternalLinkIcon />
-                                          </a>
-                                        )}
-                                      </div>
-                                      <p className="mt-2 text-xs leading-relaxed text-[#c6c6c6]">{asset.description}</p>
-                                      <div className="mt-3 flex flex-wrap gap-1.5">
-                                        {capability && (
-                                          <span
-                                            className="rounded-full border px-2 py-0.5 text-[10px] font-semibold text-white"
-                                            style={{ borderColor: `${capability.color}bb`, backgroundColor: `${capability.color}20` }}
-                                          >
-                                            {capability.label}
+                                    <li key={`${asset.section}-${asset.name}`} className="aspect-square">
+                                      <a
+                                        href={asset.url}
+                                        {...(asset.page
+                                          ? {
+                                              onClick: (event: React.MouseEvent) => {
+                                                event.preventDefault()
+                                                navigateToPage(asset.page!)
+                                              },
+                                            }
+                                          : { target: '_blank', rel: 'noreferrer' })}
+                                        title={`${asset.name} — ${asset.description}`}
+                                        className="group flex h-full flex-col overflow-hidden rounded-lg border border-white/[0.07] bg-[#161616] p-3 transition-colors hover:border-[#4589ff]/60 hover:bg-[#1c1c1c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                                      >
+                                        <div className="flex items-start justify-between gap-2">
+                                          <h4 className="line-clamp-3 text-[13px] font-semibold leading-snug text-white group-hover:text-[#a6c8ff]">{asset.name}</h4>
+                                          <span className="mt-0.5 shrink-0 text-[#78a9ff]">
+                                            {asset.page ? <span aria-hidden="true">&rarr;</span> : <ExternalLinkIcon />}
                                           </span>
-                                        )}
-                                        {asset.products.map(product => (
-                                          <span key={product} className="rounded-full border border-white/[0.1] bg-white/[0.03] px-2 py-0.5 text-[10px] font-medium text-[#c6c6c6]">
-                                            {product}
-                                          </span>
-                                        ))}
-                                      </div>
+                                        </div>
+                                        <p className="mt-1.5 line-clamp-3 text-[11px] leading-relaxed text-[#c6c6c6]">{asset.description}</p>
+                                        <div className="mt-auto flex max-h-[3.25rem] flex-wrap gap-1 overflow-hidden pt-2">
+                                          {capability && (
+                                            <span
+                                              className="rounded-full border px-1.5 py-0.5 text-[9px] font-semibold text-white"
+                                              style={{ borderColor: `${capability.color}bb`, backgroundColor: `${capability.color}20` }}
+                                            >
+                                              {capability.label}
+                                            </span>
+                                          )}
+                                          {asset.products.map(product => (
+                                            <span key={product} className="rounded-full border border-white/[0.1] bg-white/[0.03] px-1.5 py-0.5 text-[9px] font-medium text-[#c6c6c6]">
+                                              {product}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </a>
                                     </li>
                                   )
                                 })}
