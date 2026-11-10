@@ -1527,7 +1527,7 @@ function LetsCreateAssetCard({
         aria-label={`Show ${asset.name} in an embedded frame`}
         className="absolute bottom-2 left-3 inline-flex h-6 items-center rounded-md border border-white/[0.1] bg-[#262626] px-2 text-[10px] font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
       >
-        {isEmbedded ? 'Showing below' : 'Embed'}
+        {isEmbedded ? 'Showing below' : 'View Below'}
       </button>
     )}
     </div>
