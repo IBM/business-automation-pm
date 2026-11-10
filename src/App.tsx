@@ -1411,12 +1411,13 @@ function YLPage() {
   const ylProductOptions = Array.from(new Set(ylLevels.flatMap(group => group.courses.flatMap(course => course.products))))
     .sort((x, y) => x.localeCompare(y))
     .map(product => ({ id: product, label: product }))
-  const [isFilterExpanded, setIsFilterExpanded] = useState(true)
+  // Search starts minimized.
+  const [isFilterExpanded, setIsFilterExpanded] = useState(false)
   const [selectedLevels, setSelectedLevels] = useState<Set<number>>(() => new Set(allLevels))
   const [selectedCapabilities, setSelectedCapabilities] = useState<Set<string>>(() => new Set(ylCapabilityOptions.map(option => option.id)))
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(() => new Set(ylProductOptions.map(option => option.id)))
-  // Sections start minimized.
-  const [collapsedLevels, setCollapsedLevels] = useState<Set<number>>(() => new Set(allLevels))
+  // Sections start maximized.
+  const [collapsedLevels, setCollapsedLevels] = useState<Set<number>>(() => new Set())
   useEffect(() => {
     const expandFromHash = () => {
       const match = window.location.hash.match(/^#yl-level-(\d+)/)
@@ -1472,24 +1473,8 @@ function YLPage() {
             YourLearning plans by level, with the owner, capability and product for each.
           </p>
         </div>
-        <CopySectionLink id="yl-top" label="YL page" />
-      </div>
-
-      <section id="yl-filters" aria-labelledby="yl-filters-heading" className="mb-6 scroll-mt-28 rounded-xl border border-[#4589ff]/30 bg-[#1c1c1c] p-4 sm:p-5">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <h3 id="yl-filters-heading" className="text-base font-semibold text-white">Levels, Capabilities and Products</h3>
-          <button
-            type="button"
-            onClick={() => setIsFilterExpanded(expanded => !expanded)}
-            aria-expanded={isFilterExpanded}
-            aria-controls="yl-filters-body"
-            aria-label={isFilterExpanded ? 'Collapse Filters' : 'Expand Filters'}
-            title={isFilterExpanded ? 'Collapse Filters' : 'Expand Filters'}
-            className={iconButtonClass}
-          >
-            Filter
-            <VideoVisibilityIcon visible={isFilterExpanded} />
-          </button>
+        <div className="flex flex-col items-end gap-2">
+          <CopySectionLink id="yl-top" label="YL page" />
           <button
             type="button"
             onClick={() => setCollapsedLevels(allCollapsed ? new Set() : new Set(allLevels))}
@@ -1500,6 +1485,24 @@ function YLPage() {
             {allCollapsed ? 'Expand all' : 'Collapse all'}
             <VideoVisibilityIcon visible={!allCollapsed} />
           </button>
+        </div>
+      </div>
+
+      <section id="yl-filters" aria-labelledby="yl-filters-heading" className="mb-6 scroll-mt-28 rounded-xl border border-[#4589ff]/30 bg-[#1c1c1c] p-4 sm:p-5">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <h3 id="yl-filters-heading" className="text-base font-semibold text-white">
+            <button
+              type="button"
+              onClick={() => setIsFilterExpanded(expanded => !expanded)}
+              aria-expanded={isFilterExpanded}
+              aria-controls="yl-filters-body"
+              title={isFilterExpanded ? 'Minimize Search' : 'Maximize Search'}
+              className="inline-flex items-center gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+            >
+              Search
+              <span className="text-[#78a9ff]"><VideoVisibilityIcon visible={isFilterExpanded} /></span>
+            </button>
+          </h3>
           <span aria-live="polite" className="text-xs font-medium text-[#c6c6c6]">
             Levels: {levelsToShow.length} of {ylLevels.length} · Plans: {visibleCourses} of {totalCourses}
           </span>
@@ -1597,30 +1600,31 @@ function YLPage() {
                 </h3>
                 <CopySectionLink id={`yl-level-${group.level}`} label={`Level ${group.level}`} />
               </div>
-              <ul id={bodyId} hidden={isCollapsed} className="grid gap-3 sm:grid-cols-2">
+              <ul id={bodyId} hidden={isCollapsed} className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {group.courses.map(course => (
-                  <li key={course.code} className="flex flex-col rounded-lg border border-white/[0.06] bg-[#161616] p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <p className="text-sm font-semibold text-white">{course.code}</p>
+                  <li key={course.code} className="flex flex-col rounded-lg border border-white/[0.06] bg-[#161616] p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-xs font-semibold text-white">{course.code}</p>
                       <a
                         href={course.url}
                         target="_blank"
                         rel="noreferrer"
                         aria-label={`Open ${course.code} learning plan in YourLearning`}
-                        className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-[#4589ff]/35 bg-[#0f62fe]/10 px-2.5 py-1.5 text-xs font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff] hover:bg-[#0f62fe]/25 hover:text-white"
+                        title="Open learning plan in YourLearning"
+                        className="inline-flex shrink-0 items-center gap-1 rounded-md border border-[#4589ff]/35 bg-[#0f62fe]/10 px-1.5 py-1 text-[10px] font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff] hover:bg-[#0f62fe]/25 hover:text-white"
                       >
-                        Learning plan
+                        Plan
                         <ExternalLinkIcon />
                       </a>
                     </div>
-                    <p className="mt-1 text-sm leading-relaxed text-[#c6c6c6]">{course.title}</p>
+                    <p className="mt-1 text-xs leading-snug text-[#c6c6c6]">{course.title}</p>
                     {course.owners.length > 0 && (
-                      <p className="mt-2 text-xs text-[#8d8d8d]">
+                      <p className="mt-1.5 text-[11px] text-[#8d8d8d]">
                         <span className="font-semibold uppercase tracking-[0.12em] text-[#78a9ff]">{course.owners.length > 1 ? 'Owners' : 'Owner'}</span>{' '}
                         {course.owners.join(', ')}
                       </p>
                     )}
-                    <div className="mt-3 flex flex-wrap gap-1.5">
+                    <div className="mt-auto flex flex-wrap gap-1 pt-2">
                       {course.capabilities.map(page => {
                         const capability = businessAutomationCapabilityFilters.find(filter => filter.page === page)
                         return capability ? (
