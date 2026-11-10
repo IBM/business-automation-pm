@@ -4596,6 +4596,12 @@ export default function App() {
       return readSetParam<ProductResourceSection>('prs', ids, () => new Set(ids))
     },
   )
+  // An empty selection means no filtering, same as selecting all.
+  const allOrSelected = (selected: Set<string>, all: readonly string[]) => selected.size === 0 ? new Set(all) : selected
+  const effectiveLetsCreateSections = allOrSelected(letsCreateVisibleSections, letsCreateSections.map(section => section.id))
+  const effectiveVisibleProductResourceSections = visibleProductResourceSections.size === 0
+    ? new Set<ProductResourceSection>(productResourceSectionFilters.map(filter => filter.id))
+    : visibleProductResourceSections
   const [collapsedProductResourceSections, setCollapsedProductResourceSections] = useState<Set<ProductResourceSection>>(new Set())
   const [hiddenYoutubePlaylistFrames, setHiddenYoutubePlaylistFrames] = useState<Set<string>>(
     () => new Set(Object.values(portfolioResources).flatMap(resources =>
@@ -5060,7 +5066,7 @@ export default function App() {
     const visibleResourceCount = selectedFilters.reduce((total, filter) => total + counts[filter.id], 0)
     return (
       <div className="border-b border-white/[0.06] bg-black/10 px-5 py-3 sm:px-6">
-        <div className={`${isProductResourceFiltersExpanded ? 'mb-2' : ''} flex flex-wrap items-center justify-between gap-2`}>
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={() => setIsProductResourceFiltersExpanded(expanded => !expanded)}
@@ -5073,14 +5079,7 @@ export default function App() {
             Filter
             <VideoVisibilityIcon visible={isProductResourceFiltersExpanded} />
           </button>
-          <p aria-live="polite" className="text-[11px] font-medium text-[#c6c6c6]">
-            {selectedFilters.length > 0
-              ? `${selectedFilters.length} selected: ${selectedFilters.map(filter => filter.label).join(' · ')} · ${visibleResourceCount} resources`
-              : '0 selected · 0 resources'}
-          </p>
-        </div>
-        <div id="product-resource-subsection-filters" hidden={!isProductResourceFiltersExpanded}>
-          <div role="group" aria-label="Filter Product Resources subsections" className="flex flex-wrap items-center gap-2">
+          <div id="product-resource-subsection-filters" role="group" aria-label="Filter Product Resources subsections" className={isProductResourceFiltersExpanded ? 'contents' : 'hidden'}>
           <button
             type="button"
             aria-pressed={allSectionsVisible}
@@ -5140,6 +5139,11 @@ export default function App() {
           })}
           {renderProductResourceCollapseControls()}
           </div>
+          <p aria-live="polite" className="ml-auto text-[11px] font-medium text-[#c6c6c6]">
+            {selectedFilters.length > 0
+              ? `${selectedFilters.length} selected: ${selectedFilters.map(filter => filter.label).join(' · ')} · ${visibleResourceCount} resources`
+              : `0 selected · showing all ${Object.values(counts).reduce((total, count) => total + count, 0)} resources`}
+          </p>
         </div>
       </div>
     )
@@ -5181,7 +5185,7 @@ export default function App() {
     sectionId: string,
   ) => {
     const displayedSections = productResourceSectionFilters.filter(filter =>
-      visibleProductResourceSections.has(filter.id),
+      effectiveVisibleProductResourceSections.has(filter.id),
     )
     return (
       <div className="border-t border-white/[0.06] bg-black/10 px-5 py-4 sm:px-6">
@@ -5380,9 +5384,9 @@ export default function App() {
         <div id={`${sectionId}-body`} hidden={!isProductResourcesExpanded}>
         {renderProductResourceSectionFilters(sectionCounts)}
 
-        {(visibleProductResourceSections.has('reference') || visibleProductResourceSections.has('previews')) && (
+        {(effectiveVisibleProductResourceSections.has('reference') || effectiveVisibleProductResourceSections.has('previews')) && (
         <div className="grid gap-5 p-5 sm:p-6 lg:grid-cols-2">
-          {visibleProductResourceSections.has('reference') && (
+          {effectiveVisibleProductResourceSections.has('reference') && (
           <div id={`${sectionId}-reference`} className="scroll-mt-28">
             <div className="flex items-center justify-between gap-3">
               <button
@@ -5420,7 +5424,7 @@ export default function App() {
           </div>
           )}
 
-          {visibleProductResourceSections.has('previews') && (
+          {effectiveVisibleProductResourceSections.has('previews') && (
           <div id={`${sectionId}-previews`} className="scroll-mt-28">
             <div className="flex items-center justify-between gap-3">
               <button
@@ -5464,7 +5468,7 @@ export default function App() {
         </div>
         )}
 
-        {visibleProductResourceSections.has('ai-capabilities') && resources.aiCapabilities.length > 0 && (
+        {effectiveVisibleProductResourceSections.has('ai-capabilities') && resources.aiCapabilities.length > 0 && (
           <div id={`${sectionId}-ai-capabilities`} className="scroll-mt-28 border-t border-white/[0.06] px-5 py-5 sm:px-6">
             <div className="flex items-center justify-between gap-3">
               <button
@@ -5502,7 +5506,7 @@ export default function App() {
           </div>
         )}
 
-        {visibleProductResourceSections.has('demos') && resources.demos.length > 0 && (
+        {effectiveVisibleProductResourceSections.has('demos') && resources.demos.length > 0 && (
           <div id={`${sectionId}-demos`} className="scroll-mt-28 border-t border-white/[0.06] px-5 py-5 sm:px-6">
             <div className="flex items-center justify-between gap-3">
               <button
@@ -5547,7 +5551,7 @@ export default function App() {
           </div>
         )}
 
-        {visibleProductResourceSections.has('sales-kits') && (
+        {effectiveVisibleProductResourceSections.has('sales-kits') && (
         <div id={`${sectionId}-sales-kits`} className="scroll-mt-28 border-t border-white/[0.06] px-5 py-5 sm:px-6">
           <div className="flex items-center justify-between gap-3">
             <button
@@ -5586,7 +5590,7 @@ export default function App() {
         </div>
         )}
 
-        {visibleProductResourceSections.has('environments') && (
+        {effectiveVisibleProductResourceSections.has('environments') && (
         <div id={`${sectionId}-environments`} className="scroll-mt-28 border-t border-white/[0.06] px-5 py-5 sm:px-6">
           <div className="flex items-center justify-between gap-3">
             <button
@@ -5642,7 +5646,7 @@ export default function App() {
         </div>
         )}
 
-        {visibleProductResourceSections.has('techzone-collections') && (
+        {effectiveVisibleProductResourceSections.has('techzone-collections') && (
         <div id={`${sectionId}-techzone-collections`} className="scroll-mt-28 border-t border-white/[0.06] px-5 py-5 sm:px-6">
           <div className="flex items-center justify-between gap-3">
             <button
@@ -5689,7 +5693,7 @@ export default function App() {
         </div>
         )}
 
-        {visibleProductResourceSections.has('youtube-playlists') && (
+        {effectiveVisibleProductResourceSections.has('youtube-playlists') && (
         <div id={`${sectionId}-youtube-playlists`} className="scroll-mt-28 border-t border-white/[0.06] px-5 py-5 sm:px-6">
           <div className="flex items-center justify-between gap-3">
             <button
@@ -5859,9 +5863,9 @@ export default function App() {
         <div id="portfolio-product-resources-body" hidden={!isProductResourcesExpanded}>
         {renderProductResourceSectionFilters(sectionCounts)}
 
-        {(visibleProductResourceSections.has('reference') || visibleProductResourceSections.has('previews')) && (
+        {(effectiveVisibleProductResourceSections.has('reference') || effectiveVisibleProductResourceSections.has('previews')) && (
         <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-2">
-          {visibleProductResourceSections.has('reference') && (
+          {effectiveVisibleProductResourceSections.has('reference') && (
           <div id="portfolio-product-resources-reference" className="scroll-mt-28">
             <div className="flex items-center justify-between gap-3">
               <button
@@ -5904,7 +5908,7 @@ export default function App() {
           </div>
           )}
 
-          {visibleProductResourceSections.has('previews') && (
+          {effectiveVisibleProductResourceSections.has('previews') && (
           <div id="portfolio-product-resources-previews" className="scroll-mt-28">
             <div className="flex items-center justify-between gap-3">
               <button
@@ -5949,7 +5953,7 @@ export default function App() {
         </div>
         )}
 
-        {visibleProductResourceSections.has('ai-capabilities') && (
+        {effectiveVisibleProductResourceSections.has('ai-capabilities') && (
         <div id="portfolio-product-resources-ai-capabilities" className="scroll-mt-28 border-t border-white/[0.06] px-5 py-5 sm:px-6">
           <div className="flex items-center justify-between gap-3">
             <button
@@ -5992,7 +5996,7 @@ export default function App() {
         </div>
         )}
 
-        {visibleProductResourceSections.has('demos') && (
+        {effectiveVisibleProductResourceSections.has('demos') && (
         <div id="portfolio-product-resources-demos" className="scroll-mt-28 border-t border-white/[0.06] px-5 py-5 sm:px-6">
           <div className="flex items-center justify-between gap-3">
             <button
@@ -6038,7 +6042,7 @@ export default function App() {
         </div>
         )}
 
-        {visibleProductResourceSections.has('sales-kits') && (
+        {effectiveVisibleProductResourceSections.has('sales-kits') && (
         <div id="portfolio-product-resources-sales-kits" className="scroll-mt-28 border-t border-white/[0.06] px-5 py-5 sm:px-6">
           <div className="flex items-center justify-between gap-3">
             <button
@@ -6092,7 +6096,7 @@ export default function App() {
         </div>
         )}
 
-        {visibleProductResourceSections.has('environments') && (
+        {effectiveVisibleProductResourceSections.has('environments') && (
         <div id="portfolio-product-resources-environments" className="scroll-mt-28 border-t border-white/[0.06] px-5 py-5 sm:px-6">
           <div className="flex items-center justify-between gap-3">
             <button
@@ -6151,7 +6155,7 @@ export default function App() {
         </div>
         )}
 
-        {visibleProductResourceSections.has('techzone-collections') && (
+        {effectiveVisibleProductResourceSections.has('techzone-collections') && (
         <div id="portfolio-product-resources-techzone-collections" className="scroll-mt-28 border-t border-white/[0.06] px-5 py-5 sm:px-6">
           <div className="flex items-center justify-between gap-3">
             <button
@@ -6203,7 +6207,7 @@ export default function App() {
         </div>
         )}
 
-        {visibleProductResourceSections.has('youtube-playlists') && (
+        {effectiveVisibleProductResourceSections.has('youtube-playlists') && (
         <div id="portfolio-product-resources-youtube-playlists" className="scroll-mt-28 border-t border-white/[0.06] px-5 py-5 sm:px-6">
           <div className="flex items-center justify-between gap-3">
             <button
@@ -6300,7 +6304,7 @@ export default function App() {
     : '0 selected'
   const capabilityContentNavigation = (() => {
     const resourceSubsections = (sectionId: string) => productResourceSectionFilters
-      .filter(filter => visibleProductResourceSections.has(filter.id))
+      .filter(filter => effectiveVisibleProductResourceSections.has(filter.id))
       .map(filter => ({
         id: `${sectionId}-${filter.id}`,
         label: filter.label,
@@ -7256,8 +7260,10 @@ export default function App() {
           <section id="lets-create-top" aria-labelledby="lets-create-heading" className="scroll-mt-28">
             {(() => {
               const visibleAssets = letsCreateAssets.filter(asset =>
-                letsCreateVisibleSections.has(asset.section) &&
-                (letsCreateCapabilities.has(asset.capability) || asset.products.some(product => letsCreateProducts.has(product))),
+                effectiveLetsCreateSections.has(asset.section) &&
+                ((letsCreateCapabilities.size === 0 && letsCreateProducts.size === 0) ||
+                  letsCreateCapabilities.has(asset.capability) ||
+                  asset.products.some(product => letsCreateProducts.has(product))),
               )
               const handleCapabilityChange = (next: Set<string>) => {
                 const added = [...next].filter(id => !letsCreateCapabilities.has(id))
@@ -7270,7 +7276,7 @@ export default function App() {
                 }
                 setLetsCreateCapabilities(next)
               }
-              const shownSections = letsCreateSections.filter(section => letsCreateVisibleSections.has(section.id))
+              const shownSections = letsCreateSections.filter(section => effectiveLetsCreateSections.has(section.id))
               return (
                 <>
                   <div className="mb-6 flex items-start justify-between gap-4">
@@ -9158,6 +9164,7 @@ export default function App() {
               const visibleCommunities = userConnectCommunities
                 .map((community, index) => ({ community, index }))
                 .filter(({ community }) =>
+                  (communityCapabilities.size === 0 && communityProducts.size === 0) ||
                   communityCapabilities.has(community.capability) ||
                   community.products.some(product => communityProducts.has(product)),
                 )
