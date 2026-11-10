@@ -1052,6 +1052,7 @@ type BadgeEntry = {
   id: string
   capabilities: PortfolioResourcePage[]
   products: string[]
+  levels: number[]
   name: string
   criteria: string[]
   note?: string
@@ -1070,6 +1071,7 @@ const badgeEntries: BadgeEntry[] = [
     bpUrl: 'https://learn.ibm.com/course/view.php?id=10693',
     capabilities: ['cp4ba', 'process-automation', 'content-services', 'decision-intelligence'],
     products: ['IBM Cloud Pak for Business Automation', 'IBM Business Automation Workflow', 'IBM Operational Decision Manager', 'IBM Content Cortex', 'IBM Process Mining', 'IBM Robotic Process Automation'],
+    levels: [1, 2],
     name: 'Cloud Pak for Business Automation Sales Foundation V2',
     criteria: [
       'Cloud Pak for Business Automation Fundamentals Level 1',
@@ -1086,6 +1088,7 @@ const badgeEntries: BadgeEntry[] = [
     bpUrl: 'https://learn.ibm.com/course/view.php?id=10559',
     capabilities: ['cp4ba'],
     products: ['IBM Cloud Pak for Business Automation'],
+    levels: [3],
     name: 'Cloud Pak for Business Automation Intermediate',
     criteria: ['Cloud Pak for Business Automation Demos Level 3'],
   },
@@ -1096,6 +1099,7 @@ const badgeEntries: BadgeEntry[] = [
     bpUrl: 'https://www.ibm.com/training/learning-path/cloud-pak-for-business-automation-level-4-1150',
     capabilities: ['cp4ba'],
     products: ['IBM Cloud Pak for Business Automation'],
+    levels: [4],
     name: 'Cloud Pak for Business Automation Practitioner Advanced',
     criteria: ['Cloud Pak for Business Automation Level 4'],
   },
@@ -1105,6 +1109,7 @@ const badgeEntries: BadgeEntry[] = [
     ibmUrl: 'https://w3.ibm.com/hr/badge-me/badge/6ab171653a52acd3d387ccfd',
     capabilities: ['cp4ba'],
     products: ['IBM Cloud Pak for Business Automation'],
+    levels: [5],
     name: 'Cloud Pak for Business Automation Practitioner Mastery',
     criteria: ['Cloud Pak for Business Automation Practitioner Advanced badge'],
     note: 'Applicant must provide examples of internal and external community contributions that show that they have gone beyond individual product mastery.',
@@ -1117,6 +1122,7 @@ const badgeEntries: BadgeEntry[] = [
     bpUrl: 'https://learn.ibm.com/course/view.php?id=18216',
     capabilities: ['decision-intelligence'],
     products: ['IBM Decision Intelligence'],
+    levels: [1, 2],
     name: 'Decision Intelligence Sales Foundation',
     criteria: ['AI Agents Level 1', 'Decision Intelligence Level 2'],
   },
@@ -1127,6 +1133,7 @@ const badgeEntries: BadgeEntry[] = [
     bpUrl: 'https://learn.ibm.com/course/view.php?id=11750',
     capabilities: ['process-automation'],
     products: ['IBM Process Mining'],
+    levels: [3],
     name: 'Process Mining Intermediate',
     criteria: ['Process Mining Level 3'],
   },
@@ -1137,6 +1144,7 @@ const badgeEntries: BadgeEntry[] = [
     bpUrl: 'https://www.ibm.com/training/learning-path/ibm-process-mining-for-practitioner-level-4-823',
     capabilities: ['process-automation'],
     products: ['IBM Process Mining'],
+    levels: [4],
     name: 'Process Mining Practitioner Advanced',
     criteria: ['IBM Process Mining for Practitioner Level 4'],
     note: 'IBMers must apply this learning with a client and complete an application form detailing their interaction.',
@@ -1148,6 +1156,7 @@ const badgeEntries: BadgeEntry[] = [
     bpUrl: 'https://learn.ibm.com/course/view.php?id=11649',
     capabilities: ['process-automation'],
     products: ['IBM Robotic Process Automation'],
+    levels: [3],
     name: 'Robotic Process Automation Intermediate',
     criteria: ['Robotic Process Automation Level 3'],
   },
@@ -1158,6 +1167,7 @@ const badgeEntries: BadgeEntry[] = [
     bpUrl: 'https://learn.ibm.com/course/view.php?id=11956',
     capabilities: ['process-automation', 'decision-intelligence'],
     products: ['IBM Business Automation Manager Open Editions'],
+    levels: [1, 2],
     name: 'Business Automation Manager Open Editions Sales Foundation',
     criteria: [
       'Business Automation Manager Open Editions Fundamentals Level 1',
@@ -1172,6 +1182,7 @@ const badgeEntries: BadgeEntry[] = [
     bpUrl: 'https://learn.ibm.com/course/view.php?id=12239',
     capabilities: ['decision-intelligence'],
     products: ['IBM Business Automation Manager Open Editions'],
+    levels: [3],
     name: 'Decision Manager Open Edition Intermediate',
     criteria: ['Decision Manager Open Edition Level 3'],
   },
@@ -1182,6 +1193,7 @@ const badgeEntries: BadgeEntry[] = [
     bpUrl: 'https://learn.ibm.com/course/view.php?id=12296',
     capabilities: ['process-automation'],
     products: ['IBM Business Automation Manager Open Editions'],
+    levels: [3],
     name: 'Process Automation Manager Open Edition Intermediate',
     criteria: ['Process Automation Manager Open Edition Level 3'],
   },
@@ -1192,6 +1204,7 @@ const badgeEntries: BadgeEntry[] = [
     bpUrl: 'https://www.ibm.com/training/learning-path/filenet-content-manager-for-technical-sales-level-4-915',
     capabilities: ['content-services'],
     products: ['IBM Content Cortex'],
+    levels: [4],
     name: 'Content Cortex (formerly FileNet Content Manager) Technical Sales Advanced',
     criteria: ['Content Cortex (formerly FileNet Content Manager) for Technical Sales Level 4'],
     note: 'IBMers must apply this learning with a client and complete an application form detailing their interaction.',
@@ -1202,6 +1215,20 @@ function BadgesPage() {
   const [isFilterExpanded, setIsFilterExpanded] = useState(true)
   const [selectedCapabilities, setSelectedCapabilities] = useState<Set<PortfolioResourcePage>>(new Set())
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set())
+  const [selectedLevels, setSelectedLevels] = useState<Set<number>>(new Set())
+  const badgeLevels = [1, 2, 3, 4, 5]
+  const [expandedBadges, setExpandedBadges] = useState<Set<string>>(new Set())
+  useEffect(() => {
+    const expandFromHash = () => {
+      const target = window.location.hash.replace(/^#badges-/, '')
+      if (target !== window.location.hash.slice(1) && badgeEntries.some(badge => badge.id === target)) {
+        setExpandedBadges(current => new Set(current).add(target))
+      }
+    }
+    expandFromHash()
+    window.addEventListener('hashchange', expandFromHash)
+    return () => window.removeEventListener('hashchange', expandFromHash)
+  }, [])
   const linkClass =
     'inline-flex items-center gap-1.5 rounded-md border border-[#4589ff]/35 bg-[#0f62fe]/10 px-2.5 py-1.5 text-xs font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff] hover:bg-[#0f62fe]/25 hover:text-white'
   const toggleIn = <T,>(setter: (updater: (current: Set<T>) => Set<T>) => void, value: T) =>
@@ -1215,7 +1242,8 @@ function BadgesPage() {
   const visibleBadges = badgeEntries.filter(
     badge =>
       (selectedCapabilities.size === 0 || badge.capabilities.some(capability => selectedCapabilities.has(capability))) &&
-      (selectedProducts.size === 0 || badge.products.some(product => selectedProducts.has(product))),
+      (selectedProducts.size === 0 || badge.products.some(product => selectedProducts.has(product))) &&
+      (selectedLevels.size === 0 || badge.levels.some(level => selectedLevels.has(level))),
   )
   const pillClass = (active: boolean) =>
     `inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors ${
@@ -1223,6 +1251,13 @@ function BadgesPage() {
         ? 'border-[#78a9ff]/70 bg-[#0f62fe]/20 text-white'
         : 'border-white/[0.1] bg-white/[0.03] text-[#a8a8a8] hover:border-[#4589ff]/45 hover:text-white'
     }`
+  const allVisibleExpanded = visibleBadges.length > 0 && visibleBadges.every(badge => expandedBadges.has(badge.id))
+  const toggleAllBadges = () =>
+    setExpandedBadges(current => {
+      const next = new Set(current)
+      visibleBadges.forEach(badge => (allVisibleExpanded ? next.delete(badge.id) : next.add(badge.id)))
+      return next
+    })
   const countClass = (active: boolean) =>
     `rounded-full px-1.5 py-0.5 font-mono text-[9px] ${active ? 'bg-white/10 text-white' : 'bg-black/20 text-[#a8a8a8]'}`
   const checkIcon = (
@@ -1236,25 +1271,29 @@ function BadgesPage() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">IBM Data &amp; AI: Business Automation</p>
           <h2 id="badges-heading" className="mt-1 text-2xl font-semibold text-white">Badges</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#c6c6c6]">
+          <p className="mt-2 text-sm leading-relaxed text-[#c6c6c6]">
             Business Automation sales and technical badges, the earning criteria for each, and where to find the IBM and Business Partner details.
-          </p>
-          <p className="mt-3 max-w-2xl rounded-md border border-[#4589ff]/30 bg-[#0f62fe]/10 px-3 py-2 text-sm leading-relaxed text-[#e0e0e0]">
-            The latest list of badges can always be found on Seismic:{' '}
-            <a
-              href="https://ibm.biz/BadgeBA"
-              target="_blank"
-              rel="noreferrer"
-              className="font-semibold text-[#78a9ff] underline-offset-2 transition-colors hover:text-white hover:underline"
-            >
-              ibm.biz/BadgeBA
-            </a>
           </p>
         </div>
         <CopySectionLink id="badges-top" label="Badges page" />
       </div>
       <div className="mb-6 rounded-xl border border-white/[0.07] bg-[#262626] px-5 py-3">
-        <div className={`${isFilterExpanded ? 'mb-3' : ''} flex flex-wrap items-center justify-between gap-2`}>
+        <div className={`${isFilterExpanded ? 'mb-3' : ''} flex flex-col items-end gap-2`}>
+          <p aria-live="polite" className="text-[11px] font-medium text-[#c6c6c6]">
+            {visibleBadges.length} of {badgeEntries.length} badges
+          </p>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={toggleAllBadges}
+            disabled={visibleBadges.length === 0}
+            aria-label={allVisibleExpanded ? 'Collapse all badges' : 'Expand all badges'}
+            title={allVisibleExpanded ? 'Collapse all badges' : 'Expand all badges'}
+            className="inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] disabled:opacity-40"
+          >
+            {allVisibleExpanded ? 'Collapse all' : 'Expand all'}
+            <ChevronIcon expanded={allVisibleExpanded} />
+          </button>
           <button
             type="button"
             onClick={() => setIsFilterExpanded(expanded => !expanded)}
@@ -1267,9 +1306,7 @@ function BadgesPage() {
             Filter
             <VideoVisibilityIcon visible={isFilterExpanded} />
           </button>
-          <p aria-live="polite" className="text-[11px] font-medium text-[#c6c6c6]">
-            {visibleBadges.length} of {badgeEntries.length} badges
-          </p>
+          </div>
         </div>
         <div id="badges-filters" hidden={!isFilterExpanded} className="grid gap-3">
           <div role="group" aria-label="Filter badges by capability" className="flex flex-wrap items-center gap-2">
@@ -1309,6 +1346,24 @@ function BadgesPage() {
               )
             })}
           </div>
+          <div role="group" aria-label="Filter badges by level" className="flex flex-wrap items-center gap-2">
+            <span className="w-24 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8d8d8d]">Level</span>
+            <button type="button" aria-pressed={selectedLevels.size === 0} onClick={() => setSelectedLevels(new Set())} className={pillClass(selectedLevels.size === 0)}>
+              {selectedLevels.size === 0 && checkIcon}
+              All
+              <span className={countClass(selectedLevels.size === 0)}>{badgeEntries.length}</span>
+            </button>
+            {badgeLevels.map(level => {
+              const isActive = selectedLevels.has(level)
+              return (
+                <button key={level} type="button" aria-pressed={isActive} onClick={() => toggleIn(setSelectedLevels, level)} className={pillClass(isActive)}>
+                  {isActive && checkIcon}
+                  Level {level}
+                  <span className={countClass(isActive)}>{badgeEntries.filter(badge => badge.levels.includes(level)).length}</span>
+                </button>
+              )
+            })}
+          </div>
         </div>
       </div>
       {visibleBadges.length === 0 ? (
@@ -1322,7 +1377,28 @@ function BadgesPage() {
               className="scroll-mt-28 flex flex-col gap-3 rounded-xl border border-white/[0.07] bg-[#262626] p-5 lg:flex-row lg:items-start lg:justify-between"
             >
               <div className="min-w-0 flex-1">
-                <h3 className="text-base font-semibold text-white">{badge.name}</h3>
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="text-base font-semibold text-white">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExpandedBadges(current => {
+                          const next = new Set(current)
+                          if (next.has(badge.id)) next.delete(badge.id)
+                          else next.add(badge.id)
+                          return next
+                        })
+                      }
+                      aria-expanded={expandedBadges.has(badge.id)}
+                      aria-controls={`badges-${badge.id}-details`}
+                      title={`${expandedBadges.has(badge.id) ? 'Collapse' : 'Expand'} ${badge.name}`}
+                      className="inline-flex items-center gap-2 rounded-sm text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                    >
+                      <ChevronIcon expanded={expandedBadges.has(badge.id)} />
+                      <span>{badge.name}</span>
+                    </button>
+                  </h3>
+                </div>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {badge.capabilities.map(capability => {
                     const option = businessAutomationCapabilityFilters.find(filter => filter.page === capability)
@@ -1336,12 +1412,18 @@ function BadgesPage() {
                       </span>
                     ) : null
                   })}
+                  {badge.levels.map(level => (
+                    <span key={level} className="rounded-full border border-[#ff832b]/50 bg-[#ff832b]/10 px-2 py-0.5 text-[10px] font-semibold text-[#ffb784]">
+                      Level {level}
+                    </span>
+                  ))}
                   {badge.products.map(product => (
                     <span key={product} className="rounded-full border border-white/[0.12] bg-white/[0.04] px-2 py-0.5 text-[10px] font-medium text-[#c6c6c6]">
                       {product}
                     </span>
                   ))}
                 </div>
+                <div id={`badges-${badge.id}-details`} hidden={!expandedBadges.has(badge.id)}>
                 <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8d8d8d]">Badge earning criteria</p>
                 <ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm leading-relaxed text-[#c6c6c6]">
                   {badge.criteria.map(item => <li key={item}>{item}</li>)}
@@ -1351,8 +1433,13 @@ function BadgesPage() {
                     <span className="font-semibold">Note:</span> {badge.note}
                   </p>
                 )}
+                </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2 lg:w-44 lg:flex-col lg:items-stretch">
+              <div className="flex flex-col gap-2 lg:w-44">
+              <div className="flex justify-end">
+                <CopySectionLink id={`badges-${badge.id}`} label={badge.name} />
+              </div>
+              <div hidden={!expandedBadges.has(badge.id)} className="flex-wrap items-center gap-2 lg:flex-col lg:items-stretch [&:not([hidden])]:flex">
                 {badge.badgeUrl && (
                   <a href={badge.badgeUrl} target="_blank" rel="noreferrer" className={linkClass}>Badge<ExternalLinkIcon /></a>
                 )}
@@ -1366,10 +1453,22 @@ function BadgesPage() {
                   <span className="text-xs text-[#8d8d8d]">BP details: not available</span>
                 )}
               </div>
+              </div>
             </li>
           ))}
         </ul>
       )}
+          <p className="mt-6 rounded-md border border-[#4589ff]/30 bg-[#0f62fe]/10 px-3 py-2 text-sm leading-relaxed text-[#e0e0e0]">
+            The latest list of badges can always be found on Seismic:{' '}
+            <a
+              href="https://ibm.biz/BadgeBA"
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-[#78a9ff] underline-offset-2 transition-colors hover:text-white hover:underline"
+            >
+              ibm.biz/BadgeBA
+            </a>
+          </p>
     </section>
   )
 }
@@ -4103,7 +4202,7 @@ function buildGlobalSearchEntries(): GlobalSearchEntry[] {
     title: badge.name,
     subtitle: badge.criteria.join(' · '),
     category: 'Badge',
-  }, badge.capabilities.map(capability => businessAutomationCapabilityFilters.find(filter => filter.page === capability)?.label ?? capability), badge.products, badge.criteria, badge.note))
+  }, badge.capabilities.map(capability => businessAutomationCapabilityFilters.find(filter => filter.page === capability)?.label ?? capability), badge.levels.map(level => `Level ${level}`), badge.products, badge.criteria, badge.note))
 
   // Onboarding Automation page: index every block of text in every (nested) section.
   const plainOnboardingText = (value: string) => value.replace(/\[([^\]]+)\]\([^)\s]+\)/g, '$1').replace(/\*\*/g, '')
@@ -4444,7 +4543,7 @@ export default function App() {
   const [isOverviewVideoExpanded, setIsOverviewVideoExpanded] = useState(false)
   const [isCapabilityFilterExpanded, setIsCapabilityFilterExpanded] = useState(true)
   const [isCapabilityContentsExpanded, setIsCapabilityContentsExpanded] = useState(true)
-  const [isCapabilityOverviewExpanded, setIsCapabilityOverviewExpanded] = useState(true)
+  const [isCapabilityOverviewExpanded, setIsCapabilityOverviewExpanded] = useState(false)
   const [isConferenceTechxchangeExpanded, setIsConferenceTechxchangeExpanded] = useState(false)
   const [isProductResourcesExpanded, setIsProductResourcesExpanded] = useState(false)
   const [isProductResourceFiltersExpanded, setIsProductResourceFiltersExpanded] = useState(true)
@@ -7149,8 +7248,9 @@ export default function App() {
                   </div>
 
                   <section
+                    id="lets-create-filters"
                     aria-labelledby="lets-create-filters-heading"
-                    className="mb-6 rounded-xl border border-[#4589ff]/30 bg-[#1c1c1c] p-4 sm:p-5"
+                    className="mb-6 scroll-mt-28 rounded-xl border border-[#4589ff]/30 bg-[#1c1c1c] p-4 sm:p-5"
                   >
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                       <h3 id="lets-create-filters-heading" className="text-base font-semibold text-white">Sections, Capabilities and Products</h3>
@@ -7169,6 +7269,7 @@ export default function App() {
                       <span aria-live="polite" className="text-xs font-medium text-[#c6c6c6]">
                         Sections: {shownSections.length} of {letsCreateSections.length} · Assets: {visibleAssets.length} of {letsCreateAssets.length}
                       </span>
+                      <span className="ml-auto"><CopySectionLink id="lets-create-filters" label="Let's Create filters" /></span>
                     </div>
                     <div id="lets-create-filters-body" hidden={!isLetsCreateFiltersExpanded} className="mt-4 grid gap-4 border-t border-white/[0.06] pt-4">
                       <CommunityFilterGroup
@@ -7421,6 +7522,9 @@ export default function App() {
                   className="relative scroll-mt-28 overflow-hidden rounded-xl border border-white/[0.07] bg-[#262626]"
                 >
                   <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1" style={{ backgroundColor: capability.color }} />
+                  <div className="absolute right-3 top-3 z-10">
+                    <CopySectionLink id={`capabilities-all-${capability.page}`} label={`${capability.title} overview`} />
+                  </div>
                   <div className="grid gap-6 p-6 sm:p-7 lg:grid-cols-[1.1fr_0.9fr]">
                     <div>
                       <div className="flex items-center gap-3">
@@ -7457,6 +7561,9 @@ export default function App() {
 
                 {selectedCapabilityPages.has('cp4ba') && <article id="capabilities-all-cp4ba" className="relative scroll-mt-28 overflow-hidden rounded-xl border border-[#4589ff]/25 bg-[#262626]">
                 <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1 bg-[#4589ff]" />
+                <div className="absolute right-3 top-3 z-10">
+                  <CopySectionLink id="capabilities-all-cp4ba" label="Cloud Pak for Business Automation overview" />
+                </div>
                 <div className="grid gap-6 p-6 sm:p-7 lg:grid-cols-[1.1fr_0.9fr]">
                   <div>
                     <div className="flex items-center gap-3">
@@ -9031,8 +9138,9 @@ export default function App() {
               return (
                 <>
             <section
+              id="community-filters"
               aria-labelledby="community-filters-heading"
-              className="mb-6 rounded-xl border border-[#4589ff]/30 bg-[#1c1c1c] p-4 sm:p-5"
+              className="mb-6 scroll-mt-28 rounded-xl border border-[#4589ff]/30 bg-[#1c1c1c] p-4 sm:p-5"
             >
               <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                 <h3 id="community-filters-heading" className="text-base font-semibold text-white">Capabilities and Products</h3>
@@ -9051,6 +9159,7 @@ export default function App() {
                 <span className="text-xs font-medium text-[#c6c6c6]">
                   Communities: {visibleCommunities.length} of {userConnectCommunities.length} · Product connections: {new Set(visibleCommunities.flatMap(({ community }) => community.products)).size}
                 </span>
+                <span className="ml-auto"><CopySectionLink id="community-filters" label="Community filters" /></span>
               </div>
               <div id="community-filters-body" hidden={!isCommunityFiltersExpanded} className="mt-4 grid gap-4 border-t border-white/[0.06] pt-4">
               <CommunityFilterGroup
