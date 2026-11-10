@@ -2476,12 +2476,12 @@ type ProductResourceSection = 'reference' | 'previews' | 'ai-capabilities' | 'de
 const productResourceSectionFilters: { id: ProductResourceSection; label: string }[] = [
   { id: 'reference', label: 'Reference' },
   { id: 'previews', label: 'Previews and trials' },
-  { id: 'ai-capabilities', label: 'AI capabilities' },
   { id: 'demos', label: 'Demos and videos' },
   { id: 'sales-kits', label: 'Sales kits' },
   { id: 'environments', label: 'Demo Environments' },
   { id: 'techzone-collections', label: 'TechZone Collections' },
   { id: 'youtube-playlists', label: 'IBM Product Hub on YouTube' },
+  { id: 'ai-capabilities', label: 'AI capabilities' },
 ]
 const businessAutomationSalesKitNames = [
   'Business Automation Sales Kits',
@@ -5541,43 +5541,6 @@ export default function App() {
         </div>
         )}
 
-        {effectiveVisibleProductResourceSections.has('ai-capabilities') && resources.aiCapabilities.length > 0 && (
-          <div id={`${sectionId}-ai-capabilities`} className="scroll-mt-28 border-t border-white/[0.06] px-5 py-5 sm:px-6">
-            <div className="flex items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={() => toggleProductResourceSection('ai-capabilities')}
-                aria-expanded={!collapsedProductResourceSections.has('ai-capabilities')}
-                aria-controls={`${sectionId}-ai-capabilities-content`}
-                className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
-              >
-                <span>AI capabilities</span>
-                <VideoVisibilityIcon visible={!collapsedProductResourceSections.has('ai-capabilities')} />
-              </button>
-              <div className="flex items-center gap-1">
-                <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts['ai-capabilities'])}</span>
-                <span className="font-mono text-[10px] text-[#8d8d8d]">03 / 08</span>
-                <CopySectionLink id={`${sectionId}-ai-capabilities`} label={`${label} AI capabilities`} />
-                <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
-              </div>
-            </div>
-            {!collapsedProductResourceSections.has('ai-capabilities') && <div id={`${sectionId}-ai-capabilities-content`} className="mt-3 grid gap-3 sm:grid-cols-2">
-              {resources.aiCapabilities.map(capability => (
-                <article key={capability.name} className="rounded-lg border border-white/[0.06] bg-[#161616] p-4">
-                  <h5 className="text-sm font-semibold text-white">{capability.name}</h5>
-                  <p className="mt-2 text-xs leading-relaxed text-[#c6c6c6]">{capability.description}</p>
-                  {'url' in capability && capability.url && (
-                    <a href={capability.url} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[#78a9ff] hover:text-white">
-                      Learn more
-                      <ExternalLinkIcon />
-                    </a>
-                  )}
-                </article>
-              ))}
-            </div>}
-          </div>
-        )}
-
         {effectiveVisibleProductResourceSections.has('demos') && resources.demos.length > 0 && (
           <div id={`${sectionId}-demos`} className="scroll-mt-28 border-t border-white/[0.06] px-5 py-5 sm:px-6">
             <div className="flex items-center justify-between gap-3">
@@ -5593,7 +5556,7 @@ export default function App() {
               </button>
               <div className="flex items-center gap-1">
                 <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts.demos)}</span>
-                <span className="font-mono text-[10px] text-[#8d8d8d]">04 / 08</span>
+                <span className="font-mono text-[10px] text-[#8d8d8d]">03 / 08</span>
                 <CopySectionLink id={`${sectionId}-demos`} label={`${label} demos and videos`} />
                 <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
               </div>
@@ -5638,7 +5601,7 @@ export default function App() {
             <div className="flex items-center gap-1">
               {renderSalesKitSortControl()}
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts['sales-kits'])}</span>
-              <span className="font-mono text-[10px] text-[#8d8d8d]">05 / 08</span>
+              <span className="font-mono text-[10px] text-[#8d8d8d]">04 / 08</span>
               <CopySectionLink id={`${sectionId}-sales-kits`} label={`${label} sales kits`} />
               <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
             </div>
@@ -5675,7 +5638,7 @@ export default function App() {
             </button>
             <div className="flex items-center gap-1">
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts.environments)}</span>
-              <span className="font-mono text-[10px] text-[#8d8d8d]">06 / 08</span>
+              <span className="font-mono text-[10px] text-[#8d8d8d]">05 / 08</span>
               <CopySectionLink id={`${sectionId}-environments`} label={`${label} demo environments`} />
               <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
             </div>
@@ -5730,7 +5693,7 @@ export default function App() {
             </button>
             <div className="flex items-center gap-1">
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts['techzone-collections'])}</span>
-              <span className="font-mono text-[10px] text-[#8d8d8d]">07 / 08</span>
+              <span className="font-mono text-[10px] text-[#8d8d8d]">06 / 08</span>
               <CopySectionLink id={`${sectionId}-techzone-collections`} label={`${label} TechZone Collections`} />
               <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
             </div>
@@ -5775,7 +5738,7 @@ export default function App() {
                 </button>
               )}
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts['youtube-playlists'])}</span>
-              <span className="font-mono text-[10px] text-[#8d8d8d]">08 / 08</span>
+              <span className="font-mono text-[10px] text-[#8d8d8d]">07 / 08</span>
               <CopySectionLink id={`${sectionId}-youtube-playlists`} label={`${label} IBM Product Hub YouTube playlists`} />
               <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
             </div>
@@ -5826,6 +5789,43 @@ export default function App() {
             </div>
           )}
         </div>
+        )}
+
+        {effectiveVisibleProductResourceSections.has('ai-capabilities') && resources.aiCapabilities.length > 0 && (
+          <div id={`${sectionId}-ai-capabilities`} className="scroll-mt-28 border-t border-white/[0.06] px-5 py-5 sm:px-6">
+            <div className="flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => toggleProductResourceSection('ai-capabilities')}
+                aria-expanded={!collapsedProductResourceSections.has('ai-capabilities')}
+                aria-controls={`${sectionId}-ai-capabilities-content`}
+                className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
+              >
+                <span>AI capabilities</span>
+                <VideoVisibilityIcon visible={!collapsedProductResourceSections.has('ai-capabilities')} />
+              </button>
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts['ai-capabilities'])}</span>
+                <span className="font-mono text-[10px] text-[#8d8d8d]">08 / 08</span>
+                <CopySectionLink id={`${sectionId}-ai-capabilities`} label={`${label} AI capabilities`} />
+                <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
+              </div>
+            </div>
+            {!collapsedProductResourceSections.has('ai-capabilities') && <div id={`${sectionId}-ai-capabilities-content`} className="mt-3 grid gap-3 sm:grid-cols-2">
+              {resources.aiCapabilities.map(capability => (
+                <article key={capability.name} className="rounded-lg border border-white/[0.06] bg-[#161616] p-4">
+                  <h5 className="text-sm font-semibold text-white">{capability.name}</h5>
+                  <p className="mt-2 text-xs leading-relaxed text-[#c6c6c6]">{capability.description}</p>
+                  {'url' in capability && capability.url && (
+                    <a href={capability.url} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[#78a9ff] hover:text-white">
+                      Learn more
+                      <ExternalLinkIcon />
+                    </a>
+                  )}
+                </article>
+              ))}
+            </div>}
+          </div>
         )}
         </div>
       </section>
@@ -6006,48 +6006,6 @@ export default function App() {
         </div>
         )}
 
-        {effectiveVisibleProductResourceSections.has('ai-capabilities') && (
-        <div id="portfolio-product-resources-ai-capabilities" className="scroll-mt-28 border-t border-white/[0.06] px-5 py-5 sm:px-6">
-          <div className="flex items-center justify-between gap-3">
-            <button
-              type="button"
-              onClick={() => toggleProductResourceSection('ai-capabilities')}
-              aria-expanded={!collapsedProductResourceSections.has('ai-capabilities')}
-              aria-controls="portfolio-product-resources-ai-capabilities-content"
-              className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
-            >
-              <span>AI capabilities</span>
-              <VideoVisibilityIcon visible={!collapsedProductResourceSections.has('ai-capabilities')} />
-            </button>
-            <div className="flex items-center gap-1">
-              <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts['ai-capabilities'])}</span>
-              <span className="font-mono text-[10px] text-[#8d8d8d]">03 / 08</span>
-              <CopySectionLink id="portfolio-product-resources-ai-capabilities" label="Portfolio AI capabilities" />
-              <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
-            </div>
-          </div>
-          {!collapsedProductResourceSections.has('ai-capabilities') && <div id="portfolio-product-resources-ai-capabilities-content" className="mt-3 grid gap-3 sm:grid-cols-2">
-            {resourceGroups.flatMap(group =>
-              group.resources.aiCapabilities.map(capability => (
-                <article key={`${group.page}-${capability.name}`} className="rounded-lg border border-white/[0.06] bg-[#161616] p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <h4 className="text-sm font-semibold text-white">{capability.name}</h4>
-                    {capabilityTag(group.label, group.color)}
-                  </div>
-                  <p className="mt-2 text-xs leading-relaxed text-[#c6c6c6]">{capability.description}</p>
-                  {'url' in capability && capability.url && (
-                    <a href={capability.url} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[#78a9ff] hover:text-white">
-                      Learn more
-                      <ExternalLinkIcon />
-                    </a>
-                  )}
-                </article>
-              )),
-            )}
-          </div>}
-        </div>
-        )}
-
         {effectiveVisibleProductResourceSections.has('demos') && (
         <div id="portfolio-product-resources-demos" className="scroll-mt-28 border-t border-white/[0.06] px-5 py-5 sm:px-6">
           <div className="flex items-center justify-between gap-3">
@@ -6063,7 +6021,7 @@ export default function App() {
             </button>
             <div className="flex items-center gap-1">
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts.demos)}</span>
-              <span className="font-mono text-[10px] text-[#8d8d8d]">04 / 08</span>
+              <span className="font-mono text-[10px] text-[#8d8d8d]">03 / 08</span>
               <CopySectionLink id="portfolio-product-resources-demos" label="Portfolio demos and videos" />
               <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
             </div>
@@ -6110,7 +6068,7 @@ export default function App() {
               {renderSalesKitSortControl()}
               {renderSalesKitCapabilitySortControl()}
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts['sales-kits'])}</span>
-              <span className="font-mono text-[10px] text-[#8d8d8d]">05 / 08</span>
+              <span className="font-mono text-[10px] text-[#8d8d8d]">04 / 08</span>
               <CopySectionLink id="portfolio-product-resources-sales-kits" label="Portfolio sales kits" />
               <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
             </div>
@@ -6161,7 +6119,7 @@ export default function App() {
             </button>
             <div className="flex items-center gap-1">
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts.environments)}</span>
-              <span className="font-mono text-[10px] text-[#8d8d8d]">06 / 08</span>
+              <span className="font-mono text-[10px] text-[#8d8d8d]">05 / 08</span>
               <CopySectionLink id="portfolio-product-resources-environments" label="Portfolio demo environments" />
               <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
             </div>
@@ -6219,7 +6177,7 @@ export default function App() {
             </button>
             <div className="flex items-center gap-1">
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts['techzone-collections'])}</span>
-              <span className="font-mono text-[10px] text-[#8d8d8d]">07 / 08</span>
+              <span className="font-mono text-[10px] text-[#8d8d8d]">06 / 08</span>
               <CopySectionLink id="portfolio-product-resources-techzone-collections" label="Portfolio TechZone Collections" />
               <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
             </div>
@@ -6272,7 +6230,7 @@ export default function App() {
                 </button>
               )}
               <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts['youtube-playlists'])}</span>
-              <span className="font-mono text-[10px] text-[#8d8d8d]">08 / 08</span>
+              <span className="font-mono text-[10px] text-[#8d8d8d]">07 / 08</span>
               <CopySectionLink id="portfolio-product-resources-youtube-playlists" label="Portfolio IBM Product Hub YouTube playlists" />
               <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
             </div>
@@ -6327,6 +6285,48 @@ export default function App() {
                 ))}
             </div>
           )}
+        </div>
+        )}
+
+        {effectiveVisibleProductResourceSections.has('ai-capabilities') && (
+        <div id="portfolio-product-resources-ai-capabilities" className="scroll-mt-28 border-t border-white/[0.06] px-5 py-5 sm:px-6">
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => toggleProductResourceSection('ai-capabilities')}
+              aria-expanded={!collapsedProductResourceSections.has('ai-capabilities')}
+              aria-controls="portfolio-product-resources-ai-capabilities-content"
+              className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
+            >
+              <span>AI capabilities</span>
+              <VideoVisibilityIcon visible={!collapsedProductResourceSections.has('ai-capabilities')} />
+            </button>
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] font-medium text-[#c6c6c6]">{productResourceAssetCountLabel(sectionCounts['ai-capabilities'])}</span>
+              <span className="font-mono text-[10px] text-[#8d8d8d]">08 / 08</span>
+              <CopySectionLink id="portfolio-product-resources-ai-capabilities" label="Portfolio AI capabilities" />
+              <BackToCapabilityTopButton onBackToTop={collapseCapabilitySubsections} />
+            </div>
+          </div>
+          {!collapsedProductResourceSections.has('ai-capabilities') && <div id="portfolio-product-resources-ai-capabilities-content" className="mt-3 grid gap-3 sm:grid-cols-2">
+            {resourceGroups.flatMap(group =>
+              group.resources.aiCapabilities.map(capability => (
+                <article key={`${group.page}-${capability.name}`} className="rounded-lg border border-white/[0.06] bg-[#161616] p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <h4 className="text-sm font-semibold text-white">{capability.name}</h4>
+                    {capabilityTag(group.label, group.color)}
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-[#c6c6c6]">{capability.description}</p>
+                  {'url' in capability && capability.url && (
+                    <a href={capability.url} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[#78a9ff] hover:text-white">
+                      Learn more
+                      <ExternalLinkIcon />
+                    </a>
+                  )}
+                </article>
+              )),
+            )}
+          </div>}
         </div>
         )}
         </div>
