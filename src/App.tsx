@@ -1246,19 +1246,13 @@ const onboardingPageCycleLabels = [
   'Collapse all sections on the page',
 ] as const
 
-function OnboardingPageCycleButton({
-  collapsed,
-  setCollapsed,
-}: {
-  collapsed: Set<string>
-  setCollapsed: (next: Set<string>) => void
-}) {
+function OnboardingPageCycleButton({ collapsed, onCycle }: { collapsed: Set<string>; onCycle: () => void }) {
   const level = onboardingPageLevel(collapsed)
   const label = onboardingPageCycleLabels[level]
   return (
     <button
       type="button"
-      onClick={() => setCollapsed(nextOnboardingPageCollapsed(collapsed))}
+      onClick={onCycle}
       aria-label={label}
       title={label}
       className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-white/[0.12] bg-white/[0.04] text-[#c6c6c6] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
@@ -1373,8 +1367,6 @@ function OnboardingAutomationSections({
   collapsed: Set<string>
   setCollapsed: (update: Set<string> | ((current: Set<string>) => Set<string>)) => void
 }) {
-  const allCollapsed = collapsed.size === allOnboardingSectionIds.length
-
   useEffect(() => {
     const reveal = () => {
       const hash = decodeURIComponent(window.location.hash.replace(/^#/, ''))
@@ -1449,22 +1441,8 @@ function OnboardingAutomationSections({
     else window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })
   }
 
-  const collapseAllLabel = allCollapsed ? 'Expand all Onboarding Automation sections' : 'Collapse all Onboarding Automation sections'
-
   return (
     <OnboardingCollapseContext.Provider value={{ collapsed, toggle, cycle, goToSection, goToPageEdge }}>
-      <div className="mb-3 flex justify-end">
-        <button
-          type="button"
-          onClick={() => setCollapsed(allCollapsed ? new Set() : new Set(allOnboardingSectionIds))}
-          aria-label={collapseAllLabel}
-          title="Expand/Collapse sections"
-          className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md border border-[#ff832b]/45 bg-[#ff832b]/10 px-3 text-xs font-semibold text-[#ffb784] shadow-[0_0_18px_rgba(255,131,43,0.08)] transition-colors hover:border-[#ff832b]/75 hover:bg-[#ff832b]/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb784]"
-        >
-          <VideoVisibilityIcon visible={!allCollapsed} />
-          {allCollapsed ? 'Expand Sections' : 'Collapse Sections'}
-        </button>
-      </div>
       <div className="grid gap-4">
         {onboardingAutomationSections.map((section, index) => (
           <OnboardingAutomationSectionView
@@ -1595,8 +1573,13 @@ function OnboardingAutomationSectionView({
   )
 }
 
-function OnboardingAutomationContents() {
-  const [contentsCollapsed, setContentsCollapsed] = useState(false)
+function OnboardingAutomationContents({
+  contentsCollapsed,
+  setContentsCollapsed,
+}: {
+  contentsCollapsed: boolean
+  setContentsCollapsed: (update: boolean | ((current: boolean) => boolean)) => void
+}) {
   const renderEntries = (blocks: OnboardingBlock[]): ReactNode => {
     const entries = blocks.filter((block): block is Extract<OnboardingBlock, { t: 'sec' }> => block.t === 'sec' && block.s.toc !== false)
     if (entries.length === 0) return null
@@ -4007,6 +3990,13 @@ export default function App() {
   })
   const [isLetsCreateFiltersExpanded, setIsLetsCreateFiltersExpanded] = useState(false)
   const [onboardingCollapsed, setOnboardingCollapsed] = useState<Set<string>>(() => new Set(allOnboardingSectionIds))
+  const [onboardingContentsCollapsed, setOnboardingContentsCollapsed] = useState(false)
+  // The header button also drives Contents: it is collapsed together with the sections, open at the other two levels.
+  const cycleOnboardingPage = () => {
+    const next = nextOnboardingPageCollapsed(onboardingCollapsed)
+    setOnboardingCollapsed(next)
+    setOnboardingContentsCollapsed(onboardingPageLevel(next) === 0)
+  }
   const [siteAccessCount, setSiteAccessCount] = useState<number | null>(null)
   useEffect(() => {
     const controller = new AbortController()
@@ -6284,7 +6274,7 @@ export default function App() {
                 </nav>
               )}
               {currentPage === 'onboarding-automation' ? (
-                <OnboardingPageCycleButton collapsed={onboardingCollapsed} setCollapsed={setOnboardingCollapsed} />
+                <OnboardingPageCycleButton collapsed={onboardingCollapsed} onCycle={cycleOnboardingPage} />
               ) : (
               <p className="text-right text-sm text-[#8d8d8d]">
                 {activeBusinessAutomationCapability
@@ -6931,24 +6921,11 @@ export default function App() {
 
         ) : currentPage === 'onboarding-automation' ? (
           <section id="onboarding-automation-top" aria-labelledby="onboarding-automation-heading" className="scroll-mt-28">
-            <div className="mb-4">
-              <a
-                href={`#${pageAnchors['lets-create']}`}
-                onClick={event => {
-                  event.preventDefault()
-                  navigateToPage('lets-create')
-                }}
-                className="text-xs font-semibold text-[#78a9ff] transition-colors hover:text-white"
-              >
-                &larr; Back to Let&rsquo;s Create!
-              </a>
-            </div>
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">Let&rsquo;s Create! · YourLearning Enablement</p>
-                <h2 id="onboarding-automation-heading" className="mt-1 text-2xl font-semibold text-white">Onboarding Automation</h2>
+                <h2 id="onboarding-automation-heading" className="text-2xl font-semibold text-white">Onboarding Automation</h2>
                 <p className="mt-1 text-sm font-semibold text-[#c6c6c6]">{onboardingAutomationTagline}</p>
-                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#c6c6c6]">
+                <p className="mt-2 text-sm leading-relaxed text-[#c6c6c6]">
                   Content and document services demo: help Lucy, an HR onboarding specialist at Focus Corp, review applicant John Doe&rsquo;s materials in a secure teamspace and launch the onboarding process.
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-1.5">
@@ -6967,20 +6944,25 @@ export default function App() {
                     IBM FileNet Content Manager
                   </span>
                 </div>
+              </div>
+              <div className="flex shrink-0 flex-col items-end gap-3">
+                <CopySectionLink id="onboarding-automation-top" label="Onboarding Automation page" />
                 <a
                   href={onboardingAutomationSourceUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-[#4589ff]/35 bg-[#0f62fe]/10 px-2.5 py-1.5 text-xs font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff] hover:bg-[#0f62fe]/25 hover:text-white"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-[#4589ff]/35 bg-[#0f62fe]/10 px-2.5 py-1.5 text-xs font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff] hover:bg-[#0f62fe]/25 hover:text-white"
                 >
                   View original lab
                   <ExternalLinkIcon />
                 </a>
               </div>
-              <CopySectionLink id="onboarding-automation-top" label="Onboarding Automation page" />
             </div>
 
-            <OnboardingAutomationContents />
+            <OnboardingAutomationContents
+              contentsCollapsed={onboardingContentsCollapsed}
+              setContentsCollapsed={setOnboardingContentsCollapsed}
+            />
 
             <OnboardingAutomationSections collapsed={onboardingCollapsed} setCollapsed={setOnboardingCollapsed} />
           </section>
