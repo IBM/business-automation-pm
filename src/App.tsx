@@ -1955,6 +1955,8 @@ function VideosPage() {
   // The player only autoplays after a video is chosen, not on page load.
   const [shouldAutoplay, setShouldAutoplay] = useState(false)
   const [isPlaylistCollapsed, setIsPlaylistCollapsed] = useState(false)
+  const [isNavatticCollapsed, setIsNavatticCollapsed] = useState(false)
+  const navatticAssets = letsCreateAssets.filter(item => item.section === 'navattic')
   const selectedIndex = businessAutomationPlaylistVideos.findIndex(video => video.id === selectedVideoId)
   const selectedVideo = businessAutomationPlaylistVideos[Math.max(0, selectedIndex)]
   const playlistUrl = `https://www.youtube.com/playlist?list=${BUSINESS_AUTOMATION_PLAYLIST_ID}`
@@ -2072,6 +2074,39 @@ function VideosPage() {
           </ul>
         </div>
       </article>
+
+      <article id="videos-navattic" aria-labelledby="videos-navattic-heading" className="mt-4 scroll-mt-28 overflow-hidden rounded-xl border border-white/[0.07] bg-[#262626]">
+        <div className={`flex items-start justify-between gap-4 px-5 py-4 ${isNavatticCollapsed ? '' : 'border-b border-white/[0.06]'}`}>
+          <div>
+            <h3 id="videos-navattic-heading" className="text-base font-semibold text-white">
+              <button
+                type="button"
+                onClick={() => setIsNavatticCollapsed(value => !value)}
+                aria-expanded={!isNavatticCollapsed}
+                aria-controls="videos-navattic-body"
+                title={`${isNavatticCollapsed ? 'Expand' : 'Collapse'} Navattic`}
+                className="inline-flex items-center gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+              >
+                Navattic
+                <span className="text-[#78a9ff]"><VideoVisibilityIcon visible={!isNavatticCollapsed} /></span>
+              </button>
+            </h3>
+            {!isNavatticCollapsed && (
+              <p className="mt-1 text-xs leading-relaxed text-[#c6c6c6]">
+                Interactive product demos built with Navattic. Select View Below to run a demo on this page.
+              </p>
+            )}
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <span className="text-[10px] font-medium text-[#c6c6c6]">{navatticAssets.length} demos</span>
+            <CopySectionLink id="videos-navattic" label="Navattic demos" />
+          </div>
+        </div>
+        <div id="videos-navattic-body" hidden={isNavatticCollapsed} className="p-5">
+          <LetsCreateAssetGrid assets={navatticAssets} embeddable onOpenPage={() => undefined} />
+        </div>
+      </article>
+
 
       <article id="videos-more-playlists" aria-labelledby="videos-more-playlists-heading" className="mt-4 scroll-mt-28 overflow-hidden rounded-xl border border-white/[0.07] bg-[#262626]">
         <div className="border-b border-white/[0.06] px-5 py-4">
