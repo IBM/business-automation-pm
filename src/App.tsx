@@ -11,12 +11,13 @@ import {
 const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`
 
 type SessionType = 'Lab' | 'Meet the Expert' | 'Meetup' | 'Tech Talk' | 'Breakout' | 'Client Advisory Board'
-type Page = 'overview' | 'capabilities' | 'badges' | 'lets-create' | 'onboarding-automation' | 'process-automation' | 'content-services' | 'decision-intelligence' | 'cp4ba' | 'conference' | 'think' | 'sessions' | 'techxchange' | 'schedule' | 'maps' | 'ibm' | 'insights' | 'info' | 'product' | 'community' | 'enablement' | 'ug' | 'surveys' | 'speaker'
+type Page = 'overview' | 'capabilities' | 'badges' | 'yl' | 'lets-create' | 'onboarding-automation' | 'process-automation' | 'content-services' | 'decision-intelligence' | 'cp4ba' | 'conference' | 'think' | 'sessions' | 'techxchange' | 'schedule' | 'maps' | 'ibm' | 'insights' | 'info' | 'product' | 'community' | 'enablement' | 'ug' | 'surveys' | 'speaker'
 
 const pageAnchors: Record<Page, string> = {
   overview: 'main',
   capabilities: 'capabilities-top',
   badges: 'badges-top',
+  yl: 'yl-top',
   'lets-create': 'lets-create-top',
   'onboarding-automation': 'onboarding-automation-top',
   'process-automation': 'capabilities-process-automation',
@@ -44,6 +45,7 @@ const breadcrumbLabels: Record<Page, string> = {
   overview: 'Main',
   capabilities: 'Portfolio',
   badges: 'Badge',
+  yl: 'YL',
   'lets-create': 'Let\'s Create!',
   'onboarding-automation': 'Onboarding Automation',
   'process-automation': 'Process Automation',
@@ -70,6 +72,7 @@ const breadcrumbLabels: Record<Page, string> = {
 const breadcrumbParents: Partial<Record<Page, Page>> = {
   capabilities: 'overview',
   badges: 'overview',
+  yl: 'overview',
   'lets-create': 'overview',
   'onboarding-automation': 'lets-create',
   'process-automation': 'capabilities',
@@ -136,6 +139,7 @@ function pageForHash(hash: string): Page {
   if (id === 'main') return 'overview'
   if (id === 'onboarding-automation-top' || id.startsWith('onboarding-automation-')) return 'onboarding-automation'
   if (id === 'badges-top' || id.startsWith('badges-')) return 'badges'
+  if (id === 'yl-top' || id.startsWith('yl-')) return 'yl'
   if (id === 'lets-create-top' || id.startsWith('lets-create-')) return 'lets-create'
   if (id === 'capabilities-top') return 'capabilities'
   if (id === 'capabilities-all') return 'capabilities'
@@ -1341,6 +1345,95 @@ const badgeEntries: BadgeEntry[] = ([
     note: 'IBMers must apply this learning with a client and complete an application form detailing their interaction.',
   },
 ] as BadgeEntry[]).sort((a, b) => a.name.localeCompare(b.name))
+const ylLevels: { level: number; courses: { code: string; title: string; owners: string[] }[] }[] = [
+  {
+    level: 1,
+    courses: [
+      { code: 'CP4BA L1', title: 'Cloud Pak for Business Automation Level 1', owners: ['Shipra', 'Thomas'] },
+      { code: 'BAMOEL1', title: 'Business Automation Manager Open Editions Fundamentals Level 1', owners: ['Devidutta'] },
+    ],
+  },
+  {
+    level: 2,
+    courses: [
+      { code: 'CP4BA L2', title: 'Cloud Pak for Business Automation Level 2', owners: ['Shipra', 'Thomas'] },
+      { code: 'CP4BA L2 CSDP', title: 'Cloud Pak for Business Automation Content Services and Document Processing Level 2', owners: ['Sydney'] },
+      { code: 'CP4BA L2 WF DM', title: 'Cloud Pak for Business Automation Workflow and Decisions Level 2', owners: ['Bibin', 'Prasoon'] },
+      { code: 'CP4BA L2 RPA PM', title: 'Learning Plan Introduction to Robotic Process Automation and Process Mining Level 2', owners: ['Suman Kalia'] },
+      { code: 'DMOEL2', title: 'Decision Manager Open Edition Level 2', owners: ['Devidutta'] },
+      { code: 'PAMOEL2', title: 'Process Automation Manager Open Edition Level 2', owners: ['Devidutta'] },
+      { code: 'DI L2', title: 'Decision Intelligence Level 2', owners: ['Prasson'] },
+    ],
+  },
+  {
+    level: 3,
+    courses: [
+      { code: 'CP4BA L3', title: 'Cloud Pak for Business Automation Demos Level 3 (FileNet, BAW, ADS, BAI)', owners: [] },
+      { code: 'RPA L3', title: 'Robotic Process Automation Level 3', owners: ['Suman Kalia'] },
+      { code: 'IPM L3', title: 'IBM Process Mining Level 3', owners: ['Lorenzo'] },
+      { code: 'PAMOEL3', title: 'Process Automation Manager Open Edition Level 3', owners: ['Devidutta'] },
+      { code: 'DMOEL3', title: 'Decision Manager Open Edition Level 3', owners: ['Devidutta'] },
+    ],
+  },
+  {
+    level: 4,
+    courses: [
+      { code: 'FILENET L4', title: 'FileNet Content Manager for Technical Sales Level 4', owners: ['Thomas'] },
+      { code: 'IPM L4', title: 'IBM Process Mining Level 4', owners: ['Lorenzo'] },
+    ],
+  },
+]
+
+function YLPage() {
+  return (
+    <section id="yl-top" aria-labelledby="yl-heading" className="scroll-mt-28">
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">IBM Data &amp; AI: Business Automation</p>
+          <h2 id="yl-heading" className="mt-1 text-2xl font-semibold text-white">YL</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#c6c6c6]">
+            Learning plan courses by level, with the owner for each course.
+          </p>
+        </div>
+        <CopySectionLink id="yl-top" label="YL page" />
+      </div>
+      <div className="grid gap-6">
+        {ylLevels.map(group => (
+          <section
+            key={group.level}
+            id={`yl-level-${group.level}`}
+            aria-labelledby={`yl-level-${group.level}-heading`}
+            className="scroll-mt-28 rounded-xl border border-white/[0.07] bg-[#262626] p-5"
+          >
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h3 id={`yl-level-${group.level}-heading`} className="flex items-baseline gap-3 text-lg font-semibold text-white">
+                <span className="font-mono text-xs text-[#78a9ff]">{String(group.level).padStart(2, '0')}</span>
+                Level {group.level}
+              </h3>
+              <CopySectionLink id={`yl-level-${group.level}`} label={`Level ${group.level}`} />
+            </div>
+            <ul className="grid gap-3 sm:grid-cols-2">
+              {group.courses.map(course => (
+                <li key={course.code} className="rounded-lg border border-white/[0.06] bg-[#161616] p-4">
+                  <p className="text-sm font-semibold text-white">{course.code}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-[#c6c6c6]">{course.title}</p>
+                  {course.owners.length > 0 && (
+                    <p className="mt-2 text-xs text-[#8d8d8d]">
+                      <span className="font-semibold uppercase tracking-[0.12em] text-[#78a9ff]">{course.owners.length > 1 ? 'Owners' : 'Owner'}</span>{' '}
+                      {course.owners.join(', ')}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+
 
 function BadgesPage() {
   const [isFilterExpanded, setIsFilterExpanded] = useState(true)
@@ -5148,7 +5241,7 @@ export default function App() {
     Boolean(activeBusinessAutomationCapability)
   const isCommunitySection = currentPage === 'community' || currentPage === 'enablement'
   const isBusinessAutomationSection =
-    currentPage === 'overview' || currentPage === 'badges' || currentPage === 'lets-create' || currentPage === 'onboarding-automation' || isCapabilitiesPage
+    currentPage === 'overview' || currentPage === 'badges' || currentPage === 'yl' || currentPage === 'lets-create' || currentPage === 'onboarding-automation' || isCapabilitiesPage
   const isIbmSection = currentPage === 'ibm' || currentPage === 'insights' || currentPage === 'speaker'
   const isTechXchangeSection =
     currentPage === 'techxchange' ||
@@ -6655,6 +6748,8 @@ export default function App() {
     ? 'Business Automation Portfolio'
     : currentPage === 'badges'
     ? 'Badge'
+    : currentPage === 'yl'
+    ? 'YL'
     : currentPage === 'lets-create'
     ? 'Let\'s Create!'
     : currentPage === 'conference'
@@ -6834,8 +6929,9 @@ export default function App() {
                 <nav aria-label="Business Automation subpages" className="flex w-full flex-wrap items-center gap-1.5 sm:justify-end">
                   {([
                     ['overview', 'Overview'],
-                    ['capabilities', 'Portfolio'],
                     ['badges', 'Badge'],
+                    ['capabilities', 'Product'],
+                    ['yl', 'YL'],
                     ['lets-create', 'Let\'s Create!'],
                   ] as const).map(([page, label]) => {
                     const isActive = page === 'capabilities' ? isCapabilitiesPage : currentPage === page
@@ -6961,6 +7057,8 @@ export default function App() {
                     ? 'Process · Content · Decisions · Platform'
                   : currentPage === 'badges'
                     ? `${badgeEntries.length} Business Automation badges`
+                  : currentPage === 'yl'
+                    ? 'Learning plan courses by level'
                   : currentPage === 'lets-create'
                     ? 'Learn, demo, and build with Business Automation'
                   : currentPage === 'overview'
@@ -7411,6 +7509,8 @@ export default function App() {
           </section>
         ) : currentPage === 'badges' ? (
           <BadgesPage />
+        ) : currentPage === 'yl' ? (
+          <YLPage />
 
         ) : currentPage === 'lets-create' ? (
           <section id="lets-create-top" aria-labelledby="lets-create-heading" className="scroll-mt-28">
