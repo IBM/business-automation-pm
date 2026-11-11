@@ -4495,6 +4495,7 @@ const productManagementResources = allProductManagementResources
 
 // Hidden page, opened by double-clicking the IBM logo in the site header.
 function ProductManagementResourcesPage() {
+  const [isTocCollapsed, setIsTocCollapsed] = useState(false)
   const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(false)
   const [selectedSectionCode, setSelectedSectionCode] = useState<string>("all")
   const [sectionViews, setSectionViews] = useState<Record<string, "list" | "table">>({})
@@ -4525,6 +4526,22 @@ function ProductManagementResourcesPage() {
       ...prev,
       [id]: prev[id] === "table" ? "list" : "table",
     }))
+  }
+
+  const jumpToTarget = (targetId: string, expandSummary?: boolean) => {
+    if (expandSummary) {
+      setIsSummaryCollapsed(false)
+    } else {
+      setExpandedSections(prev => new Set(prev).add(targetId))
+      setSelectedSectionCode("all")
+    }
+    const elementId = expandSummary ? "pm-resources-summary" : `pm-section-${targetId}`
+    window.requestAnimationFrame(() => {
+      const el = document.getElementById(elementId)
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" })
+      }
+    })
   }
 
   const visibleSections = productManagementResourceSections.filter(sec =>
@@ -4579,6 +4596,97 @@ function ProductManagementResourcesPage() {
         </div>
       </div>
 
+      {/* Table of Contents Section */}
+      <nav id="pm-resources-toc" aria-labelledby="pm-resources-toc-heading" className="rounded-xl border border-[#4589ff]/30 bg-[#161616] p-5 shadow-lg shadow-black/40">
+        <div className="flex items-start justify-between gap-4 border-b border-white/[0.06] pb-3">
+          <div>
+            <h3 id="pm-resources-toc-heading" className="text-base font-semibold text-white">
+              <button
+                type="button"
+                onClick={() => setIsTocCollapsed(collapsed => !collapsed)}
+                aria-expanded={!isTocCollapsed}
+                aria-controls="pm-resources-toc-body"
+                title={`${isTocCollapsed ? "Expand" : "Collapse"} Table of Contents`}
+                className="inline-flex items-baseline gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+              >
+                Table of Contents
+                <span className="text-xs font-medium text-[#c6c6c6]">
+                  {productManagementResourceSections.length} sections · {allProductManagementResources.length} resources
+                </span>
+                <span className="self-center text-[#78a9ff]"><VideoVisibilityIcon visible={!isTocCollapsed} /></span>
+              </button>
+            </h3>
+            {!isTocCollapsed && (
+              <p className="mt-1 text-xs text-[#c6c6c6]">
+                Jump directly to any section or the global summary table.
+              </p>
+            )}
+          </div>
+          <CopySectionLink id="pm-resources-toc" label="Table of Contents" />
+        </div>
+
+        <div id="pm-resources-toc-body" hidden={isTocCollapsed} className="mt-4">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Quick jump to Summary Table */}
+            <button
+              type="button"
+              onClick={() => jumpToTarget("pm-resources-summary", true)}
+              className="group flex flex-col justify-between rounded-lg border border-[#78a9ff]/30 bg-[#0f62fe]/10 p-3.5 text-left transition-all hover:border-[#4589ff] hover:bg-[#0f62fe]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="inline-flex items-center rounded border border-[#78a9ff]/40 bg-[#0f62fe]/20 px-2 py-0.5 font-mono text-[10px] font-semibold text-[#a6c8ff]">
+                    SUMMARY
+                  </span>
+                  <span className="text-[10px] font-medium text-[#c6c6c6]">
+                    {allProductManagementResources.length} items
+                  </span>
+                </div>
+                <h4 className="mt-2 text-sm font-semibold text-white group-hover:text-[#a6c8ff]">
+                  Full Summary Table View
+                </h4>
+                <p className="mt-1 text-xs text-[#c6c6c6] line-clamp-2">
+                  Unified searchable and filterable table across all categories with multi-column filtering.
+                </p>
+              </div>
+              <span className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-[#78a9ff] group-hover:text-white">
+                View Summary Table <span aria-hidden="true">↓</span>
+              </span>
+            </button>
+
+            {/* Individual Sections */}
+            {productManagementResourceSections.map(sec => (
+              <button
+                key={sec.id}
+                type="button"
+                onClick={() => jumpToTarget(sec.id)}
+                className="group flex flex-col justify-between rounded-lg border border-white/[0.08] bg-[#1c1c1c] p-3.5 text-left transition-all hover:border-[#4589ff]/60 hover:bg-[#222222] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="inline-flex items-center rounded border border-white/15 bg-white/5 px-2 py-0.5 font-mono text-[10px] font-semibold text-[#78a9ff]">
+                      {sec.code}
+                    </span>
+                    <span className="text-[10px] font-medium text-[#c6c6c6]">
+                      {sec.items.length} {sec.items.length === 1 ? "resource" : "resources"}
+                    </span>
+                  </div>
+                  <h4 className="mt-2 text-sm font-semibold text-white group-hover:text-[#a6c8ff]">
+                    {sec.title}
+                  </h4>
+                  <p className="mt-1 text-xs text-[#c6c6c6] line-clamp-2">
+                    {sec.description}
+                  </p>
+                </div>
+                <span className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-[#78a9ff] group-hover:text-white">
+                  Jump to section <span aria-hidden="true">↓</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </nav>
+
       {/* Summary Section with Table View */}
       <article id="pm-resources-summary" aria-labelledby="pm-resources-summary-heading" className="rounded-xl border border-white/[0.08] bg-[#161616] p-5 shadow-lg shadow-black/40">
         <div className="flex items-start justify-between gap-4">
@@ -4591,12 +4699,12 @@ function ProductManagementResourcesPage() {
               title={`${isSummaryCollapsed ? "Expand" : "Collapse"} Summary`}
               className="inline-flex items-baseline gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
             >
-              Summary
+              Summary Table View
               <span className="text-xs font-medium text-[#c6c6c6]">{allProductManagementResources.length} resources</span>
               <span className="self-center text-[#78a9ff]"><VideoVisibilityIcon visible={!isSummaryCollapsed} /></span>
             </button>
           </h3>
-          <CopySectionLink id="pm-resources-summary" label="Summary" />
+          <CopySectionLink id="pm-resources-summary" label="Summary Table View" />
         </div>
         <div id="pm-resources-summary-body" hidden={isSummaryCollapsed} className="mt-4">
           <TableView
@@ -4755,7 +4863,7 @@ function ProductManagementResourcesPage() {
               key={sec.id}
               id={`pm-section-${sec.id}`}
               aria-labelledby={`pm-section-${sec.id}-heading`}
-              className="rounded-xl border border-white/[0.08] bg-[#161616] p-5 shadow-lg shadow-black/40"
+              className="rounded-xl border border-white/[0.08] bg-[#161616] p-5 shadow-lg shadow-black/40 scroll-mt-28"
             >
               <div className="flex flex-wrap items-start justify-between gap-4 pb-3 border-b border-white/[0.06]">
                 <div>
