@@ -1544,6 +1544,7 @@ function LetsCreateAssetCard({
 }
 
 type EmbedViewState = 'normal' | 'maximized' | 'minimized'
+type ResourceTableColumn = 'id' | 'capability' | 'section' | 'name' | 'detail' | 'site' | 'link'
 
 // Embedded frame as wide as its section, with a 16:10 height. Controls: minimize, maximize, open in a new window, and exit.
 function LetsCreateEmbedFrame({
@@ -6209,6 +6210,8 @@ export default function App() {
   const [resourceTableState, setResourceTableState] = useState<EmbedViewState>('normal')
   const [resourceTablePageSizeText, setResourceTablePageSizeText] = useState('20')
   const [resourceTablePage, setResourceTablePage] = useState(0)
+  const [resourceTableSort, setResourceTableSort] = useState<{ key: ResourceTableColumn; direction: 'asc' | 'desc' } | null>(null)
+  const [resourceTableFilters, setResourceTableFilters] = useState<Partial<Record<ResourceTableColumn, string>>>({})
   const [salesKitSortMode, setSalesKitSortMode] = useState<
     'default' | 'title-asc' | 'title-desc' | 'capability-asc' | 'capability-desc'
   >(() =>
@@ -7932,7 +7935,8 @@ export default function App() {
     )
   }
   const renderProductResourceTable = (mode: 'inline' | 'page') => {
-    type ResourceRow = { section: string; capability: string; color: string; name: string; detail: string; url?: string }
+    type ResourceRow = { id: number; site: string; link: string; section: string; capability: string; color: string; name: string; detail: string; url?: string }
+    type RawRow = Omit<ResourceRow, 'id' | 'site' | 'link'>
     const groups = [
       ...businessAutomationCapabilities.map(capability => ({
         page: capability.page as PortfolioResourcePage,
@@ -7942,7 +7946,11 @@ export default function App() {
       })),
       { page: 'cp4ba' as PortfolioResourcePage, label: 'CP4BA', color: '#4589ff', resources: portfolioResources.cp4ba },
     ].filter(group => selectedCapabilityPages.has(group.page))
-    const rows: ResourceRow[] = []
+    const host = (url?: string) => {
+      if (!url) return ''
+      try { return new URL(url).hostname.replace(/^www\./, '') } catch { return '' }
+    }
+    const baseRows: RawRow[] = []
     const visible = (section: ProductResourceSection) => effectiveVisibleProductResourceSections.has(section)
     const sectionLabel = (section: ProductResourceSection) =>
       productResourceSectionFilters.find(filter => filter.id === section)?.label ?? section
@@ -7950,43 +7958,79 @@ export default function App() {
       if (!visible(filter.id)) continue
       const section = sectionLabel(filter.id)
       if (filter.id === 'reference') {
-        groups.forEach(g => g.resources.references.forEach(r => rows.push({ section, capability: g.label, color: g.color, name: r.name, detail: '', url: r.url })))
+        groups.forEach(g => g.resources.references.forEach(r => baseRows.push({ section, capability: g.label, color: g.color, name: r.name, detail: '', url: r.url })))
       } else if (filter.id === 'previews') {
-        groups.forEach(g => g.resources.previews.forEach(r => rows.push({ section, capability: g.label, color: g.color, name: r.name, detail: r.action, url: r.url })))
+        groups.forEach(g => g.resources.previews.forEach(r => baseRows.push({ section, capability: g.label, color: g.color, name: r.name, detail: r.action, url: r.url })))
       } else if (filter.id === 'demos') {
-        groups.forEach(g => g.resources.demos.forEach(d => d.links.forEach(l => rows.push({ section, capability: g.label, color: g.color, name: l.name, detail: d.title, url: l.url }))))
+        groups.forEach(g => g.resources.demos.forEach(d => d.links.forEach(l => baseRows.push({ section, capability: g.label, color: g.color, name: l.name, detail: d.title, url: l.url }))))
       } else if (filter.id === 'sales-kits') {
         groups
           .flatMap(g => g.resources.salesKits.map(kit => ({ kit, g, capability: businessAutomationSalesKitNames.includes(kit.name) ? 'BA' : g.label })))
           .sort((a, b) => compareSalesKitCards({ name: a.kit.name, capability: a.capability }, { name: b.kit.name, capability: b.capability }))
-          .forEach(({ kit, g, capability }) => rows.push({ section, capability, color: g.color, name: kit.name, detail: '', url: kit.url }))
+          .forEach(({ kit, g, capability }) => baseRows.push({ section, capability, color: g.color, name: kit.name, detail: '', url: kit.url }))
       } else if (filter.id === 'environments') {
-        groups.forEach(g => g.resources.environments.forEach(e => rows.push({ section, capability: g.label, color: g.color, name: `${e.recommended ? '★ ' : ''}${e.name}`, detail: e.description, url: e.url })))
+        groups.forEach(g => g.resources.environments.forEach(e => baseRows.push({ section, capability: g.label, color: g.color, name: `${e.recommended ? '★ ' : ''}${e.name}`, detail: e.description, url: e.url })))
       } else if (filter.id === 'techzone-collections') {
         orderTechZoneCollections(groups.flatMap(g => g.resources.techZoneCollections.map(collection => ({ collection, g }))))
-          .forEach(({ collection, g }) => rows.push({ section, capability: g.label, color: g.color, name: `${isRecommendedTechZoneCollection(collection.name) ? '★ ' : ''}${collection.name}`, detail: collection.description, url: collection.url }))
+          .forEach(({ collection, g }) => baseRows.push({ section, capability: g.label, color: g.color, name: `${isRecommendedTechZoneCollection(collection.name) ? '★ ' : ''}${collection.name}`, detail: collection.description, url: collection.url }))
       } else if (filter.id === 'youtube-playlists') {
         groups
           .flatMap(g => g.resources.youtubePlaylists.map(playlist => ({ playlist, g })))
           .sort((a, b) => a.playlist.order - b.playlist.order)
-          .forEach(({ playlist, g }) => rows.push({ section, capability: g.label, color: g.color, name: playlist.name, detail: 'YouTube playlist', url: playlist.url }))
+          .forEach(({ playlist, g }) => baseRows.push({ section, capability: g.label, color: g.color, name: playlist.name, detail: 'YouTube playlist', url: playlist.url }))
       } else if (filter.id === 'ai-capabilities') {
-        groups.forEach(g => g.resources.aiCapabilities.forEach(c => rows.push({ section, capability: g.label, color: g.color, name: c.name, detail: `${c.area}: ${c.description}`, url: 'url' in c ? c.url : undefined })))
+        groups.forEach(g => g.resources.aiCapabilities.forEach(c => baseRows.push({ section, capability: g.label, color: g.color, name: c.name, detail: `${c.area}: ${c.description}`, url: 'url' in c ? c.url : undefined })))
       }
+    }
+
+    const rows: ResourceRow[] = baseRows.map((row, index) => ({ ...row, id: index + 1, site: host(row.url), link: row.url ?? '' }))
+
+    const columns: { key: ResourceTableColumn; label: string; col: string; placeholder: string }[] = [
+      { key: 'id', label: '#', col: 'w-16', placeholder: '#' },
+      { key: 'capability', label: 'Capability', col: 'w-40', placeholder: 'Filter' },
+      { key: 'section', label: 'Type', col: 'w-44', placeholder: 'Filter' },
+      { key: 'name', label: 'Name', col: 'w-[24%]', placeholder: 'Filter' },
+      { key: 'detail', label: 'Details', col: '', placeholder: 'Filter' },
+      { key: 'site', label: 'Site', col: 'w-40', placeholder: 'Filter' },
+      { key: 'link', label: 'Link', col: 'w-28', placeholder: 'URL' },
+    ]
+    const cellText = (row: ResourceRow, key: ResourceTableColumn) => (key === 'id' ? String(row.id) : row[key])
+    const activeFilters = columns.filter(column => (resourceTableFilters[column.key] ?? '').trim() !== '')
+    const filteredRows = rows.filter(row =>
+      activeFilters.every(column =>
+        cellText(row, column.key).toLowerCase().includes((resourceTableFilters[column.key] ?? '').trim().toLowerCase()),
+      ),
+    )
+    const sortedRows = resourceTableSort
+      ? [...filteredRows].sort((a, b) => {
+          const { key, direction } = resourceTableSort
+          const result = key === 'id'
+            ? a.id - b.id
+            : cellText(a, key).localeCompare(cellText(b, key), undefined, { numeric: true, sensitivity: 'base' })
+          return direction === 'asc' ? result : -result
+        })
+      : filteredRows
+    const toggleSort = (key: ResourceTableColumn) => {
+      setResourceTablePage(0)
+      setResourceTableSort(current =>
+        !current || current.key !== key ? { key, direction: 'asc' } : current.direction === 'asc' ? { key, direction: 'desc' } : null,
+      )
     }
 
     const parsedSize = Number.parseInt(resourceTablePageSizeText, 10)
     const pageSize = Number.isFinite(parsedSize) ? Math.min(Math.max(parsedSize, 1), 500) : 20
-    const pageCount = Math.max(1, Math.ceil(rows.length / pageSize))
+    const pageCount = Math.max(1, Math.ceil(sortedRows.length / pageSize))
     const pageIndex = Math.min(resourceTablePage, pageCount - 1)
     const start = pageIndex * pageSize
-    const shown = rows.slice(start, start + pageSize)
-    const host = (url?: string) => {
-      if (!url) return ''
-      try { return new URL(url).hostname.replace(/^www\./, '') } catch { return '' }
-    }
+    const shown = sortedRows.slice(start, start + pageSize)
     const isMaximized = resourceTableState === 'maximized'
-    const isMinimized = resourceTableState === 'minimized'
+    // Minimize returns to the normal size and the default 20 rows.
+    const canMinimize = isMaximized || pageSize !== 20 || pageIndex !== 0
+    const minimizeTable = () => {
+      setResourceTableState('normal')
+      setResourceTablePageSizeText('20')
+      setResourceTablePage(0)
+    }
     const exitTable = () => {
       setResourceTableState('normal')
       setProductResourceView('list')
@@ -8005,6 +8049,19 @@ export default function App() {
       setProductResourceView('table')
       navigateToPage('resource-table')
     }
+    const segmentClass =
+      'inline-flex h-7 w-8 items-center justify-center text-[#78a9ff] transition-colors hover:bg-[#0f62fe]/20 hover:text-white focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-[#78a9ff]'
+    const groupClass = 'inline-flex overflow-hidden rounded-md border border-white/[0.12] bg-white/[0.04]'
+    const iconProps = {
+      'aria-hidden': true,
+      viewBox: '0 0 16 16',
+      className: 'h-3.5 w-3.5',
+      fill: 'none',
+      stroke: 'currentColor',
+      strokeWidth: 1.5,
+      strokeLinecap: 'round',
+      strokeLinejoin: 'round',
+    } as const
     return (
       <div
         role="region"
@@ -8012,15 +8069,18 @@ export default function App() {
         className={isMaximized ? 'fixed inset-0 z-[100] flex flex-col bg-[#161616]' : 'flex flex-col bg-[#161616]/60'}
       >
         <div className="flex flex-wrap items-center gap-2 border-b border-white/[0.06] bg-[#1c1c1c] px-3 py-2">
-          <button type="button" className={letsCreateControlClass} onClick={() => setResourceTablePage(pageIndex - 1)} disabled={pageIndex === 0}>
-            Previous
-          </button>
+          <div className={groupClass} role="group" aria-label="Previous and next page">
+            <button type="button" className={segmentClass} onClick={() => setResourceTablePage(pageIndex - 1)} disabled={pageIndex === 0} aria-label="Previous page" title="Previous page">
+              <svg {...iconProps}><path d="M10 3 5 8l5 5" /></svg>
+            </button>
+            <button type="button" className={`${segmentClass} border-l border-white/[0.12]`} onClick={() => setResourceTablePage(pageIndex + 1)} disabled={pageIndex >= pageCount - 1} aria-label="Next page" title="Next page">
+              <svg {...iconProps}><path d="m6 3 5 5-5 5" /></svg>
+            </button>
+          </div>
           <span aria-live="polite" className="text-[11px] text-[#c6c6c6]">
-            {rows.length === 0 ? 'No resources' : `${start + 1}–${start + shown.length} of ${rows.length}`} · Page {pageIndex + 1} of {pageCount}
+            {sortedRows.length === 0 ? 'No resources' : `${start + 1}–${start + shown.length} of ${sortedRows.length}`}
+            {sortedRows.length !== rows.length ? ` (filtered from ${rows.length})` : ''} · Page {pageIndex + 1} of {pageCount}
           </span>
-          <button type="button" className={letsCreateControlClass} onClick={() => setResourceTablePage(pageIndex + 1)} disabled={pageIndex >= pageCount - 1}>
-            Next
-          </button>
           <label className="ml-2 inline-flex items-center gap-1.5 text-[11px] text-[#c6c6c6]">
             Rows per page
             <input
@@ -8036,13 +8096,28 @@ export default function App() {
               className="h-7 w-16 rounded-md border border-white/[0.1] bg-white/[0.03] px-2 text-[11px] text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
             />
           </label>
+          {(activeFilters.length > 0 || resourceTableSort) && (
+            <button
+              type="button"
+              className={letsCreateControlClass}
+              onClick={() => {
+                setResourceTableFilters({})
+                setResourceTableSort(null)
+                setResourceTablePage(0)
+              }}
+            >
+              Clear filters and sorting
+            </button>
+          )}
           <span className="ml-auto flex flex-wrap items-center gap-2">
-            <button type="button" className={letsCreateControlClass} onClick={() => setResourceTableState(isMinimized ? 'normal' : 'minimized')} aria-pressed={isMinimized}>
-              {isMinimized ? 'Restore' : 'Minimize'}
-            </button>
-            <button type="button" className={letsCreateControlClass} onClick={() => setResourceTableState(isMaximized ? 'normal' : 'maximized')} aria-pressed={isMaximized}>
-              {isMaximized ? 'Restore' : 'Maximize'}
-            </button>
+            <div className={groupClass} role="group" aria-label="Table size">
+              <button type="button" className={segmentClass} onClick={minimizeTable} disabled={!canMinimize} aria-label="Minimize table to 20 rows" title="Minimize: normal size, 20 rows">
+                <svg {...iconProps}><path d="M2.5 6.5h4v-4M13.5 9.5h-4v4M6.5 6.5l-4-4M9.5 9.5l4 4" /></svg>
+              </button>
+              <button type="button" className={`${segmentClass} border-l border-white/[0.12]`} onClick={() => setResourceTableState('maximized')} disabled={isMaximized} aria-label="Maximize table" title="Maximize">
+                <svg {...iconProps}><path d="M6 2.5H2.5V6M10 13.5h3.5V10M2.5 2.5 6.5 6.5M13.5 13.5 9.5 9.5" /></svg>
+              </button>
+            </div>
             {mode === 'inline' && (
               <button type="button" className={letsCreateControlClass} onClick={openAsPage}>
                 Open as new page
@@ -8053,66 +8128,88 @@ export default function App() {
             </button>
           </span>
         </div>
-        {!isMinimized && (
-          <div className={isMaximized ? 'min-h-0 flex-1 overflow-auto' : 'overflow-x-auto'}>
-            <table className="w-full min-w-[960px] table-fixed border-collapse text-left text-xs">
-              <colgroup>
-                <col className="w-10" />
-                <col className="w-36" />
-                <col className="w-40" />
-                <col className="w-[26%]" />
-                <col />
-                <col className="w-44" />
-                <col className="w-10" />
-              </colgroup>
-              <thead className="sticky top-0 bg-[#262626] text-[10px] uppercase tracking-[0.1em] text-[#8d8d8d]">
-                <tr>
-                  <th className="px-3 py-2 font-semibold">#</th>
-                  <th className="px-3 py-2 font-semibold">Capability</th>
-                  <th className="px-3 py-2 font-semibold">Type</th>
-                  <th className="px-3 py-2 font-semibold">Name</th>
-                  <th className="px-3 py-2 font-semibold">Details</th>
-                  <th className="px-3 py-2 font-semibold">Site</th>
-                  <th className="px-3 py-2 font-semibold"><span className="sr-only">Open</span></th>
-                </tr>
-              </thead>
-              <tbody>
-                {shown.map((row, offset) => (
-                  <tr key={`${start + offset}-${row.section}-${row.url ?? row.name}`} className="border-t border-white/[0.05] hover:bg-white/[0.03]">
-                    <td className="px-3 py-1.5 font-mono text-[10px] text-[#8d8d8d]">{start + offset + 1}</td>
-                    <td className="px-3 py-1.5">
-                      <span
-                        className="block truncate rounded-full border px-2 py-0.5 text-center text-[10px] font-semibold uppercase tracking-[0.06em]"
-                        title={row.capability}
-                        style={{ borderColor: `${row.color}66`, backgroundColor: `${row.color}18`, color: row.color }}
+        <div className={isMaximized ? 'min-h-0 flex-1 overflow-auto' : 'overflow-x-auto'}>
+          <table className="w-full min-w-[1040px] table-fixed border-collapse text-left text-xs">
+            <colgroup>
+              {columns.map(column => <col key={column.key} className={column.col} />)}
+            </colgroup>
+            <thead className="sticky top-0 z-10 bg-[#262626] text-[10px] uppercase tracking-[0.1em] text-[#8d8d8d]">
+              <tr>
+                {columns.map(column => {
+                  const sortDirection = resourceTableSort?.key === column.key ? resourceTableSort.direction : null
+                  return (
+                    <th key={column.key} aria-sort={sortDirection === 'asc' ? 'ascending' : sortDirection === 'desc' ? 'descending' : 'none'} className="px-3 pt-2 font-semibold">
+                      <button
+                        type="button"
+                        onClick={() => toggleSort(column.key)}
+                        title={`Sort by ${column.label}`}
+                        className={`inline-flex items-center gap-1 uppercase tracking-[0.1em] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${sortDirection ? 'text-[#ffb784]' : ''}`}
                       >
-                        {row.capability}
-                      </span>
-                    </td>
-                    <td className="truncate px-3 py-1.5 text-[#ffb784]" title={row.section}>{row.section}</td>
-                    <td className="truncate px-3 py-1.5 font-medium text-white" title={row.name}>
-                      {row.url ? (
-                        <a href={row.url} target="_blank" rel="noreferrer" className="text-[#a6c8ff] hover:text-white hover:underline">{row.name}</a>
-                      ) : row.name}
-                    </td>
-                    <td className="truncate px-3 py-1.5 text-[#c6c6c6]" title={row.detail}>{row.detail}</td>
-                    <td className="truncate px-3 py-1.5 font-mono text-[10px] text-[#8d8d8d]" title={row.url}>{host(row.url)}</td>
-                    <td className="px-3 py-1.5 text-[#78a9ff]">
-                      {row.url && (
-                        <a href={row.url} target="_blank" rel="noreferrer" aria-label={`Open ${row.name} in a new tab`} className="inline-flex hover:text-white">
-                          <ExternalLinkIcon />
-                        </a>
-                      )}
-                    </td>
-                  </tr>
+                        {column.label}
+                        <svg aria-hidden="true" viewBox="0 0 8 12" className="h-3 w-2" fill="currentColor">
+                          <path d="M4 0 7.5 4.5h-7z" opacity={sortDirection === 'asc' ? 1 : 0.3} />
+                          <path d="M4 12 .5 7.5h7z" opacity={sortDirection === 'desc' ? 1 : 0.3} />
+                        </svg>
+                      </button>
+                    </th>
+                  )
+                })}
+              </tr>
+              <tr>
+                {columns.map(column => (
+                  <th key={column.key} className="px-3 pb-2 pt-1 font-normal normal-case tracking-normal">
+                    <input
+                      type="search"
+                      value={resourceTableFilters[column.key] ?? ''}
+                      onChange={event => {
+                        const value = event.target.value
+                        setResourceTableFilters(current => ({ ...current, [column.key]: value }))
+                        setResourceTablePage(0)
+                      }}
+                      placeholder={column.placeholder}
+                      aria-label={`Filter ${column.label}`}
+                      className="h-6 w-full min-w-0 rounded border border-white/[0.1] bg-white/[0.03] px-1.5 text-[11px] text-white placeholder:text-[#6f6f6f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                    />
+                  </th>
                 ))}
-                {shown.length === 0 && (
-                  <tr><td colSpan={7} className="px-3 py-6 text-center text-[#8d8d8d]">No Product Resources match the current selection.</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
+              </tr>
+            </thead>
+            <tbody>
+              {shown.map(row => (
+                <tr key={`${row.id}-${row.section}-${row.url ?? row.name}`} className="border-t border-white/[0.05] hover:bg-white/[0.03]">
+                  <td className="px-3 py-1.5 font-mono text-[10px] text-[#8d8d8d]">{row.id}</td>
+                  <td className="px-3 py-1.5">
+                    <span
+                      className="block truncate rounded-full border px-2 py-0.5 text-center text-[10px] font-semibold uppercase tracking-[0.06em]"
+                      title={row.capability}
+                      style={{ borderColor: `${row.color}66`, backgroundColor: `${row.color}18`, color: row.color }}
+                    >
+                      {row.capability}
+                    </span>
+                  </td>
+                  <td className="truncate px-3 py-1.5 text-[#ffb784]" title={row.section}>{row.section}</td>
+                  <td className="truncate px-3 py-1.5 font-medium text-white" title={row.name}>
+                    {row.url ? (
+                      <a href={row.url} target="_blank" rel="noreferrer" className="text-[#a6c8ff] hover:text-white hover:underline">{row.name}</a>
+                    ) : row.name}
+                  </td>
+                  <td className="truncate px-3 py-1.5 text-[#c6c6c6]" title={row.detail}>{row.detail}</td>
+                  <td className="truncate px-3 py-1.5 font-mono text-[10px] text-[#8d8d8d]" title={row.url}>{row.site}</td>
+                  <td className="px-3 py-1.5 text-[#78a9ff]">
+                    {row.url && (
+                      <a href={row.url} target="_blank" rel="noreferrer" aria-label={`Open ${row.name} in a new tab`} className="inline-flex hover:text-white">
+                        <ExternalLinkIcon />
+                      </a>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {shown.length === 0 && (
+                <tr><td colSpan={7} className="px-3 py-6 text-center text-[#8d8d8d]">No Product Resources match the current selection or filters.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     )
   }
