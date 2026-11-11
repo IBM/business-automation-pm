@@ -1744,6 +1744,308 @@ function LetsCreateAssetGrid({
   )
 }
 
+const formatHost = (url?: string) => {
+  if (!url) return ''
+  try {
+    return new URL(url).hostname.replace(/^www\./, '')
+  } catch {
+    return ''
+  }
+}
+
+interface TableColumn<T> {
+  key: string
+  label: string
+  col?: string
+  placeholder?: string
+  sortable?: boolean
+  getValue?: (row: T) => string | number
+  getFilterValue?: (row: T) => string
+  render?: (row: T, index: number) => ReactNode
+}
+
+function TableView<T>({
+  label,
+  columns,
+  rows,
+  rowKey,
+  onExit,
+  emptyMessage = 'No items match the current selection or filters.',
+  defaultPageSize = 20,
+  minWidth = 'min-w-[1000px]',
+}: {
+  label: string
+  columns: TableColumn<T>[]
+  rows: T[]
+  rowKey: (row: T, index: number) => string
+  onExit?: () => void
+  emptyMessage?: string
+  defaultPageSize?: number
+  minWidth?: string
+}) {
+  const [filters, setFilters] = useState<Record<string, string>>({})
+  const [sort, setSort] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null)
+  const [tableState, setTableState] = useState<'normal' | 'maximized'>('normal')
+  const [pageSizeText, setPageSizeText] = useState(String(defaultPageSize))
+  const [page, setPage] = useState(0)
+
+  useEffect(() => {
+    if (tableState !== 'maximized') return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setTableState('normal')
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [tableState])
+
+  const cellText = (row: T, col: TableColumn<T>) => {
+    if (col.getFilterValue) return col.getFilterValue(row)
+    if (col.getValue) return String(col.getValue(row))
+    return String((row as Record<string, unknown>)[col.key] ?? '')
+  }
+
+  const activeFilters = columns.filter(col => (filters[col.key] ?? '').trim() !== '')
+  const filteredRows = rows.filter(row =>
+    activeFilters.every(col =>
+      cellText(row, col).toLowerCase().includes((filters[col.key] ?? '').trim().toLowerCase()),
+    ),
+  )
+
+  const sortedRows = sort
+    ? [...filteredRows].sort((a, b) => {
+        const col = columns.find(c => c.key === sort.key)
+        if (!col) return 0
+        const aVal = col.getValue ? col.getValue(a) : (a as Record<string, unknown>)[sort.key]
+        const bVal = col.getValue ? col.getValue(b) : (b as Record<string, unknown>)[sort.key]
+        let result = 0
+        if (typeof aVal === 'number' && typeof bVal === 'number') {
+          result = aVal - bVal
+        } else {
+          result = String(aVal ?? '').localeCompare(String(bVal ?? ''), undefined, {
+            numeric: true,
+            sensitivity: 'base',
+          })
+        }
+        return sort.direction === 'asc' ? result : -result
+      })
+    : filteredRows
+
+  const toggleSort = (key: string) => {
+    setPage(0)
+    setSort(current =>
+      !current || current.key !== key
+        ? { key, direction: 'asc' }
+        : current.direction === 'asc'
+          ? { key, direction: 'desc' }
+          : null,
+    )
+  }
+
+  const parsedSize = Number.parseInt(pageSizeText, 10)
+  const pageSize = Number.isFinite(parsedSize) ? Math.min(Math.max(parsedSize, 1), 500) : defaultPageSize
+  const pageCount = Math.max(1, Math.ceil(sortedRows.length / pageSize))
+  const pageIndex = Math.min(page, pageCount - 1)
+  const start = Math.max(0, pageIndex * pageSize)
+  const shown = sortedRows.slice(start, start + pageSize)
+  const isMaximized = tableState === 'maximized'
+  const canMinimize = isMaximized || pageSize !== defaultPageSize || pageIndex !== 0
+
+  const minimizeTable = () => {
+    setTableState('normal')
+    setPageSizeText(String(defaultPageSize))
+    setPage(0)
+  }
+
+  const segmentClass =
+    'inline-flex h-7 w-8 items-center justify-center text-[#78a9ff] transition-colors hover:bg-[#0f62fe]/20 hover:text-white focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-[#78a9ff]'
+  const groupClass = 'inline-flex overflow-hidden rounded-md border border-white/[0.12] bg-white/[0.04]'
+  const iconProps = {
+    'aria-hidden': true,
+    viewBox: '0 0 16 16',
+    className: 'h-3.5 w-3.5',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.5,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+  } as const
+
+  return (
+    <div
+      role="region"
+      aria-label={`${label} table`}
+      className={
+        isMaximized
+          ? 'fixed inset-0 z-[100] flex flex-col bg-[#161616]'
+          : 'flex flex-col overflow-hidden rounded-xl border border-white/[0.07] bg-[#161616]/60'
+      }
+    >
+      <div className="flex flex-wrap items-center gap-2 border-b border-white/[0.06] bg-[#1c1c1c] px-3 py-2">
+        <div className={groupClass} role="group" aria-label="Previous and next page">
+          <button
+            type="button"
+            className={segmentClass}
+            onClick={() => setPage(pageIndex - 1)}
+            disabled={pageIndex <= 0}
+            aria-label="Previous page"
+            title="Previous page"
+          >
+            <svg {...iconProps}><path d="M10 3 5 8l5 5" /></svg>
+          </button>
+          <button
+            type="button"
+            className={`${segmentClass} border-l border-white/[0.12]`}
+            onClick={() => setPage(pageIndex + 1)}
+            disabled={pageIndex >= pageCount - 1}
+            aria-label="Next page"
+            title="Next page"
+          >
+            <svg {...iconProps}><path d="m6 3 5 5-5 5" /></svg>
+          </button>
+        </div>
+        <span aria-live="polite" className="text-[11px] text-[#c6c6c6]">
+          {sortedRows.length === 0 ? 'No items' : `${start + 1}–${start + shown.length} of ${sortedRows.length}`}
+          {sortedRows.length !== rows.length ? ` (filtered from ${rows.length})` : ''} · Page {pageIndex + 1} of {pageCount}
+        </span>
+        <label className="ml-2 inline-flex items-center gap-1.5 text-[11px] text-[#c6c6c6]">
+          Rows per page
+          <input
+            type="number"
+            min={1}
+            max={500}
+            value={pageSizeText}
+            onChange={event => {
+              setPageSizeText(event.target.value)
+              setPage(0)
+            }}
+            onBlur={() => setPageSizeText(String(pageSize))}
+            className="h-7 w-16 rounded-md border border-white/[0.1] bg-white/[0.03] px-2 text-[11px] text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+          />
+        </label>
+        {(activeFilters.length > 0 || sort) && (
+          <button
+            type="button"
+            className={letsCreateControlClass}
+            onClick={() => {
+              setFilters({})
+              setSort(null)
+              setPage(0)
+            }}
+          >
+            Clear filters and sorting
+          </button>
+        )}
+        <span className="ml-auto flex flex-wrap items-center gap-2">
+          <div className={groupClass} role="group" aria-label="Table size">
+            <button
+              type="button"
+              className={segmentClass}
+              onClick={minimizeTable}
+              disabled={!canMinimize}
+              aria-label={`Minimize table to ${defaultPageSize} rows`}
+              title={`Minimize: normal size, ${defaultPageSize} rows`}
+            >
+              <svg {...iconProps}><path d="M2.5 6.5h4v-4M13.5 9.5h-4v4M6.5 6.5l-4-4M9.5 9.5l4 4" /></svg>
+            </button>
+            <button
+              type="button"
+              className={`${segmentClass} border-l border-white/[0.12]`}
+              onClick={() => setTableState('maximized')}
+              disabled={isMaximized}
+              aria-label="Maximize table"
+              title="Maximize"
+            >
+              <svg {...iconProps}><path d="M6 2.5H2.5V6M10 13.5h3.5V10M2.5 2.5 6.5 6.5M13.5 13.5 9.5 9.5" /></svg>
+            </button>
+          </div>
+          {onExit && (
+            <button type="button" className={letsCreateControlClass} onClick={onExit}>
+              Exit to List View
+            </button>
+          )}
+        </span>
+      </div>
+      <div className={isMaximized ? 'min-h-0 flex-1 overflow-auto' : 'overflow-x-auto'}>
+        <table className={`w-full ${minWidth} table-fixed border-collapse text-left text-xs`}>
+          <colgroup>
+            {columns.map(column => <col key={column.key} className={column.col} />)}
+          </colgroup>
+          <thead className="sticky top-0 z-10 bg-[#262626] text-[10px] uppercase tracking-[0.1em] text-[#8d8d8d]">
+            <tr>
+              {columns.map(column => {
+                const isSortable = column.sortable !== false
+                const sortDirection = sort?.key === column.key ? sort.direction : null
+                return (
+                  <th
+                    key={column.key}
+                    aria-sort={sortDirection === 'asc' ? 'ascending' : sortDirection === 'desc' ? 'descending' : 'none'}
+                    className="px-3 pt-2 font-semibold"
+                  >
+                    {isSortable ? (
+                      <button
+                        type="button"
+                        onClick={() => toggleSort(column.key)}
+                        title={`Sort by ${column.label}`}
+                        className={`inline-flex items-center gap-1 uppercase tracking-[0.1em] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${sortDirection ? 'text-[#ffb784]' : ''}`}
+                      >
+                        {column.label}
+                        <svg aria-hidden="true" viewBox="0 0 8 12" className="h-3 w-2" fill="currentColor">
+                          <path d="M4 0 7.5 4.5h-7z" opacity={sortDirection === 'asc' ? 1 : 0.3} />
+                          <path d="M4 12 .5 7.5h7z" opacity={sortDirection === 'desc' ? 1 : 0.3} />
+                        </svg>
+                      </button>
+                    ) : (
+                      <span>{column.label}</span>
+                    )}
+                  </th>
+                )
+              })}
+            </tr>
+            <tr>
+              {columns.map(column => (
+                <th key={column.key} className="px-3 pb-2 pt-1 font-normal normal-case tracking-normal">
+                  <input
+                    type="search"
+                    value={filters[column.key] ?? ''}
+                    onChange={event => {
+                      const value = event.target.value
+                      setFilters(current => ({ ...current, [column.key]: value }))
+                      setPage(0)
+                    }}
+                    placeholder={column.placeholder ?? 'Filter'}
+                    aria-label={`Filter ${column.label}`}
+                    className="h-6 w-full min-w-0 rounded border border-white/[0.1] bg-white/[0.03] px-1.5 text-[11px] text-white placeholder:text-[#6f6f6f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                  />
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {shown.map((row, index) => (
+              <tr key={rowKey(row, index)} className="border-t border-white/[0.05] hover:bg-white/[0.03]">
+                {columns.map(column => (
+                  <td key={column.key} className="px-3 py-1.5 align-middle">
+                    {column.render
+                      ? column.render(row, start + index)
+                      : String((row as Record<string, unknown>)[column.key] ?? '')}
+                  </td>
+                ))}
+              </tr>
+            ))}
+            {shown.length === 0 && (
+              <tr>
+                <td colSpan={columns.length} className="px-3 py-6 text-center text-[#8d8d8d]">
+                  {emptyMessage}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 type BadgeEntry = {
   id: string
   capabilities: PortfolioResourcePage[]
@@ -2183,6 +2485,7 @@ function VideoCard({
 function VideosPage() {
   const [isPlaylistCollapsed, setIsPlaylistCollapsed] = useState(false)
   const [isMoreCollapsed, setIsMoreCollapsed] = useState(false)
+  const [baPlaylistView, setBaPlaylistView] = useState<'list' | 'table'>('list')
   // Each section has its own frame, shown below its cards.
   // The playlist is the first item, followed by its videos. `shownVideo` is null when the playlist is shown.
   const [shownBaItem, setShownBaItem] = useState<'playlist' | (typeof businessAutomationPlaylistVideos)[number] | null>(null)
@@ -2233,42 +2536,137 @@ function VideosPage() {
             )}
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setBaPlaylistView(view => (view === 'table' ? 'list' : 'table'))}
+              aria-pressed={baPlaylistView === 'table'}
+              title={baPlaylistView === 'table' ? 'Return to the List View' : 'Show all videos in one table'}
+              className={`inline-flex h-7 items-center rounded-md border px-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${
+                baPlaylistView === 'table'
+                  ? 'border-[#78a9ff] bg-[#0f62fe]/20 text-white'
+                  : 'border-white/[0.1] bg-white/[0.03] text-[#78a9ff] hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/10 hover:text-white'
+              }`}
+            >
+              {baPlaylistView === 'table' ? 'List View' : 'Table View'}
+            </button>
             <span className="text-[10px] font-medium text-[#c6c6c6]">1 playlist · {businessAutomationPlaylistVideos.length} videos</span>
             <CopySectionLink id="videos-business-automation" label="IBM Business Automation playlist" />
           </div>
         </div>
         <div id="videos-business-automation-body" hidden={isPlaylistCollapsed} className="p-5">
-          <LimitedGrid
-            items={businessAutomationItems}
-            rows={2}
-            gridClass={videoGridClass}
-            itemKey={item => (item === 'playlist' ? 'playlist' : item.id)}
-            renderItem={(item, index) =>
-              item === 'playlist' ? (
-                <VideoCard
-                  title="IBM Business Automation playlist"
-                  description={`The full playlist, ${businessAutomationPlaylistVideos.length} videos.`}
-                  thumbnail={`https://i.ytimg.com/vi/${businessAutomationPlaylistVideos[0].id}/hqdefault.jpg`}
-                  badge={`${businessAutomationPlaylistVideos.length} videos`}
-                  index={index}
-                  href={playlistUrl}
-                  isShown={shownBaItem === 'playlist'}
-                  onViewBelow={() => setShownBaItem('playlist')}
-                />
-              ) : (
-                <VideoCard
-                  title={item.title}
-                  thumbnail={`https://i.ytimg.com/vi/${item.id}/hqdefault.jpg`}
-                  badge={item.duration}
-                  index={index}
-                  recommended={index - 1 < BUSINESS_AUTOMATION_RECOMMENDED_COUNT}
-                  href={`https://www.youtube.com/watch?v=${item.id}&list=${BUSINESS_AUTOMATION_PLAYLIST_ID}`}
-                  isShown={typeof shownBaItem === 'object' && shownBaItem?.id === item.id}
-                  onViewBelow={() => setShownBaItem(item)}
-                />
-              )
-            }
-          />
+          {baPlaylistView === 'table' ? (
+            <div className="space-y-4">
+              <TableView
+                label="IBM Business Automation playlist"
+                columns={[
+                  { key: 'index', label: '#', col: 'w-14', placeholder: '#', getValue: r => r.index },
+                  {
+                    key: 'title',
+                    label: 'Title',
+                    col: 'w-[52%]',
+                    placeholder: 'Filter title',
+                    getValue: r => r.title,
+                    render: r => (
+                      <div className="flex items-center justify-between gap-2">
+                        <a
+                          href={r.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-medium text-white hover:text-[#a6c8ff] hover:underline"
+                          title={r.title}
+                        >
+                          {r.title}
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => setShownBaItem(businessAutomationPlaylistVideos.find(v => v.id === r.id) ?? null)}
+                          aria-label={`Show ${r.title} in an embedded frame`}
+                          className="inline-flex h-6 shrink-0 items-center rounded border border-white/[0.1] bg-[#1c1c1c] px-2 text-[10px] font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white"
+                        >
+                          View Below
+                        </button>
+                      </div>
+                    ),
+                  },
+                  {
+                    key: 'duration',
+                    label: 'Duration',
+                    col: 'w-28',
+                    placeholder: 'Filter',
+                    getValue: r => r.duration,
+                    render: r => <span className="font-mono text-xs text-[#c6c6c6]">{r.duration}</span>,
+                  },
+                  {
+                    key: 'id',
+                    label: 'Video ID',
+                    col: 'w-36',
+                    placeholder: 'Filter',
+                    getValue: r => r.id,
+                    render: r => <span className="font-mono text-[11px] text-[#8d8d8d]">{r.id}</span>,
+                  },
+                  {
+                    key: 'link',
+                    label: 'Link',
+                    col: 'w-20',
+                    sortable: false,
+                    render: r => (
+                      <a
+                        href={r.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`Open ${r.title} on YouTube`}
+                        className="inline-flex text-[#78a9ff] hover:text-white"
+                      >
+                        <ExternalLinkIcon />
+                      </a>
+                    ),
+                  },
+                ]}
+                rows={businessAutomationPlaylistVideos.map((video, idx) => ({
+                  id: video.id,
+                  index: idx + 1,
+                  title: video.title,
+                  duration: video.duration,
+                  url: `https://www.youtube.com/watch?v=${video.id}&list=${BUSINESS_AUTOMATION_PLAYLIST_ID}`,
+                }))}
+                rowKey={r => r.id}
+                onExit={() => setBaPlaylistView('list')}
+                emptyMessage="No videos match the current filters."
+              />
+            </div>
+          ) : (
+            <LimitedGrid
+              items={businessAutomationItems}
+              rows={2}
+              gridClass={videoGridClass}
+              itemKey={item => (item === 'playlist' ? 'playlist' : item.id)}
+              renderItem={(item, index) =>
+                item === 'playlist' ? (
+                  <VideoCard
+                    title="IBM Business Automation playlist"
+                    description={`The full playlist, ${businessAutomationPlaylistVideos.length} videos.`}
+                    thumbnail={`https://i.ytimg.com/vi/${businessAutomationPlaylistVideos[0].id}/hqdefault.jpg`}
+                    badge={`${businessAutomationPlaylistVideos.length} videos`}
+                    index={index}
+                    href={playlistUrl}
+                    isShown={shownBaItem === 'playlist'}
+                    onViewBelow={() => setShownBaItem('playlist')}
+                  />
+                ) : (
+                  <VideoCard
+                    title={item.title}
+                    thumbnail={`https://i.ytimg.com/vi/${item.id}/hqdefault.jpg`}
+                    badge={item.duration}
+                    index={index}
+                    recommended={index - 1 < BUSINESS_AUTOMATION_RECOMMENDED_COUNT}
+                    href={`https://www.youtube.com/watch?v=${item.id}&list=${BUSINESS_AUTOMATION_PLAYLIST_ID}`}
+                    isShown={typeof shownBaItem === 'object' && shownBaItem?.id === item.id}
+                    onViewBelow={() => setShownBaItem(item)}
+                  />
+                )
+              }
+            />
+          )}
           {shownBaItem === 'playlist' && (
             <VideoPlaylistPanel
               key="ba-playlist"
@@ -2623,72 +3021,139 @@ function YLPage() {
               onClick={() => setIsSummaryCollapsed(collapsed => !collapsed)}
               aria-expanded={!isSummaryCollapsed}
               aria-controls="yl-summary-body"
-              title={`${isSummaryCollapsed ? 'Expand' : 'Collapse'} YL Summary`}
+              title={`${isSummaryCollapsed ? 'Expand' : 'Collapse'} Summary`}
               className="inline-flex items-baseline gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
             >
-              YL Summary
+              Summary
               <span className="text-xs font-medium text-[#c6c6c6]">{totalCourses} plans</span>
               <span className="self-center text-[#78a9ff]"><VideoVisibilityIcon visible={!isSummaryCollapsed} /></span>
             </button>
           </h3>
-          <CopySectionLink id="yl-summary" label="YL Summary" />
+          <CopySectionLink id="yl-summary" label="Summary" />
         </div>
-        <div id="yl-summary-body" hidden={isSummaryCollapsed} className="overflow-x-auto rounded-lg border border-white/[0.06]">
-          <table className="w-full min-w-[1000px] table-fixed border-collapse text-left text-xs">
-            <caption className="sr-only">All learning plans, ordered by level</caption>
-            <colgroup>
-              <col className="w-[3.5rem]" />
-              <col className="w-[9rem]" />
-              <col />
-              <col className="w-[9rem]" />
-              <col className="w-[10rem]" />
-              <col className="w-[15rem]" />
-              <col className="w-[4.5rem]" />
-            </colgroup>
-            <thead className="bg-[#1c1c1c] text-[10px] uppercase tracking-[0.12em] text-[#78a9ff]">
-              <tr>
-                {['Level', 'Code', 'Plan', 'Owners', 'Capabilities', 'Products', 'Link'].map(heading => (
-                  <th key={heading} scope="col" className="whitespace-nowrap px-3 py-2 font-semibold">{heading}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {ylLevels.flatMap(group =>
-                group.courses.map(course => {
-                  const capabilityLabels = course.capabilities
-                    .map(page => businessAutomationCapabilityFilters.find(filter => filter.page === page)?.label)
-                    .filter(Boolean)
-                    .join(', ')
-                  const owners = course.owners.join(', ')
-                  const products = course.products.join(', ')
-                  const cell = 'truncate whitespace-nowrap px-3 py-1.5'
-                  return (
-                    <tr key={course.code} className="border-t border-white/[0.06] bg-[#161616] text-[#c6c6c6] hover:bg-[#1c1c1c]">
-                      <td className={`${cell} font-mono text-[#78a9ff]`}>{group.level}</td>
-                      <td className={`${cell} font-semibold text-white`} title={course.code}>{course.code}</td>
-                      <td className={cell} title={course.title}>{course.title}</td>
-                      <td className={cell} title={owners}>{owners || '—'}</td>
-                      <td className={cell} title={capabilityLabels}>{capabilityLabels || '—'}</td>
-                      <td className={cell} title={products}>{products || '—'}</td>
-                      <td className="whitespace-nowrap px-3 py-1.5">
-                        <a
-                          href={course.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`Open ${course.code} learning plan in YourLearning`}
-                          title="Open learning plan in YourLearning"
-                          className="inline-flex items-center gap-1 font-semibold text-[#78a9ff] transition-colors hover:text-white"
+        <div id="yl-summary-body" hidden={isSummaryCollapsed}>
+          <TableView
+            label="Summary"
+            columns={[
+              { key: 'index', label: '#', col: 'w-14', placeholder: '#', getValue: r => r.index },
+              {
+                key: 'level',
+                label: 'Level',
+                col: 'w-24',
+                placeholder: 'Level',
+                getValue: r => r.level,
+                render: r => <span className="font-mono font-semibold text-[#78a9ff]">Level {r.level}</span>,
+              },
+              {
+                key: 'code',
+                label: 'Code',
+                col: 'w-36',
+                placeholder: 'Filter code',
+                getValue: r => r.code,
+                render: r => <span className="font-semibold text-white">{r.code}</span>,
+              },
+              {
+                key: 'title',
+                label: 'Plan',
+                col: 'w-[32%]',
+                placeholder: 'Filter plan',
+                getValue: r => r.title,
+                render: r => (
+                  <div>
+                    <a
+                      href={r.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-medium text-white hover:text-[#a6c8ff] hover:underline"
+                      title={r.title}
+                    >
+                      {r.title}
+                    </a>
+                    {r.description && <p className="line-clamp-1 text-[11px] text-[#8d8d8d]" title={r.description}>{r.description}</p>}
+                  </div>
+                ),
+              },
+              {
+                key: 'owners',
+                label: 'Owners',
+                col: 'w-32',
+                placeholder: 'Filter',
+                getValue: r => r.owners.join(', '),
+                render: r => <span className="text-[#c6c6c6]">{r.owners.join(', ') || '—'}</span>,
+              },
+              {
+                key: 'capabilities',
+                label: 'Capabilities',
+                col: 'w-44',
+                placeholder: 'Filter',
+                getValue: r => r.capabilities.map(c => businessAutomationCapabilityFilters.find(f => f.page === c)?.label ?? c).join(', '),
+                render: r => (
+                  <div className="flex flex-wrap gap-1">
+                    {r.capabilities.map(cap => {
+                      const opt = businessAutomationCapabilityFilters.find(f => f.page === cap)
+                      return opt ? (
+                        <span
+                          key={cap}
+                          className="rounded-full border px-1.5 py-0.5 text-[9px] font-semibold text-white"
+                          style={{ borderColor: `${opt.color}bb`, backgroundColor: `${opt.color}20` }}
                         >
-                          Plan
-                          <ExternalLinkIcon />
-                        </a>
-                      </td>
-                    </tr>
-                  )
-                }),
-              )}
-            </tbody>
-          </table>
+                          {opt.label}
+                        </span>
+                      ) : null
+                    })}
+                  </div>
+                ),
+              },
+              {
+                key: 'products',
+                label: 'Products',
+                col: 'w-40',
+                placeholder: 'Filter',
+                getValue: r => r.products.join(', '),
+                render: r => (
+                  <div className="flex flex-wrap gap-1">
+                    {r.products.map(prod => (
+                      <span key={prod} className="rounded-full border border-white/[0.1] bg-white/[0.03] px-1.5 py-0.5 text-[9px] font-medium text-[#c6c6c6]" title={prod}>
+                        {prod}
+                      </span>
+                    ))}
+                  </div>
+                ),
+              },
+              {
+                key: 'link',
+                label: 'Link',
+                col: 'w-20',
+                sortable: false,
+                render: r => (
+                  <a
+                    href={r.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`Open ${r.code} in YourLearning`}
+                    className="inline-flex items-center gap-1 font-semibold text-[#78a9ff] hover:text-white"
+                  >
+                    Plan <ExternalLinkIcon />
+                  </a>
+                ),
+              },
+            ]}
+            rows={ylLevels.flatMap(group =>
+              group.courses.map(course => ({
+                id: `${group.level}-${course.code}`,
+                level: group.level,
+                code: course.code,
+                title: course.title,
+                description: course.description,
+                owners: course.owners,
+                capabilities: course.capabilities,
+                products: course.products,
+                url: course.url,
+              })),
+            ).map((row, idx) => ({ ...row, index: idx + 1 }))}
+            rowKey={r => r.id}
+            emptyMessage="No learning plans match the current filters."
+          />
         </div>
       </section>
 
@@ -2795,6 +3260,7 @@ function ProductManagementResourcesPage() {
 function BadgesPage() {
   // Search starts minimized.
   const [isFilterExpanded, setIsFilterExpanded] = useState(false)
+  const [badgeView, setBadgeView] = useState<'list' | 'table'>('list')
   const [selectedCapabilities, setSelectedCapabilities] = useState<Set<PortfolioResourcePage>>(() => new Set(businessAutomationCapabilityFilters.map(filter => filter.page)))
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(() => new Set(badgeEntries.flatMap(badge => badge.products)))
   const badgeLevels = [1, 2, 3, 4, 5]
@@ -2890,6 +3356,19 @@ function BadgesPage() {
               <span className="text-[#78a9ff]"><VideoVisibilityIcon visible={isFilterExpanded} /></span>
             </button>
           </h3>
+          <button
+            type="button"
+            onClick={() => setBadgeView(view => (view === 'table' ? 'list' : 'table'))}
+            aria-pressed={badgeView === 'table'}
+            title={badgeView === 'table' ? 'Return to the List View' : 'Show all badges in one table'}
+            className={`inline-flex h-7 items-center rounded-md border px-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${
+              badgeView === 'table'
+                ? 'border-[#78a9ff] bg-[#0f62fe]/20 text-white'
+                : 'border-white/[0.1] bg-white/[0.03] text-[#78a9ff] hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/10 hover:text-white'
+            }`}
+          >
+            {badgeView === 'table' ? 'List View' : 'Table View'}
+          </button>
           <span aria-live="polite" className="text-xs font-medium text-[#c6c6c6]">
             {visibleBadges.length} of {badgeEntries.length} badges
           </span>
@@ -2952,7 +3431,147 @@ function BadgesPage() {
           </div>
         </div>
       </section>
-      {visibleBadges.length === 0 ? (
+      {badgeView === 'table' ? (
+        <TableView
+          label="Badge"
+          columns={[
+            { key: 'index', label: '#', col: 'w-14', placeholder: '#', getValue: r => r.index },
+            {
+              key: 'name',
+              label: 'Badge',
+              col: 'w-64',
+              placeholder: 'Filter badge',
+              getValue: r => r.name,
+              render: r => (
+                <div>
+                  {r.badgeUrl ? (
+                    <a
+                      href={r.badgeUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-semibold text-white hover:text-[#a6c8ff] hover:underline"
+                      title={r.name}
+                    >
+                      {r.name}
+                    </a>
+                  ) : (
+                    <span className="font-semibold text-white">{r.name}</span>
+                  )}
+                </div>
+              ),
+            },
+            {
+              key: 'capabilities',
+              label: 'Capabilities',
+              col: 'w-44',
+              placeholder: 'Filter',
+              getValue: r => r.capabilities.map(c => businessAutomationCapabilityFilters.find(f => f.page === c)?.label ?? c).join(', '),
+              render: r => (
+                <div className="flex flex-wrap gap-1">
+                  {r.capabilities.map(cap => {
+                    const opt = businessAutomationCapabilityFilters.find(f => f.page === cap)
+                    return opt ? (
+                      <span
+                        key={cap}
+                        className="rounded-full border px-1.5 py-0.5 text-[9px] font-semibold"
+                        style={{ borderColor: `${opt.color}66`, backgroundColor: `${opt.color}1a`, color: opt.color }}
+                      >
+                        {opt.label}
+                      </span>
+                    ) : null
+                  })}
+                </div>
+              ),
+            },
+            {
+              key: 'levels',
+              label: 'Level',
+              col: 'w-24',
+              placeholder: 'Filter',
+              getValue: r => r.levels.map(l => `Level ${l}`).join(', '),
+              render: r => (
+                <div className="flex flex-wrap gap-1">
+                  {r.levels.map(lvl => (
+                    <span key={lvl} className="rounded-full border border-[#ff832b]/50 bg-[#ff832b]/10 px-1.5 py-0.5 text-[9px] font-semibold text-[#ffb784]">
+                      Level {lvl}
+                    </span>
+                  ))}
+                </div>
+              ),
+            },
+            {
+              key: 'products',
+              label: 'Products',
+              col: 'w-44',
+              placeholder: 'Filter',
+              getValue: r => r.products.join(', '),
+              render: r => (
+                <div className="flex flex-wrap gap-1">
+                  {r.products.map(prod => (
+                    <span key={prod} className="rounded-full border border-white/[0.1] bg-white/[0.03] px-1.5 py-0.5 text-[9px] font-medium text-[#c6c6c6]" title={prod}>
+                      {prod}
+                    </span>
+                  ))}
+                </div>
+              ),
+            },
+            {
+              key: 'description',
+              label: 'Description',
+              col: '',
+              placeholder: 'Filter description',
+              getValue: r => r.description,
+              render: r => (
+                <div>
+                  <p className="line-clamp-2 text-xs leading-snug text-[#c6c6c6]" title={r.description}>{r.description}</p>
+                  {r.note && <p className="mt-1 line-clamp-1 text-[11px] text-[#f1c21b]" title={r.note}>Note: {r.note}</p>}
+                </div>
+              ),
+            },
+            {
+              key: 'links',
+              label: 'Links',
+              col: 'w-40',
+              sortable: false,
+              render: r => (
+                <div className="flex flex-wrap items-center gap-1.5 text-[10px]">
+                  {r.badgeUrl && (
+                    <a href={r.badgeUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 rounded border border-[#4589ff]/30 bg-[#0f62fe]/10 px-1.5 py-0.5 font-semibold text-[#78a9ff] hover:bg-[#0f62fe]/25 hover:text-white" title="Badge details">
+                      Badge <ExternalLinkIcon />
+                    </a>
+                  )}
+                  {r.ibmUrl && (
+                    <a href={r.ibmUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 rounded border border-[#4589ff]/30 bg-[#0f62fe]/10 px-1.5 py-0.5 font-semibold text-[#78a9ff] hover:bg-[#0f62fe]/25 hover:text-white" title="IBM details">
+                      IBM <ExternalLinkIcon />
+                    </a>
+                  )}
+                  {r.bpUrl && (
+                    <a href={r.bpUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 rounded border border-[#4589ff]/30 bg-[#0f62fe]/10 px-1.5 py-0.5 font-semibold text-[#78a9ff] hover:bg-[#0f62fe]/25 hover:text-white" title="Business Partner details">
+                      BP <ExternalLinkIcon />
+                    </a>
+                  )}
+                </div>
+              ),
+            },
+          ]}
+          rows={visibleBadges.map((badge, idx) => ({
+            id: badge.id,
+            index: idx + 1,
+            name: badge.name,
+            capabilities: badge.capabilities,
+            levels: badge.levels,
+            products: badge.products,
+            description: badge.description,
+            note: badge.note,
+            badgeUrl: badge.badgeUrl,
+            ibmUrl: badge.ibmUrl,
+            bpUrl: badge.bpUrl,
+          }))}
+          rowKey={r => r.id}
+          onExit={() => setBadgeView('list')}
+          emptyMessage="No badges match the selected filters."
+        />
+      ) : visibleBadges.length === 0 ? (
         <p className="rounded-xl border border-white/[0.07] bg-[#262626] px-5 py-6 text-sm text-[#c6c6c6]">No badges match the selected filters.</p>
       ) : (
         <div className="rounded-xl border border-white/[0.07] bg-[#161616] p-3 sm:p-4">
@@ -6106,11 +6725,19 @@ export default function App() {
   // Search starts minimized; sections start maximized.
   const [isLetsCreateFiltersExpanded, setIsLetsCreateFiltersExpanded] = useState(false)
   const [collapsedLetsCreateSections, setCollapsedLetsCreateSections] = useState<Set<string>>(() => new Set())
+  const [technicalAcceleratorsView, setTechnicalAcceleratorsView] = useState<'list' | 'table'>('list')
+  const [technicalAcceleratorsStandaloneView, setTechnicalAcceleratorsStandaloneView] = useState<'list' | 'table'>('list')
+  const [isLetsCreateSummaryCollapsed, setIsLetsCreateSummaryCollapsed] = useState(false)
   useEffect(() => {
     const expandFromHash = () => {
       const match = window.location.hash.match(/^#lets-create-([a-z-]+)/)
       const id = match?.[1]
-      if (!id || !letsCreateSections.some(section => section.id === id)) return
+      if (!id) return
+      if (id === 'summary') {
+        setIsLetsCreateSummaryCollapsed(false)
+        return
+      }
+      if (!letsCreateSections.some(section => section.id === id)) return
       setCollapsedLetsCreateSections(current => {
         if (!current.has(id)) return current
         const next = new Set(current)
@@ -9397,6 +10024,21 @@ export default function App() {
                               )}
                             </div>
                             <div className="flex shrink-0 items-center gap-2">
+                              {section.id === 'technical-accelerators' && (
+                                <button
+                                  type="button"
+                                  onClick={() => setTechnicalAcceleratorsView(view => (view === 'table' ? 'list' : 'table'))}
+                                  aria-pressed={technicalAcceleratorsView === 'table'}
+                                  title={technicalAcceleratorsView === 'table' ? 'Return to the List View' : 'Show all technical accelerators in one table'}
+                                  className={`inline-flex h-7 items-center rounded-md border px-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${
+                                    technicalAcceleratorsView === 'table'
+                                      ? 'border-[#78a9ff] bg-[#0f62fe]/20 text-white'
+                                      : 'border-white/[0.1] bg-white/[0.03] text-[#78a9ff] hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/10 hover:text-white'
+                                  }`}
+                                >
+                                  {technicalAcceleratorsView === 'table' ? 'List View' : 'Table View'}
+                                </button>
+                              )}
                               <span className="text-[10px] font-medium text-[#c6c6c6]">
                                 {sectionAssets.length} {sectionAssets.length === 1 ? 'asset' : 'assets'}
                               </span>
@@ -9404,7 +10046,99 @@ export default function App() {
                             </div>
                           </div>
                           <div id={bodyId} hidden={isCollapsed} className="p-5">
-                            {sectionAssets.length === 0 ? (
+                            {section.id === 'technical-accelerators' && technicalAcceleratorsView === 'table' ? (
+                              <TableView
+                                label="Technical Accelerators"
+                                columns={[
+                                  { key: 'index', label: '#', col: 'w-14', placeholder: '#', getValue: r => r.index },
+                                  {
+                                    key: 'name',
+                                    label: 'Name',
+                                    col: 'w-[28%]',
+                                    placeholder: 'Filter name',
+                                    getValue: r => r.name,
+                                    render: r => (
+                                      <a
+                                        href={r.url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="font-semibold text-white hover:text-[#a6c8ff] hover:underline"
+                                        title={r.name}
+                                      >
+                                        {r.name}
+                                      </a>
+                                    ),
+                                  },
+                                  {
+                                    key: 'capability',
+                                    label: 'Capability',
+                                    col: 'w-44',
+                                    placeholder: 'Filter',
+                                    getValue: r => businessAutomationCapabilityFilters.find(f => f.page === r.capability)?.label ?? r.capability,
+                                    render: r => {
+                                      const opt = businessAutomationCapabilityFilters.find(f => f.page === r.capability)
+                                      return opt ? (
+                                        <span
+                                          className="rounded-full border px-2 py-0.5 text-[10px] font-semibold text-white"
+                                          style={{ borderColor: `${opt.color}bb`, backgroundColor: `${opt.color}20` }}
+                                        >
+                                          {opt.label}
+                                        </span>
+                                      ) : null
+                                    },
+                                  },
+                                  {
+                                    key: 'products',
+                                    label: 'Products',
+                                    col: 'w-48',
+                                    placeholder: 'Filter',
+                                    getValue: r => r.products.join(', '),
+                                    render: r => (
+                                      <div className="flex flex-wrap gap-1">
+                                        {r.products.map(prod => (
+                                          <span key={prod} className="rounded-full border border-white/[0.1] bg-white/[0.03] px-1.5 py-0.5 text-[9px] font-medium text-[#c6c6c6]" title={prod}>
+                                            {prod}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    ),
+                                  },
+                                  {
+                                    key: 'description',
+                                    label: 'Description',
+                                    col: '',
+                                    placeholder: 'Filter description',
+                                    getValue: r => r.description,
+                                    render: r => (
+                                      <p className="line-clamp-2 text-xs leading-relaxed text-[#c6c6c6]" title={r.description}>
+                                        {r.description}
+                                      </p>
+                                    ),
+                                  },
+                                  {
+                                    key: 'link',
+                                    label: 'Box Link',
+                                    col: 'w-24',
+                                    sortable: false,
+                                    render: r => (
+                                      <a
+                                        href={r.url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        aria-label={`Open ${r.name} in Box`}
+                                        className="inline-flex items-center gap-1 font-semibold text-[#78a9ff] hover:text-white"
+                                      >
+                                        Box <ExternalLinkIcon />
+                                      </a>
+                                    ),
+                                  },
+                                ]}
+                                rows={sectionAssets.map((asset, idx) => ({ ...asset, index: idx + 1 }))}
+                                rowKey={r => `${r.section}-${r.name}`}
+                                onExit={() => setTechnicalAcceleratorsView('list')}
+                                emptyMessage="No technical accelerators match the current selection or filters."
+                              />
+                            ) : sectionAssets.length === 0 ? (
                               <p className="text-sm text-[#8d8d8d]">
                                 {letsCreateAssets.some(asset => asset.section === section.id)
                                   ? 'No assets match the selected capabilities and products.'
@@ -9424,6 +10158,167 @@ export default function App() {
                       )
                     })}
                   </div>
+
+                  <section
+                    id="lets-create-summary"
+                    aria-labelledby="lets-create-summary-heading"
+                    className="mt-6 scroll-mt-28 rounded-xl border border-white/[0.07] bg-[#262626] p-5"
+                  >
+                    <div className={`${isLetsCreateSummaryCollapsed ? '' : 'mb-4'} flex items-center justify-between gap-3`}>
+                      <h3 id="lets-create-summary-heading" className="text-lg font-semibold text-white">
+                        <button
+                          type="button"
+                          onClick={() => setIsLetsCreateSummaryCollapsed(collapsed => !collapsed)}
+                          aria-expanded={!isLetsCreateSummaryCollapsed}
+                          aria-controls="lets-create-summary-body"
+                          title={`${isLetsCreateSummaryCollapsed ? 'Expand' : 'Collapse'} Summary`}
+                          className="inline-flex items-baseline gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                        >
+                          Summary
+                          <span className="text-xs font-medium text-[#c6c6c6]">{letsCreateAssets.length} assets</span>
+                          <span className="self-center text-[#78a9ff]"><VideoVisibilityIcon visible={!isLetsCreateSummaryCollapsed} /></span>
+                        </button>
+                      </h3>
+                      <CopySectionLink id="lets-create-summary" label="Summary" />
+                    </div>
+                    <div id="lets-create-summary-body" hidden={isLetsCreateSummaryCollapsed}>
+                      <TableView
+                        label="Summary"
+                        columns={[
+                          { key: 'index', label: '#', col: 'w-14', placeholder: '#', getValue: r => r.index },
+                          {
+                            key: 'section',
+                            label: 'Section',
+                            col: 'w-44',
+                            placeholder: 'Filter section',
+                            getValue: r => r.sectionLabel,
+                            render: r => <span className="font-medium text-[#ffb784]" title={r.sectionLabel}>{r.sectionLabel}</span>,
+                          },
+                          {
+                            key: 'name',
+                            label: 'Name',
+                            col: 'w-[24%]',
+                            placeholder: 'Filter name',
+                            getValue: r => r.name,
+                            render: r => (
+                              r.page ? (
+                                <button
+                                  type="button"
+                                  onClick={() => navigateToPage(r.page!)}
+                                  className="text-left font-semibold text-[#a6c8ff] hover:text-white hover:underline"
+                                  title={r.name}
+                                >
+                                  {r.name}
+                                </button>
+                              ) : (
+                                <a
+                                  href={r.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="font-semibold text-white hover:text-[#a6c8ff] hover:underline"
+                                  title={r.name}
+                                >
+                                  {r.name}
+                                </a>
+                              )
+                            ),
+                          },
+                          {
+                            key: 'capability',
+                            label: 'Capability',
+                            col: 'w-40',
+                            placeholder: 'Filter',
+                            getValue: r => businessAutomationCapabilityFilters.find(f => f.page === r.capability)?.label ?? r.capability,
+                            render: r => {
+                              const opt = businessAutomationCapabilityFilters.find(f => f.page === r.capability)
+                              return opt ? (
+                                <span
+                                  className="rounded-full border px-2 py-0.5 text-[10px] font-semibold text-white"
+                                  style={{ borderColor: `${opt.color}bb`, backgroundColor: `${opt.color}20` }}
+                                >
+                                  {opt.label}
+                                </span>
+                              ) : null
+                            },
+                          },
+                          {
+                            key: 'products',
+                            label: 'Products',
+                            col: 'w-44',
+                            placeholder: 'Filter',
+                            getValue: r => r.products.join(', '),
+                            render: r => (
+                              <div className="flex flex-wrap gap-1">
+                                {r.products.map(prod => (
+                                  <span key={prod} className="rounded-full border border-white/[0.1] bg-white/[0.03] px-1.5 py-0.5 text-[9px] font-medium text-[#c6c6c6]" title={prod}>
+                                    {prod}
+                                  </span>
+                                ))}
+                              </div>
+                            ),
+                          },
+                          {
+                            key: 'description',
+                            label: 'Description',
+                            col: '',
+                            placeholder: 'Filter description',
+                            getValue: r => r.description,
+                            render: r => (
+                              <p className="line-clamp-2 text-xs leading-relaxed text-[#c6c6c6]" title={r.description}>
+                                {r.description}
+                              </p>
+                            ),
+                          },
+                          {
+                            key: 'site',
+                            label: 'Site',
+                            col: 'w-36',
+                            placeholder: 'Filter site',
+                            getValue: r => r.site,
+                            render: r => <span className="font-mono text-[10px] text-[#8d8d8d]" title={r.url}>{r.site}</span>,
+                          },
+                          {
+                            key: 'link',
+                            label: 'Link',
+                            col: 'w-20',
+                            sortable: false,
+                            render: r => (
+                              r.page ? (
+                                <button
+                                  type="button"
+                                  onClick={() => navigateToPage(r.page!)}
+                                  aria-label={`Open ${r.name}`}
+                                  className="inline-flex text-[#78a9ff] hover:text-white"
+                                >
+                                  <svg aria-hidden="true" viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M6 3l5 5-5 5" />
+                                  </svg>
+                                </button>
+                              ) : (
+                                <a
+                                  href={r.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  aria-label={`Open ${r.name}`}
+                                  className="inline-flex text-[#78a9ff] hover:text-white"
+                                >
+                                  <ExternalLinkIcon />
+                                </a>
+                              )
+                            ),
+                          },
+                        ]}
+                        rows={letsCreateAssets.map((asset, idx) => ({
+                          ...asset,
+                          index: idx + 1,
+                          sectionLabel: letsCreateSections.find(s => s.id === asset.section)?.label ?? asset.section,
+                          site: asset.page ? 'Internal page' : formatHost(asset.url),
+                        }))}
+                        rowKey={r => `${r.section}-${r.name}`}
+                        emptyMessage="No assets match the current filters."
+                      />
+                    </div>
+                  </section>
                 </>
               )
             })()}
@@ -9450,14 +10345,123 @@ export default function App() {
                       {section?.author && <p className="mt-1 text-xs text-[#8d8d8d]">Author: {section.author}</p>}
                     </div>
                     <div className="flex shrink-0 flex-col items-end gap-3">
-                      <CopySectionLink id="technical-accelerators-top" label="Technical Accelerators page" />
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setTechnicalAcceleratorsStandaloneView(view => (view === 'table' ? 'list' : 'table'))}
+                          aria-pressed={technicalAcceleratorsStandaloneView === 'table'}
+                          title={technicalAcceleratorsStandaloneView === 'table' ? 'Return to the List View' : 'Show all technical accelerators in one table'}
+                          className={`inline-flex h-7 items-center rounded-md border px-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${
+                            technicalAcceleratorsStandaloneView === 'table'
+                              ? 'border-[#78a9ff] bg-[#0f62fe]/20 text-white'
+                              : 'border-white/[0.1] bg-white/[0.03] text-[#78a9ff] hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/10 hover:text-white'
+                          }`}
+                        >
+                          {technicalAcceleratorsStandaloneView === 'table' ? 'List View' : 'Table View'}
+                        </button>
+                        <CopySectionLink id="technical-accelerators-top" label="Technical Accelerators page" />
+                      </div>
                       <button type="button" onClick={() => navigateToPage('lets-create', 'lets-create-technical-accelerators')} className={letsCreateControlClass}>
                         Back to Let&rsquo;s Create
                       </button>
                     </div>
                   </div>
                   <p className="mb-3 text-xs font-medium text-[#c6c6c6]">{assets.length} assets</p>
-                  <LetsCreateAssetGrid assets={assets} onOpenPage={page => navigateToPage(page)} />
+                  {technicalAcceleratorsStandaloneView === 'table' ? (
+                    <TableView
+                      label="Technical Accelerators"
+                      columns={[
+                        { key: 'index', label: '#', col: 'w-14', placeholder: '#', getValue: r => r.index },
+                        {
+                          key: 'name',
+                          label: 'Name',
+                          col: 'w-[28%]',
+                          placeholder: 'Filter name',
+                          getValue: r => r.name,
+                          render: r => (
+                            <a
+                              href={r.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="font-semibold text-white hover:text-[#a6c8ff] hover:underline"
+                              title={r.name}
+                            >
+                              {r.name}
+                            </a>
+                          ),
+                        },
+                        {
+                          key: 'capability',
+                          label: 'Capability',
+                          col: 'w-44',
+                          placeholder: 'Filter',
+                          getValue: r => businessAutomationCapabilityFilters.find(f => f.page === r.capability)?.label ?? r.capability,
+                          render: r => {
+                            const opt = businessAutomationCapabilityFilters.find(f => f.page === r.capability)
+                            return opt ? (
+                              <span
+                                className="rounded-full border px-2 py-0.5 text-[10px] font-semibold text-white"
+                                style={{ borderColor: `${opt.color}bb`, backgroundColor: `${opt.color}20` }}
+                              >
+                                {opt.label}
+                              </span>
+                            ) : null
+                          },
+                        },
+                        {
+                          key: 'products',
+                          label: 'Products',
+                          col: 'w-48',
+                          placeholder: 'Filter',
+                          getValue: r => r.products.join(', '),
+                          render: r => (
+                            <div className="flex flex-wrap gap-1">
+                              {r.products.map(prod => (
+                                <span key={prod} className="rounded-full border border-white/[0.1] bg-white/[0.03] px-1.5 py-0.5 text-[9px] font-medium text-[#c6c6c6]" title={prod}>
+                                  {prod}
+                                </span>
+                              ))}
+                            </div>
+                          ),
+                        },
+                        {
+                          key: 'description',
+                          label: 'Description',
+                          col: '',
+                          placeholder: 'Filter description',
+                          getValue: r => r.description,
+                          render: r => (
+                            <p className="line-clamp-2 text-xs leading-relaxed text-[#c6c6c6]" title={r.description}>
+                              {r.description}
+                            </p>
+                          ),
+                        },
+                        {
+                          key: 'link',
+                          label: 'Box Link',
+                          col: 'w-24',
+                          sortable: false,
+                          render: r => (
+                            <a
+                              href={r.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              aria-label={`Open ${r.name} in Box`}
+                              className="inline-flex items-center gap-1 font-semibold text-[#78a9ff] hover:text-white"
+                            >
+                              Box <ExternalLinkIcon />
+                            </a>
+                          ),
+                        },
+                      ]}
+                      rows={assets.map((asset, idx) => ({ ...asset, index: idx + 1 }))}
+                      rowKey={r => `${r.section}-${r.name}`}
+                      onExit={() => setTechnicalAcceleratorsStandaloneView('list')}
+                      emptyMessage="No technical accelerators match the current selection or filters."
+                    />
+                  ) : (
+                    <LetsCreateAssetGrid assets={assets} onOpenPage={page => navigateToPage(page)} />
+                  )}
                 </>
               )
             })()}
