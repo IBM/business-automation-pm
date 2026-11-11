@@ -8860,14 +8860,17 @@ export default function App() {
     window.requestAnimationFrame(() => scrollElementBelowPageHeader(id))
   }
 
-  // Single click on the IBM logo still opens its link, after a short delay; a double-click opens the hidden resources page.
+  // Single click on the IBM logo still opens its link, after a short delay; a double-click opens the hidden resources page only when in fullscreen on the Badge page.
   const logoClickTimer = useRef<number | undefined>(undefined)
   const handleLogoClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
     event.preventDefault()
     window.clearTimeout(logoClickTimer.current)
     if (event.detail >= 2) {
-      navigateToPage('pm-resources')
+      const isViewingFullscreen = Boolean(isFullscreen || document.fullscreenElement)
+      if (isViewingFullscreen && currentPage === 'badges') {
+        navigateToPage('pm-resources')
+      }
       return
     }
     const href = event.currentTarget.href
@@ -9055,8 +9058,18 @@ export default function App() {
     currentPage === 'cp4ba' ||
     Boolean(activeBusinessAutomationCapability)
   const isCommunitySection = currentPage === 'community' || currentPage === 'enablement'
+  const isPmSection = currentPage === 'pm-resources'
   const isBusinessAutomationSection =
-    currentPage === 'overview' || currentPage === 'videos' || currentPage === 'pm-resources' || currentPage === 'badges' || currentPage === 'yl' || currentPage === 'lets-create' || currentPage === 'technical-accelerators' || currentPage === 'onboarding-automation' || isCapabilitiesPage
+    !isPmSection && (
+      currentPage === 'overview' ||
+      currentPage === 'videos' ||
+      currentPage === 'badges' ||
+      currentPage === 'yl' ||
+      currentPage === 'lets-create' ||
+      currentPage === 'technical-accelerators' ||
+      currentPage === 'onboarding-automation' ||
+      isCapabilitiesPage
+    )
   const isIbmSection = currentPage === 'ibm' || currentPage === 'insights' || currentPage === 'speaker'
   const isTechXchangeSection =
     currentPage === 'techxchange' ||
@@ -10993,6 +11006,7 @@ export default function App() {
                   ['overview', 'Main'],
                   ['community', 'Community'],
                   ['conference', 'Conference'],
+                  ...(isPmSection ? [['pm-resources', 'PM'] as const] : []),
                 ] as const).map(([page, label]) => {
                   const isActive = page === 'overview'
                     ? isBusinessAutomationSection
@@ -11000,7 +11014,9 @@ export default function App() {
                       ? isConferenceSection
                       : page === 'community'
                         ? isCommunitySection
-                        : currentPage === page
+                        : page === 'pm-resources'
+                          ? isPmSection
+                          : currentPage === page
                   return (
                     <a
                       key={page}
