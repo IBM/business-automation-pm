@@ -1,6 +1,6 @@
 {
  "boardName": "Business Automation Enablement Tracker",
- "generatedAt": "2026-11-09",
+ "generatedAt": "2026-11-11",
  "items": [
   {
    "name": "Content - User Group",
@@ -1157,7 +1157,7 @@
    "name": "IBM BWL/PM User Group",
    "group": "User Groups",
    "type": "User Group (TechXChange)",
-   "status": "Working on it",
+   "status": "Stuck",
    "date": "2026-11-17",
    "quarter": "Q4",
    "audience": "External Customers",
@@ -1189,14 +1189,15 @@
    "topic": "Decision Intelligence User Connect Series"
   },
   {
-   "name": "DIEE Demand Strategist Session",
+   "name": "IBM Decision Intelligence: Apply the right decisioning technology to the right business problem",
    "group": "BA Enablement",
    "type": "Enablement - Other",
    "product": "Decisions",
    "status": "Working on it",
    "date": "2026-11-19",
    "quarter": "Q4",
-   "audience": "Sellers"
+   "audience": "Sellers",
+   "link": "https://www.ibm.com/forms/webinars/mkt-on24-webinar-5551702"
   },
   {
    "name": "Content Cortex Premium townhall",
