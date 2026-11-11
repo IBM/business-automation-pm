@@ -3203,56 +3203,1755 @@ function YLPage() {
   )
 }
 
-const coreAccessHubUrl = 'https://ibm-support.saviyntcloud.com/'
-const productManagementResources: { name: string; url: string; tooltip: string }[] = [
+export interface PMResourceItem {
+  name: string
+  category: string
+  tool: string
+  url: string
+  notes: string
+  accessGuide?: string
+}
+
+export interface PMResourceSection {
+  id: string
+  code: string
+  title: string
+  description: string
+  items: PMResourceItem[]
+}
+
+export const productManagementResourceSections: PMResourceSection[] = [
   {
-    name: 'Core PM CoE Dashboard',
-    url: 'https://core-coe-deal-management-frontend-prod.core-coe-deal-management.wdc.app.cirrus.ibm.com/product-manager',
-    tooltip: [
-      `• Go to AccessHub ${coreAccessHubUrl}`,
-      '• Select Applications',
-      '• Search for “CORE PM COE DASHBOARD”',
-      '• Choose “Member”',
-      '• Add a justification',
-      '• Select Submit',
-    ].join('\n'),
+    "id": "quick-trackers",
+    "code": "Top Trackers",
+    "title": "Top Trackers & Quick Links",
+    "description": "Primary day-to-day trackers, Monday boards, deal dashboards, and video publishing channels for BA Product Management.",
+    "items": [
+      {
+        "name": "Client Touchpoint Tracker",
+        "category": "Trackers",
+        "tool": "Monday.com",
+        "url": "https://ibm.monday.com/boards/18433120374",
+        "notes": "Central board for client touchpoints, feedback sessions, and client engagements."
+      },
+      {
+        "name": "Monday GTM Readiness Board",
+        "category": "GTM",
+        "tool": "Monday.com",
+        "url": "https://ibm.monday.com/boards/8390745201",
+        "notes": "GTM readiness tracking for Business Automation releases and milestones."
+      },
+      {
+        "name": "Product GTM Tracker",
+        "category": "GTM",
+        "tool": "Monday.com",
+        "url": "https://ibm.monday.com/boards/18397235989",
+        "notes": "Product go-to-market status, deliverables, and release milestones."
+      },
+      {
+        "name": "Core PM CoE Dashboard",
+        "category": "Deal Mgmt",
+        "tool": "Cirrus App",
+        "url": "https://core-coe-deal-management-frontend-prod.core-coe-deal-management.wdc.app.cirrus.ibm.com/product-manager",
+        "notes": "Core PM deal management & product manager dashboard.",
+        "accessGuide": "Go to AccessHub (https://ibm-support.saviyntcloud.com/) > Select Applications > Search for “CORE PM COE DASHBOARD” > Choose “Member” > Add a justification > Submit."
+      },
+      {
+        "name": "Slack: #ba-social-media",
+        "category": "Slack",
+        "tool": "Slack",
+        "url": "https://ibm.enterprise.slack.com/archives/C0AG59RJ1F1",
+        "notes": "Coordination channel for Business Automation social media, blogs, and announcements."
+      },
+      {
+        "name": "YouTube – IBM Product Hub Channel",
+        "category": "YouTube",
+        "tool": "YouTube",
+        "url": "https://www.youtube.com/IBMSupportTV",
+        "notes": "Official YouTube channel for IBM product demos, tutorials, and deep dives."
+      },
+      {
+        "name": "YouTube BA Shortlink",
+        "category": "YouTube",
+        "tool": "ibm.biz",
+        "url": "http://ibm.biz/business-automation-youtube",
+        "notes": "Direct vanity shortlink to IBM Business Automation videos on YouTube."
+      },
+      {
+        "name": "IBM Product Hub YouTube Home (Publisher)",
+        "category": "YouTube",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/ibm-product-hub-youtube-home",
+        "notes": "Video publishing portal, criteria, guidelines, and home for creators."
+      },
+      {
+        "name": "Slack: #ibmproducthub-yt-stakeholders",
+        "category": "Slack",
+        "tool": "Slack",
+        "url": "https://ibm.enterprise.slack.com/archives/C09PSNLGUJE",
+        "notes": "Stakeholder community for YouTube video submissions, feedback, and reviews."
+      },
+      {
+        "name": "YouTube Video Content Checklist",
+        "category": "YouTube",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/ibm-product-hub-youtube-home/video-publishing-checklist",
+        "notes": "Step-by-step pre-publish checklist for product videos."
+      },
+      {
+        "name": "YouTube Production Guidance",
+        "category": "YouTube",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/ibm-product-hub-youtube-home/video-coach",
+        "notes": "Video coaching and production best practices."
+      },
+      {
+        "name": "YouTube Creator Resources",
+        "category": "YouTube",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/ibm-product-hub-youtube-home/resources",
+        "notes": "Templates, intros/outros, brand assets, and guidelines."
+      },
+      {
+        "name": "IBM Product Hub Canvas",
+        "category": "YouTube",
+        "tool": "Slack Canvas",
+        "url": "https://ibm.enterprise.slack.com/docs/T02J3DPUE/F0AQ4QKP1FZ",
+        "notes": "Master canvas for publishing videos to the IBM Product Hub YouTube site."
+      }
+    ]
   },
+  {
+    "id": "top-resources",
+    "code": "000",
+    "title": "000 — Top Resources & Getting Started",
+    "description": "Core Business Automation management system, GTM guides, org charts, roadmaps, analyst reports, and learning essentials.",
+    "items": [
+      {
+        "name": "Business Automation Management System (Box)",
+        "category": "Management",
+        "tool": "Box",
+        "url": "https://ibm.biz/product-management",
+        "notes": "Primary Box repository for BA Product Management strategy, templates, and collateral."
+      },
+      {
+        "name": "Slack: #business-automation-product-management",
+        "category": "Slack",
+        "tool": "Slack",
+        "url": "https://slack.com/archives/C03QUUL1CN4",
+        "notes": "Main Slack channel for Business Automation Product Management squad."
+      },
+      {
+        "name": "Slack: #ba-pm-enablement",
+        "category": "Slack",
+        "tool": "Slack",
+        "url": "https://slack.com/archives/C0AR3RH65RA",
+        "notes": "PM enablement, knowledge sharing, and training updates."
+      },
+      {
+        "name": "Events 2026: Routine Essential Product Updates",
+        "category": "Events",
+        "tool": "Slack Canvas",
+        "url": "https://ibm.enterprise.slack.com/docs/T02J3DPUE/F0B05LR1KJB?focus_section_id=temp%3AC%3AECI866edd7090994d2fa8daebfb7",
+        "notes": "Schedule of routine essential product updates and cadence meetings."
+      },
+      {
+        "name": "GTM Guide 2026",
+        "category": "GTM",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/ibmsaleszone/gtm-guide-2026",
+        "notes": "Comprehensive GTM guide on SalesZone for 2026 product launches."
+      },
+      {
+        "name": "GTM Readiness Board",
+        "category": "GTM",
+        "tool": "ibm.biz",
+        "url": "https://ibm.biz/gtm-readiness-board",
+        "notes": "Board tracking cross-functional readiness across PM, Tech Sales, and Marketing."
+      },
+      {
+        "name": "GTM Readiness Checklist",
+        "category": "GTM",
+        "tool": "ibm.biz",
+        "url": "https://ibm.biz/gtm-readiness-checklist",
+        "notes": "Standard checklist for launch gates, readiness criteria, and sign-offs."
+      },
+      {
+        "name": "BA Asset Priority List",
+        "category": "Collateral",
+        "tool": "Box",
+        "url": "https://ibm.box.com/s/0k8sd4hipxc8o4fxqh1xo5cskkqwf7vj",
+        "notes": "Prioritized list of sales and enablement assets across the BA portfolio."
+      },
+      {
+        "name": "GTM Dashboard",
+        "category": "GTM",
+        "tool": "ibm.biz",
+        "url": "http://ibm.biz/gtm-bashboard",
+        "notes": "Go-to-market performance metrics and launch pipeline dashboard."
+      },
+      {
+        "name": "MMT (Market Management Tool)",
+        "category": "Planning",
+        "tool": "Box",
+        "url": "https://ibm.box.com/s/4gjpolryreuakkf9f7ldbgifeh27gefq",
+        "notes": "Market management planning documentation and workbooks."
+      },
+      {
+        "name": "BA Org Chart",
+        "category": "Org",
+        "tool": "Box",
+        "url": "https://ibm.box.com/s/l6zwiezro4cxw9yb32a4x3njn9ou4zwr",
+        "notes": "Current organizational structure and leadership alignment for Business Automation."
+      },
+      {
+        "name": "Analyst Reports Hub",
+        "category": "Analyst",
+        "tool": "Box",
+        "url": "https://ibm.box.com/s/tjbg11gsqgmc1mxnpa1b4nnlqd20hyvx",
+        "notes": "Gartner, Forrester, and IDC reports evaluating Business Automation solutions."
+      },
+      {
+        "name": "Gartner Boat Reprint",
+        "category": "Analyst",
+        "tool": "Gartner",
+        "url": "https://www.gartner.com/doc/reprints?id=1-2M5CL5FU&ct=251022&st=sb",
+        "notes": "Official Gartner Magic Quadrant / market reprint documentation."
+      },
+      {
+        "name": "Intelligence Report",
+        "category": "Analyst",
+        "tool": "Box",
+        "url": "https://ibm.box.com/s/vse521yyj7zhguc8zpphouwaq7tv6a85",
+        "notes": "Market and competitive intelligence synthesis reports."
+      },
+      {
+        "name": "Product Roadmap (Aha!)",
+        "category": "Roadmap",
+        "tool": "Aha!",
+        "url": "https://bigblue.aha.io/shared/f57ac514f25fc96a56295650a987f78d",
+        "notes": "Live shared product roadmap in Aha! across Business Automation portfolio."
+      },
+      {
+        "name": "Core Products Hub (Seismic)",
+        "category": "Sales Kit",
+        "tool": "Seismic",
+        "url": "https://ibm.seismic.com/Link/Content/DCcbTdMV4XhfcGCBdPFQXHCXRd4B",
+        "notes": "Central Seismic repository for Core Business Automation product collateral."
+      },
+      {
+        "name": "Customer Advocacy Review",
+        "category": "Advocacy",
+        "tool": "Box",
+        "url": "https://ibm.box.com/s/sjyglr5cfnt2l3xubidvkx5n3qrv4xxy",
+        "notes": "Client references, advocacy programs, and customer advisory board reviews."
+      },
+      {
+        "name": "License Calculator Sales Enablement",
+        "category": "Pricing",
+        "tool": "Seismic",
+        "url": "https://ibm.seismic.com/Link/Content/DCGXhRBGRdRFXG7JXRjRqRTf2h4j",
+        "notes": "Tool and guide for sizing and calculating software licensing requirements."
+      },
+      {
+        "name": "Product Value Guide (PVG) - BA",
+        "category": "Value Guide",
+        "tool": "Box",
+        "url": "https://ibm.box.com/s/u0qo09wjffdutu1hfai6wnqebhyflbz2",
+        "notes": "Business Automation product value guide and annuity one-pager."
+      },
+      {
+        "name": "Product Value Guide (PVG) - COE",
+        "category": "Value Guide",
+        "tool": "Box",
+        "url": "https://ibm.ent.box.com/s/rvh8hn68gsxw9prizcdx19d79wqvgc34/folder/411632819004?page=1",
+        "notes": "Core PM COE value guide folder and templates."
+      },
+      {
+        "name": "Product Value Guide Dashboard",
+        "category": "Value Guide",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/core-software-organization/annuity",
+        "notes": "Core Software Organization Annuity and PVG dashboard."
+      },
+      {
+        "name": "NFI Tracker",
+        "category": "NFI/NPI",
+        "tool": "ibm.biz",
+        "url": "http://ibm.biz/ba-nfi-tracker",
+        "notes": "New Feature / New Product Introduction tracker."
+      },
+      {
+        "name": "BA Demos: 120-NPI/NFI",
+        "category": "Demos",
+        "tool": "Slack Canvas",
+        "url": "https://ibm.enterprise.slack.com/docs/T02J3DPUE/F0BCLS53DCN?focus_section_id=temp%3AC%3APaK71912013fe8e4f49bc91516f2",
+        "notes": "Demo assets repository for NFI/NPI features."
+      },
+      {
+        "name": "Udemy for IBM",
+        "category": "Learning",
+        "tool": "Udemy",
+        "url": "https://ibm-learning.udemy.com/",
+        "notes": "Full enterprise learning catalog on Udemy."
+      },
+      {
+        "name": "Product Management Learning Path",
+        "category": "Learning",
+        "tool": "Udemy",
+        "url": "https://ibm-learning.udemy.com/learning-paths/1746726/",
+        "notes": "Curated learning path for IBM Product Managers on Udemy."
+      },
+      {
+        "name": "Prompt Engineering for AI Bootcamp (2026)",
+        "category": "Learning",
+        "tool": "Udemy",
+        "url": "https://ibm-learning.udemy.com/course/prompt-engineering-for-ai/",
+        "notes": "Hands-on masterclass in generative AI prompt engineering."
+      },
+      {
+        "name": "AI Prompt Learning Path",
+        "category": "Learning",
+        "tool": "Udemy",
+        "url": "https://ibm-learning.udemy.com/learning-paths/11028113/",
+        "notes": "Prompt engineering and AI workflow mastery path."
+      },
+      {
+        "name": "Software Product Management Publisher",
+        "category": "Community",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/software-product-management",
+        "notes": "IBM Software PM community, methodology, governance, and playbook."
+      },
+      {
+        "name": "Performance Expectations for IBMers (YL)",
+        "category": "HR / Goals",
+        "tool": "Your Learning",
+        "url": "https://yourlearning.ibm.com/activity/ALM-COURSE_4068965",
+        "notes": "SuccessFactors course on aligning for success and performance expectations."
+      }
+    ]
+  },
+  {
+    "id": "slack-channels",
+    "code": "110",
+    "title": "110 — Slack Channels",
+    "description": "Key product management, technical sales, field sales, announcement, and practitioner community Slack channels.",
+    "items": [
+      {
+        "name": "#business-automation-product-management",
+        "category": "Product Management",
+        "tool": "Slack",
+        "url": "https://slack.com/archives/C03QUUL1CN4",
+        "notes": "Core collaboration channel for BA product managers."
+      },
+      {
+        "name": "#ba-pm-enablement",
+        "category": "Product Management",
+        "tool": "Slack",
+        "url": "https://slack.com/archives/C0AR3RH65RA",
+        "notes": "Enablement, training announcements, and PM tooling updates."
+      },
+      {
+        "name": "#ba-social-media",
+        "category": "Marketing",
+        "tool": "Slack",
+        "url": "https://slack.com/archives/C0AG59RJ1F1",
+        "notes": "Social media amplification, blogs, webinars, and event highlights."
+      },
+      {
+        "name": "#ba-gtm-coordination",
+        "category": "GTM",
+        "tool": "Slack",
+        "url": "https://slack.com/archives/C08B8LMCG2E",
+        "notes": "Cross-functional GTM launch execution and readiness sync."
+      },
+      {
+        "name": "#business-automation-techsales",
+        "category": "Tech Sales",
+        "tool": "Slack",
+        "url": "https://slack.com/archives/CBSQ40JSW",
+        "notes": "Technical sales community for demos, POCs, and architecture questions."
+      },
+      {
+        "name": "#business-automation-sales",
+        "category": "Sales",
+        "tool": "Slack",
+        "url": "https://slack.com/archives/C9CLCH9CL",
+        "notes": "Direct seller and territory field sales alignment channel."
+      },
+      {
+        "name": "#business-automation-announcements",
+        "category": "Announcements",
+        "tool": "Slack",
+        "url": "https://slack.com/archives/CQ8S6U7HR",
+        "notes": "Major product releases, executive updates, and portfolio milestones."
+      },
+      {
+        "name": "#ba-content-practitioners",
+        "category": "Practitioners",
+        "tool": "Slack",
+        "url": "https://slack.com/archives/C03BRN0G5V5",
+        "notes": "Content Services (FileNet, Datacap, Content Assistant) practitioner channel."
+      },
+      {
+        "name": "#ba-baw-practitioners",
+        "category": "Practitioners",
+        "tool": "Slack",
+        "url": "https://slack.com/archives/C3A3KV6UW",
+        "notes": "Business Automation Workflow and process orchestration community."
+      },
+      {
+        "name": "#ba-enterprise-records-practitioners",
+        "category": "Practitioners",
+        "tool": "Slack",
+        "url": "https://slack.com/archives/C01LYC7V76V",
+        "notes": "IBM Enterprise Records (IER) compliance and governance community."
+      }
+    ]
+  },
+  {
+    "id": "sales-kits",
+    "code": "120",
+    "title": "120 — Sales Kits & Seismic",
+    "description": "Official Seismic sales kits, 2-pagers, and enablement repositories across all Business Automation product pillars.",
+    "items": [
+      {
+        "name": "BA Portfolio Hub",
+        "category": "Portfolio",
+        "tool": "Seismic",
+        "url": "https://ibm.biz/BASalesKit",
+        "notes": "Master portfolio page linking all Business Automation sales kits."
+      },
+      {
+        "name": "BA Sales Kits Collection",
+        "category": "Portfolio",
+        "tool": "Seismic",
+        "url": "http://ibm.biz/BASalesKits",
+        "notes": "Complete directory of BA sales kits and collateral."
+      },
+      {
+        "name": "BA 2-Pager",
+        "category": "Overview",
+        "tool": "Seismic",
+        "url": "http://ibm.biz/ba-2pager",
+        "notes": "Executive two-page portfolio overview and value narrative."
+      },
+      {
+        "name": "Sales Plays (Seismic)",
+        "category": "Sales Play",
+        "tool": "Seismic",
+        "url": "https://ibm.seismic.com/Link/Content/DCVXVmRGj87BmG2Gc368BHMdjQDd",
+        "notes": "Prescriptive sales plays and plays for select territory sellers."
+      },
+      {
+        "name": "Cloud Pak for Business Automation (CP4BA)",
+        "category": "Platform",
+        "tool": "Seismic",
+        "url": "http://ibm.biz/CP4BASalesKit",
+        "notes": "Sales kit for Cloud Pak for Business Automation container platform."
+      },
+      {
+        "name": "CP4BA as a Service (CP4BAaaS)",
+        "category": "Platform",
+        "tool": "Seismic",
+        "url": "http://ibm.biz/CP4BAaaSSalesKit",
+        "notes": "Sales kit for Cloud Pak for Business Automation SaaS edition."
+      },
+      {
+        "name": "Intelligent Content Services Sales Kit",
+        "category": "Content Services",
+        "tool": "Seismic",
+        "url": "http://ibm.biz/ContentServicesSaleskit",
+        "notes": "Content pillar sales kit covering FileNet, Datacap, and AI content assistant."
+      },
+      {
+        "name": "FileNet Sales Kit",
+        "category": "Content Services",
+        "tool": "Seismic",
+        "url": "http://ibm.biz/FileNetSalesKit",
+        "notes": "Sales kit for IBM FileNet Content Manager."
+      },
+      {
+        "name": "Datacap Sales Kit",
+        "category": "Content Services",
+        "tool": "Seismic",
+        "url": "http://ibm.biz/DatacapSalesKit",
+        "notes": "Sales kit for IBM Datacap document capture and extraction."
+      },
+      {
+        "name": "IBM Enterprise Records (IER) Sales Kit",
+        "category": "Content Services",
+        "tool": "Seismic",
+        "url": "http://ibm.biz/IERSalesKit",
+        "notes": "Sales kit for IBM Enterprise Records management and compliance."
+      },
+      {
+        "name": "Content Collector (ICC) Sales Kit",
+        "category": "Content Services",
+        "tool": "Seismic",
+        "url": "http://ibm.biz/ICCSalesKit",
+        "notes": "Sales kit for IBM Content Collector."
+      },
+      {
+        "name": "Content Manager OnDemand (CMOD) Sales Kit",
+        "category": "Content Services",
+        "tool": "Seismic",
+        "url": "http://ibm.biz/CMODSalesKit",
+        "notes": "Sales kit for IBM Content Manager OnDemand."
+      },
+      {
+        "name": "Business Automation Workflow (BAW) Sales Kit",
+        "category": "Process Automation",
+        "tool": "Seismic",
+        "url": "https://ibm.seismic.com/Link/Content/DCRFm2Cjhb3gHGcWJcjcFD7QD84P",
+        "notes": "Sales kit for IBM Business Automation Workflow."
+      },
+      {
+        "name": "Business Automation Manager (BAM) Sales Kit",
+        "category": "Process Automation",
+        "tool": "Seismic",
+        "url": "https://ibm.biz/BAMSalesKit",
+        "notes": "Sales kit for Business Automation Manager."
+      },
+      {
+        "name": "Robotic Process Automation (RPA) Sales Kit",
+        "category": "Process Automation",
+        "tool": "Seismic",
+        "url": "http://ibm.biz/RPASalesKit",
+        "notes": "Sales kit for IBM Robotic Process Automation."
+      },
+      {
+        "name": "Blueworks Live (BWL) Sales Kit",
+        "category": "Process Automation",
+        "tool": "Seismic",
+        "url": "http://ibm.biz/BWLSalesKit",
+        "notes": "Sales kit for IBM Blueworks Live cloud process mapping."
+      },
+      {
+        "name": "Process Mining Sales Kit",
+        "category": "Process Automation",
+        "tool": "Seismic",
+        "url": "http://ibm.biz/ProcessMiningSalesKit",
+        "notes": "Sales kit for IBM Process Mining."
+      },
+      {
+        "name": "Decision Intelligence Sales Kit",
+        "category": "Decision Intelligence",
+        "tool": "Seismic",
+        "url": "http://ibm.biz/DecisionIntelligenceSalesKit",
+        "notes": "Sales kit covering Operational Decision Manager (ODM) and ADS."
+      },
+      {
+        "name": "Operational Decision Manager (ODM) Sales Kit",
+        "category": "Decision Intelligence",
+        "tool": "Seismic",
+        "url": "http://ibm.biz/ODMSalesKit",
+        "notes": "Sales kit for IBM Operational Decision Manager."
+      },
+      {
+        "name": "Automation Decision Services (ADS) Sales Kit",
+        "category": "Decision Intelligence",
+        "tool": "Seismic",
+        "url": "http://ibm.biz/ADSSalesKit",
+        "notes": "Sales kit for IBM Automation Decision Services."
+      },
+      {
+        "name": "watsonx Orchestrate Sales Kit",
+        "category": "watsonx",
+        "tool": "Seismic",
+        "url": "https://ibm.biz/wxoSalesKit",
+        "notes": "Sales kit for IBM watsonx Orchestrate generative AI skills and automations."
+      },
+      {
+        "name": "webMethods Sales Kit",
+        "category": "Integration",
+        "tool": "Seismic",
+        "url": "http://ibm.biz/webMethodsSalesKit",
+        "notes": "Sales kit for Software AG webMethods integration & API platform."
+      },
+      {
+        "name": "Content Manager (CM) Request Procedure",
+        "category": "Seismic Admin",
+        "tool": "Seismic",
+        "url": "https://ibm.seismic.com/Link/Content/DC3bQJbcJPQpjGqVmHmJWHTHqfGV",
+        "notes": "Procedure for publishing or updating collateral on Seismic."
+      },
+      {
+        "name": "Slack: #seismic-help",
+        "category": "Seismic Admin",
+        "tool": "Slack",
+        "url": "https://slack.com/archives/CH5F2KV5K",
+        "notes": "Help and technical support for Seismic platform users."
+      },
+      {
+        "name": "Slack: #seismic-content-leaders",
+        "category": "Seismic Admin",
+        "tool": "Slack",
+        "url": "https://slack.com/archives/C01RA72KCKB",
+        "notes": "Governance and best practices for Seismic content curators."
+      },
+      {
+        "name": "Slack: #seismic-liveinsights",
+        "category": "Seismic Admin",
+        "tool": "Slack",
+        "url": "https://slack.com/archives/C01RN2JK7A4",
+        "notes": "Analytics, content engagement insights, and metrics for Seismic."
+      }
+    ]
+  },
+  {
+    "id": "use-cases",
+    "code": "122",
+    "title": "122 — Use Cases & Client References",
+    "description": "Industry use case libraries, reference architectures, and customer reference materials.",
+    "items": [
+      {
+        "name": "IBM Institute for Business Value (IBV) - AI Use Case Library",
+        "category": "Use Cases",
+        "tool": "IBV",
+        "url": "https://intemail.ibm.com/NzkzLVZCTS05MTUAAAGg4v4Ioeg-RzWn90UpEDJfIjmC3Pn35go5JLRQOBS4P847KOjjAirXqW73uhVAzsm8fozNdzc=",
+        "notes": "Curated library of AI and automation use cases with measurable ROI."
+      },
+      {
+        "name": "Customer Reference Handbook",
+        "category": "References",
+        "tool": "Box",
+        "url": "https://ibm.box.com/s/vtyr82n6t3ei8mzyebkk6ceskk5mdzjk",
+        "notes": "Guidelines for engaging client references, case study drafting, and approvals."
+      }
+    ]
+  },
+  {
+    "id": "marketing-community",
+    "code": "130",
+    "title": "130 — Marketing, Social Media & Community",
+    "description": "Brand design assets, icon libraries, newsletter templates, TechXchange communities, and media publishing systems.",
+    "items": [
+      {
+        "name": "Slack: #ba-social-media",
+        "category": "Social Media",
+        "tool": "Slack",
+        "url": "https://slack.com/archives/C0AG59RJ1F1",
+        "notes": "Social media team announcements, blog releases, and campaigns."
+      },
+      {
+        "name": "YouTube – IBM Product Hub",
+        "category": "Video",
+        "tool": "ibm.biz",
+        "url": "http://ibm.biz/business-automation-youtube",
+        "notes": "Direct vanity link to Business Automation playlist on YouTube."
+      },
+      {
+        "name": "Newsletter Template",
+        "category": "Newsletters",
+        "tool": "ibm.biz",
+        "url": "http://ibm.biz/newsletter-template/",
+        "notes": "Standard HTML/markdown newsletter template for internal/external updates."
+      },
+      {
+        "name": "BA Newsletters Box Folder",
+        "category": "Newsletters",
+        "tool": "Box",
+        "url": "http://ibm.biz/ba-newsletters",
+        "notes": "Archive of past Business Automation newsletters and distributions."
+      },
+      {
+        "name": "BA Digital Assets",
+        "category": "Design",
+        "tool": "ibm.biz",
+        "url": "http://ibm.biz/BADigitalAssets",
+        "notes": "Logos, diagramming components, presentation templates, and graphics."
+      },
+      {
+        "name": "BA Hub Icons",
+        "category": "Design",
+        "tool": "Internal",
+        "url": "https://BAHubIcons",
+        "notes": "Product iconography and badges for Business Automation Hub."
+      },
+      {
+        "name": "BA Icons Library",
+        "category": "Design",
+        "tool": "ibm.biz",
+        "url": "https://ibm.biz/BAIcons",
+        "notes": "Standard Carbon/IBM Design Language SVG icons for Business Automation."
+      },
+      {
+        "name": "IBM Design Language - App Icons",
+        "category": "Design",
+        "tool": "ibm.biz",
+        "url": "https://ibm.biz/appicons",
+        "notes": "Official IBM Design Language guidelines and grid specs for application icons."
+      },
+      {
+        "name": "Figma - Design AI",
+        "category": "Design",
+        "tool": "Box / Figma",
+        "url": "https://ibm.box.com/s/hj44isk9p9j2widoj0v2binr9fc0copj",
+        "notes": "Figma design system kits and AI UI component libraries."
+      },
+      {
+        "name": "TechXchange User Groups",
+        "category": "Community",
+        "tool": "TechXchange",
+        "url": "http://ibm.biz/business-automation-ug",
+        "notes": "Client and practitioner user groups for Business Automation on TechXchange."
+      },
+      {
+        "name": "IBM Blogs and Webinars Management System",
+        "category": "Publishing",
+        "tool": "ibm.biz",
+        "url": "http://ibm.biz/blog-webinar",
+        "notes": "Submit, schedule, and track product blogs and webinars."
+      },
+      {
+        "name": "IBM Media Center",
+        "category": "Video",
+        "tool": "MediaCenter",
+        "url": "https://mediacenter.ibm.com/home",
+        "notes": "Internal video hosting and media management portal."
+      },
+      {
+        "name": "Ruby / Marketo Marketing Engine",
+        "category": "Marketing",
+        "tool": "Cirrus App",
+        "url": "https://ruby.cio-sms-ruby.wdc.app.cirrus.ibm.com/",
+        "notes": "Campaign automation, lead nurturing, and email marketing engine."
+      }
+    ]
+  },
+  {
+    "id": "sales-enablement",
+    "code": "140",
+    "title": "140 — Sales & Subscriptions",
+    "description": "SalesZone portals, territory plays, pricebooks, subscription licensing, and deal acceleration tools.",
+    "items": [
+      {
+        "name": "SalesZone Portal",
+        "category": "Portal",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/ibmsaleszone",
+        "notes": "Primary sales portal for IBM Technology Sales."
+      },
+      {
+        "name": "Winning in Select Territory",
+        "category": "Strategy",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/winning-products/what-makes-a-winning-product/winning-in-select-territory",
+        "notes": "Guidance on selling into Select and mid-market territories."
+      },
+      {
+        "name": "Welcome 2026 - Select Territory",
+        "category": "Strategy",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/ibm-technology-sales/sales-news/data-ai-blogs/5b70f920-f091-11f0-8470-532b4d3acf22",
+        "notes": "2026 strategy kickoff and execution plans for Select territory."
+      },
+      {
+        "name": "Sales Plays (Seismic)",
+        "category": "Plays",
+        "tool": "Seismic",
+        "url": "https://ibm.seismic.com/Link/Content/DCVXVmRGj87BmG2Gc368BHMdjQDd",
+        "notes": "Field-ready sales playbooks and conversation starters."
+      },
+      {
+        "name": "Client Resource Locator",
+        "category": "Territory",
+        "tool": "Cirrus App",
+        "url": "https://web.client-resource-locator.wdc.app.cirrus.ibm.com/",
+        "notes": "Locate assigned account reps, technical specialists, and partner contacts."
+      },
+      {
+        "name": "Subscription and Annuity Enablement",
+        "category": "Subscriptions",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/subscription-annuity-enablement/ask-the-experts",
+        "notes": "Ask the experts on subscription term licenses and SaaS conversion."
+      },
+      {
+        "name": "Seller Details Hub",
+        "category": "Directory",
+        "tool": "Box",
+        "url": "https://ibm.box.com/s/58fsq2u8a4vyovkv7igk362vc7e949oj",
+        "notes": "Seller coverage, quota territories, and account mappings."
+      },
+      {
+        "name": "Fast Pass Deal Sizing",
+        "category": "Quoting",
+        "tool": "DSW",
+        "url": "https://w3.ibm.com/cio/dsw-dashboard/dsw_online/dsw_online/fastpass",
+        "notes": "Fast Pass customer licensing agreements and entitlement verification."
+      },
+      {
+        "name": "Distributed Software Pricebook",
+        "category": "Pricing",
+        "tool": "DSW",
+        "url": "https://w3-314.ibm.com/dsw/services/sales/pricebook?dswaud=internal",
+        "notes": "Official internal software pricebook and part number lookup."
+      },
+      {
+        "name": "Subscriptions Playbook (Seismic)",
+        "category": "Subscriptions",
+        "tool": "Seismic",
+        "url": "https://ibm.seismic.com/Link/Content/DCb1uiOHmIlEy--_UnReRwJg",
+        "notes": "Seismic collateral for software subscription packaging."
+      },
+      {
+        "name": "General Software Subscription FAQs",
+        "category": "Subscriptions",
+        "tool": "Box",
+        "url": "https://ibm.box.com/s/9a90wmy2otwbrskbc18kzv8d2w20dzyi%20%20Pr",
+        "notes": "FAQ guide for term licenses, conversions, and renewals."
+      },
+      {
+        "name": "Slack: #subscription-license",
+        "category": "Slack",
+        "tool": "Slack",
+        "url": "https://slack.com/archives/CP106K71T",
+        "notes": "Slack channel for questions on subscription licensing rules and discounts."
+      }
+    ]
+  },
+  {
+    "id": "core-coe",
+    "code": "150",
+    "title": "150 — Core PM Center of Excellence & Lighthouse",
+    "description": "Core Software PM organization resources, opportunity risk tracker, demo excellence, 365 Days of Innovation, and Launch & Land.",
+    "items": [
+      {
+        "name": "Core PM Center of Excellence Portal",
+        "category": "Center of Excellence",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/core-software-organization",
+        "notes": "Core Software Organization portal, leadership directives, and PM frameworks."
+      },
+      {
+        "name": "Core PM Resource Hub",
+        "category": "Center of Excellence",
+        "tool": "ibm.biz",
+        "url": "http://ibm.biz/core-resource-hub",
+        "notes": "Central hub for Core PM tooling, standards, and playbooks."
+      },
+      {
+        "name": "Core Software Seismic Space",
+        "category": "Seismic",
+        "tool": "Seismic",
+        "url": "https://ibm.seismic.com/Link/Content/DCcbTdMV4XhfcGCBdPFQXHCXRd4B",
+        "notes": "Core software marketing and sales assets on Seismic."
+      },
+      {
+        "name": "Slack: #ibmcoresw",
+        "category": "Slack",
+        "tool": "Slack",
+        "url": "https://slack.com/archives/C089GNN8BRQ",
+        "notes": "Core software organization broad announcements and discussions."
+      },
+      {
+        "name": "365 Days of Innovation Blogs",
+        "category": "Innovation",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/core-software-organization/blogs",
+        "notes": "Daily innovation highlights and customer success showcases."
+      },
+      {
+        "name": "Core PM Resource Hub - Main",
+        "category": "PM Resources",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/core-software-organization/pm-resource-hub",
+        "notes": "Master PM resource hub page."
+      },
+      {
+        "name": "Core PM Monday Board",
+        "category": "PM Resources",
+        "tool": "Monday.com",
+        "url": "https://ibm.monday.com/boards/18423329272",
+        "notes": "Core PM initiatives and deliverables board."
+      },
+      {
+        "name": "Core Software Roadmaps (Aha!)",
+        "category": "PM Resources",
+        "tool": "Aha!",
+        "url": "https://bigblue.aha.io/shared/f57ac514f25fc96a56295650a987f78d",
+        "notes": "Shared Core Software product roadmaps in Aha!."
+      },
+      {
+        "name": "Software Product Roadmaps Portal",
+        "category": "PM Resources",
+        "tool": "w3",
+        "url": "https://w3.ibm.com/software/product-roadmaps",
+        "notes": "Internal official software product roadmaps page."
+      },
+      {
+        "name": "Opportunity Risk Tracker - Main",
+        "category": "Risk Tracker",
+        "tool": "ibm.biz",
+        "url": "http://ibm.biz/opportunity-risk-tracker",
+        "notes": "Track deal risks, product gaps, and competitive threats."
+      },
+      {
+        "name": "Opportunity Risk Tracker Guide",
+        "category": "Risk Tracker",
+        "tool": "Box",
+        "url": "https://ibm.ent.box.com/s/2ycvi70atnaycus7cyh07ss201li0egl",
+        "notes": "User guide for submitting and reviewing opportunity risks."
+      },
+      {
+        "name": "Demo Assets & Accelerators Portal",
+        "category": "Demo Assets",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/core-software-organization/core-center-of-excellence/demo-assets",
+        "notes": "Curated catalog of reusable live demos and accelerators."
+      },
+      {
+        "name": "What Makes a Good Demo Guide",
+        "category": "Demo Assets",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/core-software-organization/core-center-of-excellence/demo-assets/what-makes-a-good-demo",
+        "notes": "Guidelines for structuring engaging, high-converting product demonstrations."
+      },
+      {
+        "name": "Demo Assets Best Practices",
+        "category": "Demo Assets",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/core-software-organization/core-center-of-excellence/demo-assets/demo-assets-best-practices",
+        "notes": "Standards for containerized and cloud demos."
+      },
+      {
+        "name": "Lighthouse Innovation Space",
+        "category": "Lighthouse",
+        "tool": "Lighthouse",
+        "url": "https://w3.ibm.com/services/lighthouse/spaces/view/365-days-of-innovation/all-content?q=&spaceId=b3a41a00-6abc-4a2f-b72c-5a17c07cdd0f&taxonomy=&modified_last_days=06%2F15%2F2024-06%2F15%2F2026&tags=&meta_tags=&sort_field=title&sort_order=asc&pageId=07f28f5a-12a5-4704-87e3-81a540677fec&widgetId=c7177374-7358-498f-a234-7149b22dfdc3&useQuickFilters=true",
+        "notes": "Lighthouse portal showcasing 365 days of software innovation."
+      },
+      {
+        "name": "Launch and Land Playbook",
+        "category": "Launch & Land",
+        "tool": "SharePoint",
+        "url": "https://ibm.sharepoint.com/:p:/s/DEPT-LaunchLand/IQAKHEfrYNiTS7I7jZPixf5-AZYvycQLSS2a3kOfYqMnnqY?e=qQf7WP&or=PPT-WEB.BODY.NT&ct=1782911528076",
+        "notes": "Strategic methodology for lighthouse customer acquisition and expansion."
+      },
+      {
+        "name": "Launch and Land FAQ",
+        "category": "Launch & Land",
+        "tool": "ibm.biz",
+        "url": "http://ibm.biz/pm-launchland-faq",
+        "notes": "Frequently asked questions for Product Managers on Launch and Land program."
+      },
+      {
+        "name": "Launch and Land Canvas",
+        "category": "Launch & Land",
+        "tool": "Slack Canvas",
+        "url": "https://ibm.enterprise.slack.com/docs/T02J3DPUE/F0AQP2P455K",
+        "notes": "Collaboration canvas for active Launch & Land customer accounts."
+      },
+      {
+        "name": "Slack: #software-launch-and-land",
+        "category": "Slack",
+        "tool": "Slack",
+        "url": "https://slack.com/archives/C0AQQDDTSCE",
+        "notes": "Community channel for software launch and land programs."
+      }
+    ]
+  },
+  {
+    "id": "tools-utilities",
+    "code": "700",
+    "title": "700 — Tools & General Utilities",
+    "description": "AI assistants (Bob, Otto), Amplitude product analytics, Snip URL management, Qualtrics, Pulse, AEM, and workplace tools.",
+    "items": [
+      {
+        "name": "Bob (AI Engineering Assistant)",
+        "category": "AI Tools",
+        "tool": "Bob",
+        "url": "https://bob.ibm.com/",
+        "notes": "AI pair programmer and software development assistant."
+      },
+      {
+        "name": "Bob Context Playbook",
+        "category": "AI Tools",
+        "tool": "GitHub Pages",
+        "url": "https://pages.github.ibm.com/Markus-Eisele/bob-book/poster/use-ibm-bob-better-context/",
+        "notes": "Best practice guide on giving Bob high-signal context and prompts."
+      },
+      {
+        "name": "Otto (AI Assistant)",
+        "category": "AI Tools",
+        "tool": "Otto",
+        "url": "https://otto.test.saas.ibm.com/",
+        "notes": "IBM generative AI assistant for employee workflows."
+      },
+      {
+        "name": "Otto FAQ",
+        "category": "AI Tools",
+        "tool": "Otto",
+        "url": "https://otto.dev.saas.ibm.com/faq",
+        "notes": "Frequently asked questions and capabilities of Otto."
+      },
+      {
+        "name": "watsonx Workshop",
+        "category": "AI Tools",
+        "tool": "Workshop",
+        "url": "https://workshop.ibm.com/",
+        "notes": "Interactive AI prototyping and model evaluation environment."
+      },
+      {
+        "name": "watsonx Context Manager",
+        "category": "AI Tools",
+        "tool": "Workshop",
+        "url": "https://context.workshop.ibm.com/",
+        "notes": "Context management service for generative AI models and agents."
+      },
+      {
+        "name": "Creative Assistant",
+        "category": "Marketing AI",
+        "tool": "w3",
+        "url": "https://w3.ibm.com/marketing/creative-assistant/2",
+        "notes": "AI-powered creative copywriting and design asset generation."
+      },
+      {
+        "name": "Creative Assistant Demo",
+        "category": "Marketing AI",
+        "tool": "IBM Video",
+        "url": "https://secure.video.ibm.com/channel/26292300/video/134544808",
+        "notes": "Video walkthrough of Creative Assistant features."
+      },
+      {
+        "name": "Growth Dashboard",
+        "category": "Product Growth",
+        "tool": "ibm.biz",
+        "url": "http://ibm.biz/growth-dashboard",
+        "notes": "Product growth metrics, user journeys, and funnel conversions."
+      },
+      {
+        "name": "Growth Dashboard Pre-Prod Verification",
+        "category": "Product Growth",
+        "tool": "ibm.biz",
+        "url": "http://ibm.biz/pre-prod",
+        "notes": "Pre-production verification environment for product telemetry."
+      },
+      {
+        "name": "Growth Dashboard Info & Video",
+        "category": "Product Growth",
+        "tool": "ibm.biz",
+        "url": "http://ibm.biz/growth-dashboard-info",
+        "notes": "Growth dashboard documentation and enablement video."
+      },
+      {
+        "name": "Snip (ibm.biz URL Manager)",
+        "category": "URL Shortener",
+        "tool": "w3",
+        "url": "https://w3.ibm.com/webmaster/url-tool/snip?section=create",
+        "notes": "IBM URL shortener. Append + to any URL to view analytics and owner."
+      },
+      {
+        "name": "Amplitude Analytics Home",
+        "category": "Telemetry",
+        "tool": "Amplitude",
+        "url": "https://app.amplitude.com/analytics/ibm/home",
+        "notes": "IBM enterprise product analytics and event telemetry."
+      },
+      {
+        "name": "Decision Intelligence Usage Dashboard",
+        "category": "Amplitude",
+        "tool": "Amplitude",
+        "url": "https://app.amplitude.com/analytics/ibm/dashboard/ck14l9ms",
+        "notes": "Active users, model executions, and adoption metrics for Decision Intelligence."
+      },
+      {
+        "name": "Content Assistant Usage Dashboard",
+        "category": "Amplitude",
+        "tool": "Amplitude",
+        "url": "https://app.amplitude.com/analytics/ibm/dashboard/0owsdjxc",
+        "notes": "Content Cortex and Content Assistant telemetry."
+      },
+      {
+        "name": "BWL - Paid Account Usage (NSM)",
+        "category": "Amplitude",
+        "tool": "Amplitude",
+        "url": "https://app.amplitude.com/analytics/ibm/chart/v48sq2qc?sharingId=ej_3rDsX",
+        "notes": "Blueworks Live North Star Metric: monthly active paid accounts."
+      },
+      {
+        "name": "BWL - Paid Account Usage (NSM Proxy Metric)",
+        "category": "Amplitude",
+        "tool": "Amplitude",
+        "url": "https://app.amplitude.com/analytics/ibm/chart/2wxow423?sharingId=1mOHJduV",
+        "notes": "BWL secondary proxy metric tracking account health."
+      },
+      {
+        "name": "BWL - Trial Accounts Activated (Unsegmented)",
+        "category": "Amplitude",
+        "tool": "Amplitude",
+        "url": "https://app.amplitude.com/analytics/ibm/chart/q5fnlaa9?sharingId=2zqATdit",
+        "notes": "Trial signups and self-service account activations."
+      },
+      {
+        "name": "BWL - User Activity Dashboard",
+        "category": "Amplitude",
+        "tool": "Amplitude",
+        "url": "https://app.amplitude.com/analytics/ibm/dashboard/gvefozi1?source=copy+url",
+        "notes": "Daily and monthly active users across Blueworks Live."
+      },
+      {
+        "name": "BWL Milestone Report",
+        "category": "Amplitude",
+        "tool": "Amplitude",
+        "url": "https://app.amplitude.com/analytics/ibm/chart/uxwa6kz0?sharingId=vG1mQQf0",
+        "notes": "Common Milestone Taxonomy (CMT) completion funnel for BWL."
+      },
+      {
+        "name": "Blueworks Live Digital Performances",
+        "category": "Amplitude",
+        "tool": "Amplitude",
+        "url": "https://app.amplitude.com/analytics/ibm/dashboard/1u6sqpx5?source=copy+url",
+        "notes": "Digital performance indicators and cohort analysis."
+      },
+      {
+        "name": "Blueworks Live IQ Usage Dashboard",
+        "category": "Amplitude",
+        "tool": "Amplitude",
+        "url": "https://app.amplitude.com/analytics/ibm/dashboard/ezvzyj4m",
+        "notes": "AI generative process generation usage in BWL IQ."
+      },
+      {
+        "name": "Qualtrics Client Feedback",
+        "category": "Feedback",
+        "tool": "ibm.biz",
+        "url": "https://ibm.biz/qualtrics",
+        "notes": "Client and partner satisfaction feedback, NPS, and survey data."
+      },
+      {
+        "name": "Qualtrics Request Access",
+        "category": "Feedback",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/ibm-client-feedback-program/start/get-qualtrics-access",
+        "notes": "Request access to IBM client feedback surveys on Qualtrics."
+      },
+      {
+        "name": "Slack: #qualtrics-feedback",
+        "category": "Slack",
+        "tool": "Slack",
+        "url": "https://ibm.enterprise.slack.com/archives/C621AHQ4X",
+        "notes": "Slack support channel for Qualtrics feedback and survey analysis."
+      },
+      {
+        "name": "IBM Pulse Overview",
+        "category": "Sentiment",
+        "tool": "ibm.biz",
+        "url": "http://ibm.biz/pulse-overview",
+        "notes": "IBM Pulse social listening and market sentiment overview."
+      },
+      {
+        "name": "IBM Pulse Dashboard",
+        "category": "Sentiment",
+        "tool": "ibm.biz",
+        "url": "http://ibm.biz/ibm-pulse",
+        "notes": "Live Pulse executive dashboard."
+      },
+      {
+        "name": "Slack: #ibm-pulse",
+        "category": "Slack",
+        "tool": "Slack",
+        "url": "https://slack.com/archives/C0BHD998WCC",
+        "notes": "Slack channel for Pulse news, alerts, and report requests."
+      },
+      {
+        "name": "Adobe Experience Manager (AEM / DAM)",
+        "category": "DAM",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/adobe-enterprise-digital-asset-manager/content-authors",
+        "notes": "Content author portal for Adobe Digital Asset Manager."
+      },
+      {
+        "name": "TRIRIGA Workplace Services",
+        "category": "Workplace",
+        "tool": "TRIRIGA",
+        "url": "https://gre.tririga.com/p/web/workplaceServices",
+        "notes": "IBM office reservation, desk booking, and facility services."
+      },
+      {
+        "name": "Carbon for IBM Products",
+        "category": "Design System",
+        "tool": "GitHub Pages",
+        "url": "https://pages.github.ibm.com/carbon/ibm-products/",
+        "notes": "Carbon design system components and patterns for IBM software products."
+      },
+      {
+        "name": "Third-Party Software Access & Installation",
+        "category": "IT / Tools",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/third-party-software/slm/access-and-installation-instructions",
+        "notes": "Approved software catalog, license procurement, and installation rules."
+      }
+    ]
+  },
+  {
+    "id": "enablement-standards",
+    "code": "800",
+    "title": "800 — Enablement & Standards",
+    "description": "Technology sales enablement, authoring workbenches, PM standards, and presentation mastery.",
+    "items": [
+      {
+        "name": "Getting Started in Technology Sales (CoE)",
+        "category": "Enablement",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/getting-started-in-technology-sales",
+        "notes": "Onboarding and foundational skills for technology sellers."
+      },
+      {
+        "name": "Sales Enablement Checklists",
+        "category": "Enablement",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/ibm-sales-enablement/enablement-checklists",
+        "notes": "Milestone checklists for product launch sales enablement."
+      },
+      {
+        "name": "Learning Plan (Your Learning)",
+        "category": "Learning",
+        "tool": "Your Learning",
+        "url": "https://yourlearning.ibm.com/activity/PLAN-28D9429836A3",
+        "notes": "Structured learning plan for Business Automation product readiness."
+      },
+      {
+        "name": "Face-to-Face (F2F) Series",
+        "category": "Learning",
+        "tool": "Your Learning",
+        "url": "https://ec.yourlearning.ibm.com/w3/series/10561734?layout=grid",
+        "notes": "In-person and interactive cohort training series."
+      },
+      {
+        "name": "PowerPoint Ninja Masterclass",
+        "category": "Learning",
+        "tool": "Your Learning",
+        "url": "https://yourlearning.ibm.com/activity/PLAN-E1EAEC62C335",
+        "notes": "Advanced presentation design and storytelling with IBM brand templates."
+      },
+      {
+        "name": "Author Workbench (Skills Network)",
+        "category": "Course Authoring",
+        "tool": "Skills Network",
+        "url": "https://author.skills.network/labs",
+        "notes": "Cloud lab and hands-on sandbox authoring workbench."
+      },
+      {
+        "name": "Using Author Workbench for Course Development",
+        "category": "Course Authoring",
+        "tool": "w3 Publisher",
+        "url": "https://w3.ibm.com/w3publisher/getting-started-in-technology-sales/resources/using-awb-for-course-development",
+        "notes": "Guide to building interactive hands-on labs on Author Workbench."
+      },
+      {
+        "name": "Technology Sales Enablement (BA Slack Doc)",
+        "category": "Enablement",
+        "tool": "Slack Canvas",
+        "url": "https://ibm.enterprise.slack.com/docs/T02J3DPUE/F0AQWRJDXT7",
+        "notes": "Business Automation technology sales enablement canvas and schedule."
+      },
+      {
+        "name": "Product Management Standards (Box)",
+        "category": "Standards",
+        "tool": "Box",
+        "url": "http://ibm.biz/pm-standards",
+        "notes": "Official IBM Product Management governance, stage gates, and artifact standards."
+      },
+      {
+        "name": "Navattic Interactive Demo Standards",
+        "category": "Standards",
+        "tool": "Slack Canvas",
+        "url": "https://ibm.enterprise.slack.com/docs/T02J3DPUE/F0ASPPRV8DB",
+        "notes": "Standards and guidelines for authoring self-service interactive Navattic demos."
+      },
+      {
+        "name": "How Big is my Browser (Resolution Testing)",
+        "category": "Utilities",
+        "tool": "Web Utility",
+        "url": "http://howbigismybrowser.com/",
+        "notes": "Utility to test viewport dimensions for optimal demo display resolutions."
+      }
+    ]
+  }
 ]
+
+export interface FlatPMResourceRow extends PMResourceItem {
+  index: number
+  sectionId: string
+  sectionCode: string
+  sectionTitle: string
+}
+
+export const allProductManagementResources: FlatPMResourceRow[] = productManagementResourceSections.flatMap(sec =>
+  sec.items.map((item, idx) => ({
+    ...item,
+    index: 0,
+    sectionId: sec.id,
+    sectionCode: sec.code,
+    sectionTitle: sec.title,
+  }))
+).map((row, idx) => ({ ...row, index: idx + 1 }))
+
+// Legacy array for compatibility
+const productManagementResources = allProductManagementResources
 
 // Hidden page, opened by double-clicking the IBM logo in the site header.
 function ProductManagementResourcesPage() {
+  const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(false)
+  const [selectedSectionCode, setSelectedSectionCode] = useState<string>("all")
+  const [sectionViews, setSectionViews] = useState<Record<string, "list" | "table">>({})
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(
+    () => new Set(productManagementResourceSections.map(s => s.id))
+  )
+
+  const toggleSection = (id: string) => {
+    setExpandedSections(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const allExpanded = productManagementResourceSections.every(s => expandedSections.has(s.id))
+  const toggleAllSections = () => {
+    if (allExpanded) {
+      setExpandedSections(new Set())
+    } else {
+      setExpandedSections(new Set(productManagementResourceSections.map(s => s.id)))
+    }
+  }
+
+  const toggleSectionView = (id: string) => {
+    setSectionViews(prev => ({
+      ...prev,
+      [id]: prev[id] === "table" ? "list" : "table",
+    }))
+  }
+
+  const visibleSections = productManagementResourceSections.filter(sec =>
+    selectedSectionCode === "all" || sec.code === selectedSectionCode
+  )
+
+  const toolBadgeColor = (tool: string) => {
+    const t = tool.toLowerCase()
+    if (t.includes("slack")) return "border-[#36c5f0]/40 bg-[#36c5f0]/10 text-[#7cd1f9]"
+    if (t.includes("box")) return "border-[#0061d5]/40 bg-[#0061d5]/10 text-[#78a9ff]"
+    if (t.includes("seismic")) return "border-[#ff7eb6]/40 bg-[#ff7eb6]/10 text-[#ff7eb6]"
+    if (t.includes("amplitude")) return "border-[#08bdae]/40 bg-[#08bdae]/10 text-[#25e2d1]"
+    if (t.includes("monday")) return "border-[#ff832b]/40 bg-[#ff832b]/10 text-[#ffb784]"
+    if (t.includes("youtube")) return "border-[#ff4d4f]/40 bg-[#ff4d4f]/10 text-[#ff8389]"
+    if (t.includes("learning") || t.includes("udemy")) return "border-[#be95ff]/40 bg-[#be95ff]/10 text-[#d4bbff]"
+    if (t.includes("aha")) return "border-[#009d9a]/40 bg-[#009d9a]/10 text-[#3ddbd9]"
+    return "border-white/10 bg-white/5 text-[#c6c6c6]"
+  }
+
+  const sectionPillClass = (active: boolean) =>
+    `inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold transition-colors ${
+      active
+        ? "border-[#78a9ff]/70 bg-[#0f62fe]/20 text-white"
+        : "border-white/[0.1] bg-white/[0.03] text-[#a8a8a8] hover:border-[#4589ff]/45 hover:text-white"
+    }`
+
+  const iconButtonClass =
+    "inline-flex h-7 items-center gap-2 rounded-md border border-white/[0.1] bg-white/[0.03] px-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+
   return (
-    <section id="pm-resources-top" aria-labelledby="pm-resources-heading" className="scroll-mt-28">
-      <div className="mb-6 flex items-start justify-between gap-4">
+    <section id="pm-resources-top" aria-labelledby="pm-resources-heading" className="scroll-mt-28 space-y-6">
+      <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">IBM Data &amp; AI: Business Automation</p>
           <h2 id="pm-resources-heading" className="mt-1 text-2xl font-semibold text-white">Product Management Resources</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#c6c6c6]">
-            IBM internal tools and links for product managers. Hover over a link to see how to request access.
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#c6c6c6]">
+            Comprehensive internal IBM directory of tools, trackers, sales kits, Slack channels, Amplitude dashboards, roadmaps, and enablement resources for Business Automation Product Managers.
           </p>
         </div>
-        <CopySectionLink id="pm-resources-top" label="Product Management Resources page" />
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          <CopySectionLink id="pm-resources-top" label="Product Management Resources page" />
+          <button
+            type="button"
+            onClick={toggleAllSections}
+            aria-label={allExpanded ? "Collapse all sections" : "Expand all sections"}
+            title={allExpanded ? "Collapse all sections" : "Expand all sections"}
+            className={iconButtonClass}
+          >
+            {allExpanded ? "Collapse all" : "Expand all"}
+            <VideoVisibilityIcon visible={allExpanded} />
+          </button>
+        </div>
       </div>
-      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {productManagementResources.map((resource, index) => (
-          <li key={resource.url}>
-            <a
-              href={resource.url}
-              target="_blank"
-              rel="noreferrer"
-              title={resource.tooltip}
-              aria-describedby={`pm-resource-access-${index}`}
-              className="group flex h-full flex-col rounded-lg border border-white/[0.07] bg-[#262626] p-4 transition-colors hover:border-[#4589ff]/60 hover:bg-[#1c1c1c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+
+      {/* Summary Section with Table View */}
+      <article id="pm-resources-summary" aria-labelledby="pm-resources-summary-heading" className="rounded-xl border border-white/[0.08] bg-[#161616] p-5 shadow-lg shadow-black/40">
+        <div className="flex items-start justify-between gap-4">
+          <h3 id="pm-resources-summary-heading" className="text-base font-semibold text-white">
+            <button
+              type="button"
+              onClick={() => setIsSummaryCollapsed(collapsed => !collapsed)}
+              aria-expanded={!isSummaryCollapsed}
+              aria-controls="pm-resources-summary-body"
+              title={`${isSummaryCollapsed ? "Expand" : "Collapse"} Summary`}
+              className="inline-flex items-baseline gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
             >
-              <span className="flex items-start justify-between gap-2">
-                <span className="text-sm font-semibold text-white group-hover:text-[#a6c8ff]">{resource.name}</span>
-                <span className="shrink-0 text-[#78a9ff]"><ExternalLinkIcon /></span>
-              </span>
-              <span id={`pm-resource-access-${index}`} className="sr-only">How to request access: {resource.tooltip.replace(/\n/g, '. ')}</span>
-            </a>
-          </li>
-        ))}
-      </ul>
+              Summary
+              <span className="text-xs font-medium text-[#c6c6c6]">{allProductManagementResources.length} resources</span>
+              <span className="self-center text-[#78a9ff]"><VideoVisibilityIcon visible={!isSummaryCollapsed} /></span>
+            </button>
+          </h3>
+          <CopySectionLink id="pm-resources-summary" label="Summary" />
+        </div>
+        <div id="pm-resources-summary-body" hidden={isSummaryCollapsed} className="mt-4">
+          <TableView
+            label="PM Resources Summary"
+            columns={[
+              { key: "index", label: "#", col: "w-14", placeholder: "#", getValue: r => r.index },
+              {
+                key: "sectionTitle",
+                label: "Section",
+                col: "w-52",
+                placeholder: "Filter section",
+                getValue: r => r.sectionTitle,
+                render: r => (
+                  <span className="inline-flex items-center rounded border border-[#78a9ff]/30 bg-[#0f62fe]/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-[#78a9ff]" title={r.sectionTitle}>
+                    {r.sectionCode}
+                  </span>
+                ),
+              },
+              {
+                key: "name",
+                label: "Resource",
+                col: "w-[26%]",
+                placeholder: "Filter resource",
+                getValue: r => r.name,
+                render: r => (
+                  <div className="flex items-center justify-between gap-2">
+                    <a
+                      href={r.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-semibold text-white hover:text-[#a6c8ff] hover:underline"
+                      title={r.name}
+                    >
+                      {r.name}
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => navigator.clipboard.writeText(r.url)}
+                      title="Copy URL"
+                      className="shrink-0 rounded p-1 text-[#c6c6c6] transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                    >
+                      <svg aria-hidden="true" viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none">
+                        <path d="M5.5 4.5V2.5A1.5 1.5 0 0 1 7 1h5.5A1.5 1.5 0 0 1 14 2.5v7a1.5 1.5 0 0 1-1.5 1.5H10.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                        <rect x="2" y="4.5" width="8.5" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+                      </svg>
+                    </button>
+                  </div>
+                ),
+              },
+              {
+                key: "tool",
+                label: "Platform / Tool",
+                col: "w-36",
+                placeholder: "Filter tool",
+                getValue: r => r.tool,
+                render: r => (
+                  <span className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold ${toolBadgeColor(r.tool)}`}>
+                    {r.tool}
+                  </span>
+                ),
+              },
+              {
+                key: "notes",
+                label: "Notes & Details",
+                col: "w-[30%]",
+                placeholder: "Filter notes",
+                getValue: r => `${r.notes} ${r.accessGuide ?? ""}`,
+                render: r => (
+                  <div className="space-y-1">
+                    <p className="text-xs text-[#c6c6c6]">{r.notes}</p>
+                    {r.accessGuide && (
+                      <p className="rounded border border-[#f1c21b]/30 bg-[#f1c21b]/10 px-2 py-1 text-[11px] text-[#f1c21b]">
+                        <span className="font-semibold">Access:</span> {r.accessGuide}
+                      </p>
+                    )}
+                  </div>
+                ),
+              },
+              {
+                key: "url",
+                label: "Link",
+                col: "w-28",
+                placeholder: "Filter URL",
+                getValue: r => r.url,
+                render: r => (
+                  <a
+                    href={r.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-[#4589ff]/35 bg-[#0f62fe]/10 px-2.5 py-1 text-xs font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff] hover:bg-[#0f62fe]/25 hover:text-white"
+                  >
+                    Open
+                    <ExternalLinkIcon />
+                  </a>
+                ),
+              },
+            ]}
+            rows={allProductManagementResources}
+            rowKey={(r, i) => `${r.sectionId}-${r.name}-${i}`}
+          />
+        </div>
+      </article>
+
+      {/* Section Filter Pills */}
+      <section aria-labelledby="pm-section-filter-heading" className="rounded-xl border border-white/[0.08] bg-[#161616] p-4">
+        <h3 id="pm-section-filter-heading" className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#c6c6c6]">
+          Filter by Section
+        </h3>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setSelectedSectionCode("all")}
+            aria-pressed={selectedSectionCode === "all"}
+            className={sectionPillClass(selectedSectionCode === "all")}
+          >
+            All Sections
+            <span className="rounded-full bg-black/20 px-1.5 py-0.5 font-mono text-[9px] text-white">
+              {allProductManagementResources.length}
+            </span>
+          </button>
+          {productManagementResourceSections.map(sec => {
+            const isActive = selectedSectionCode === sec.code
+            return (
+              <button
+                key={sec.id}
+                type="button"
+                onClick={() => setSelectedSectionCode(sec.code)}
+                aria-pressed={isActive}
+                className={sectionPillClass(isActive)}
+              >
+                {sec.code} · {sec.title.split(" — ")[1] ?? sec.title}
+                <span className={`rounded-full px-1.5 py-0.5 font-mono text-[9px] ${isActive ? "bg-white/10 text-white" : "bg-black/20 text-[#a8a8a8]"}`}>
+                  {sec.items.length}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* Category Sections */}
+      <div className="space-y-6">
+        {visibleSections.map(sec => {
+          const isCollapsed = !expandedSections.has(sec.id)
+          const currentView = sectionViews[sec.id] ?? "list"
+          const secRows: FlatPMResourceRow[] = sec.items.map((item, idx) => ({
+            ...item,
+            index: idx + 1,
+            sectionId: sec.id,
+            sectionCode: sec.code,
+            sectionTitle: sec.title,
+          }))
+
+          return (
+            <article
+              key={sec.id}
+              id={`pm-section-${sec.id}`}
+              aria-labelledby={`pm-section-${sec.id}-heading`}
+              className="rounded-xl border border-white/[0.08] bg-[#161616] p-5 shadow-lg shadow-black/40"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-4 pb-3 border-b border-white/[0.06]">
+                <div>
+                  <h3 id={`pm-section-${sec.id}-heading`} className="text-base font-semibold text-white">
+                    <button
+                      type="button"
+                      onClick={() => toggleSection(sec.id)}
+                      aria-expanded={!isCollapsed}
+                      aria-controls={`pm-section-${sec.id}-body`}
+                      title={`${isCollapsed ? "Expand" : "Collapse"} ${sec.title}`}
+                      className="inline-flex items-baseline gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                    >
+                      {sec.title}
+                      <span className="text-xs font-medium text-[#c6c6c6]">{sec.items.length} {sec.items.length === 1 ? "item" : "items"}</span>
+                      <span className="self-center text-[#78a9ff]"><VideoVisibilityIcon visible={!isCollapsed} /></span>
+                    </button>
+                  </h3>
+                  {!isCollapsed && <p className="mt-1 text-xs text-[#c6c6c6]">{sec.description}</p>}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleSectionView(sec.id)}
+                    aria-pressed={currentView === "table"}
+                    title={currentView === "table" ? "Switch to Cards" : "Switch to Table View"}
+                    className={`inline-flex h-7 items-center rounded-md border px-2.5 text-[10px] font-semibold uppercase tracking-[0.12em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${
+                      currentView === "table"
+                        ? "border-[#78a9ff] bg-[#0f62fe]/20 text-white"
+                        : "border-white/[0.1] bg-white/[0.03] text-[#78a9ff] hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/10 hover:text-white"
+                    }`}
+                  >
+                    {currentView === "table" ? "Card View" : "Table View"}
+                  </button>
+                  <CopySectionLink id={`pm-section-${sec.id}`} label={sec.title} />
+                </div>
+              </div>
+
+              <div id={`pm-section-${sec.id}-body`} hidden={isCollapsed} className="mt-4">
+                {currentView === "table" ? (
+                  <TableView
+                    label={sec.title}
+                    columns={[
+                      { key: "index", label: "#", col: "w-14", placeholder: "#", getValue: r => r.index },
+                      {
+                        key: "name",
+                        label: "Resource",
+                        col: "w-[30%]",
+                        placeholder: "Filter name",
+                        getValue: r => r.name,
+                        render: r => (
+                          <div className="flex items-center justify-between gap-2">
+                            <a
+                              href={r.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="font-semibold text-white hover:text-[#a6c8ff] hover:underline"
+                              title={r.name}
+                            >
+                              {r.name}
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => navigator.clipboard.writeText(r.url)}
+                              title="Copy URL"
+                              className="shrink-0 rounded p-1 text-[#c6c6c6] transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                            >
+                              <svg aria-hidden="true" viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none">
+                                <path d="M5.5 4.5V2.5A1.5 1.5 0 0 1 7 1h5.5A1.5 1.5 0 0 1 14 2.5v7a1.5 1.5 0 0 1-1.5 1.5H10.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                                <rect x="2" y="4.5" width="8.5" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+                              </svg>
+                            </button>
+                          </div>
+                        ),
+                      },
+                      {
+                        key: "category",
+                        label: "Category",
+                        col: "w-32",
+                        placeholder: "Filter category",
+                        getValue: r => r.category,
+                        render: r => (
+                          <span className="font-mono text-xs text-[#a6c8ff]">{r.category}</span>
+                        ),
+                      },
+                      {
+                        key: "tool",
+                        label: "Platform",
+                        col: "w-36",
+                        placeholder: "Filter platform",
+                        getValue: r => r.tool,
+                        render: r => (
+                          <span className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold ${toolBadgeColor(r.tool)}`}>
+                            {r.tool}
+                          </span>
+                        ),
+                      },
+                      {
+                        key: "notes",
+                        label: "Notes & Instructions",
+                        col: "w-[32%]",
+                        placeholder: "Filter notes",
+                        getValue: r => `${r.notes} ${r.accessGuide ?? ""}`,
+                        render: r => (
+                          <div className="space-y-1">
+                            <p className="text-xs text-[#c6c6c6]">{r.notes}</p>
+                            {r.accessGuide && (
+                              <p className="rounded border border-[#f1c21b]/30 bg-[#f1c21b]/10 px-2 py-1 text-[11px] text-[#f1c21b]">
+                                <span className="font-semibold">Access:</span> {r.accessGuide}
+                              </p>
+                            )}
+                          </div>
+                        ),
+                      },
+                      {
+                        key: "url",
+                        label: "Action",
+                        col: "w-28",
+                        placeholder: "Filter URL",
+                        getValue: r => r.url,
+                        render: r => (
+                          <a
+                            href={r.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-md border border-[#4589ff]/35 bg-[#0f62fe]/10 px-2.5 py-1 text-xs font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff] hover:bg-[#0f62fe]/25 hover:text-white"
+                          >
+                            Open
+                            <ExternalLinkIcon />
+                          </a>
+                        ),
+                      },
+                    ]}
+                    rows={secRows}
+                    rowKey={(r, i) => `${sec.id}-${r.name}-${i}`}
+                  />
+                ) : (
+                  <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {sec.items.map((item, index) => (
+                      <li key={`${sec.id}-${item.name}-${index}`}>
+                        <div className="group flex h-full flex-col justify-between rounded-lg border border-white/[0.08] bg-[#1c1c1c] p-4 transition-colors hover:border-[#4589ff]/60 hover:bg-[#222222]">
+                          <div>
+                            <div className="flex items-start justify-between gap-2">
+                              <span className="font-mono text-[10px] uppercase tracking-wider text-[#a6c8ff]">
+                                {item.category}
+                              </span>
+                              <span className={`rounded-full border px-2 py-0.5 text-[9px] font-semibold ${toolBadgeColor(item.tool)}`}>
+                                {item.tool}
+                              </span>
+                            </div>
+                            <h4 className="mt-2 text-sm font-semibold text-white group-hover:text-[#a6c8ff]">
+                              <a href={item.url} target="_blank" rel="noreferrer" className="hover:underline">
+                                {item.name}
+                              </a>
+                            </h4>
+                            <p className="mt-1 text-xs leading-relaxed text-[#c6c6c6]">
+                              {item.notes}
+                            </p>
+                            {item.accessGuide && (
+                              <div className="mt-2 rounded border border-[#f1c21b]/30 bg-[#f1c21b]/10 p-2 text-[11px] text-[#f1c21b]">
+                                <span className="font-semibold block mb-0.5">Access Instructions:</span>
+                                {item.accessGuide}
+                              </div>
+                            )}
+                          </div>
+                          <div className="mt-3 flex items-center justify-between gap-2 pt-2 border-t border-white/[0.06]">
+                            <a
+                              href={item.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1.5 rounded-md border border-[#4589ff]/35 bg-[#0f62fe]/10 px-2.5 py-1 text-xs font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff] hover:bg-[#0f62fe]/25 hover:text-white"
+                            >
+                              Open
+                              <ExternalLinkIcon />
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => navigator.clipboard.writeText(item.url)}
+                              title="Copy URL"
+                              className="rounded p-1 text-[#c6c6c6] transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                            >
+                              <svg aria-hidden="true" viewBox="0 0 16 16" className="h-4 w-4" fill="none">
+                                <path d="M5.5 4.5V2.5A1.5 1.5 0 0 1 7 1h5.5A1.5 1.5 0 0 1 14 2.5v7a1.5 1.5 0 0 1-1.5 1.5H10.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                                <rect x="2" y="4.5" width="8.5" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </article>
+          )
+        })}
+      </div>
     </section>
   )
 }
