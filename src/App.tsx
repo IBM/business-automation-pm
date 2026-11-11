@@ -2112,7 +2112,7 @@ const badgeEntries: BadgeEntry[] = ([
     capabilities: ['cp4ba'],
     products: ['IBM Cloud Pak for Business Automation'],
     levels: [5],
-    description: 'The highest Cloud Pak for Business Automation recognition. It builds on the Practitioner Advanced badge and is awarded to people who have contributed to internal and external communities beyond individual product mastery.',
+    description: 'This badge recognizes IBMers who have demonstrated deep technical expertise using IBM Cloud Pak for Business Automation and have gone beyond individual product mastery to share their knowledge with internal teams, clients, and the broader technical community. Badge earners are thought leaders who contextualize IBM technology strategically, engage in business-level conversations, and contribute meaningfully to enablement and advocacy efforts.',
     name: 'Cloud Pak for Business Automation Practitioner Mastery',
     criteria: ['Cloud Pak for Business Automation Practitioner Advanced badge'],
     note: 'Applicant must provide examples of internal and external community contributions that show that they have gone beyond individual product mastery.',
@@ -2287,6 +2287,20 @@ const ylLevels: { level: number; courses: YLCourse[] }[] = [
       },
       { code: 'FILENET L4', title: 'FileNet Content Manager for Technical Sales Level 4', owners: ['Thomas'], url: ylPlanUrl('PLAN-AF8DE95A7D19'), capabilities: ['content-services'], products: [ylProducts.content] },
       { code: 'IPM L4', title: 'IBM Process Mining Level 4', owners: ['Lorenzo'], url: ylPlanUrl('PLAN-9763E3E62DE8'), capabilities: ['process-automation'], products: [ylProducts.mining] },
+    ],
+  },
+  {
+    level: 5,
+    courses: [
+      {
+        code: 'CP4BA L5',
+        title: 'Cloud Pak for Business Automation Practitioner Mastery',
+        description: 'This badge recognizes IBMers who have demonstrated deep technical expertise using IBM Cloud Pak for Business Automation and have gone beyond individual product mastery to share their knowledge with internal teams, clients, and the broader technical community. Badge earners are thought leaders who contextualize IBM technology strategically, engage in business-level conversations, and contribute meaningfully to enablement and advocacy efforts.',
+        owners: [],
+        url: 'https://w3.ibm.com/hr/badge-me/badge/6ab171653a52acd3d387ccfd',
+        capabilities: ['cp4ba'],
+        products: [ylProducts.cp4ba],
+      },
     ],
   },
 ]
