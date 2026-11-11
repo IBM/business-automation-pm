@@ -9092,6 +9092,20 @@ function ProductManagementFaqPage({
                 ),
               },
               {
+                key: "product",
+                label: "Product",
+                col: "w-44",
+                placeholder: "Filter product",
+                getValue: (r) => r.product,
+                render: (r) => (
+                  <span
+                    className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-semibold ${capabilityBadgeClass(r.capability)}`}
+                  >
+                    {r.product}
+                  </span>
+                ),
+              },
+              {
                 key: "description",
                 label: "Description",
                 col: "w-[32%]",
@@ -9191,6 +9205,11 @@ function ProductManagementFaqPage({
 
                 {/* Tag chips */}
                 <div className="flex flex-wrap gap-1 pt-1">
+                  <span
+                    className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold ${capabilityBadgeClass(item.capability)}`}
+                  >
+                    {item.product}
+                  </span>
                   {item.tags.slice(0, 3).map((tag) => (
                     <span
                       key={tag}
@@ -9287,6 +9306,21 @@ function ProductManagementFaqPage({
                           <p className="mt-1 text-xs text-[#c6c6c6] leading-relaxed">
                             {item.description}
                           </p>
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            <span
+                              className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold ${capabilityBadgeClass(item.capability)}`}
+                            >
+                              {item.product}
+                            </span>
+                            {item.tags.slice(0, 3).map((tag) => (
+                              <span
+                                key={tag}
+                                className="rounded bg-white/[0.04] px-1.5 py-0.5 text-[10px] text-[#8d8d8d]"
+                              >
+                                #{tag}
+                              </span>
+                            ))}
+                          </div>
                         </div>
                         <div className="mt-3 flex items-center justify-between gap-2 border-t border-white/[0.04] pt-2">
                           <CopySectionLink
