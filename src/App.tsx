@@ -12,7 +12,7 @@ import {
 const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`
 
 type SessionType = 'Lab' | 'Meet the Expert' | 'Meetup' | 'Tech Talk' | 'Breakout' | 'Client Advisory Board'
-type Page = 'overview' | 'capabilities' | 'resource-table' | 'videos' | 'pm-resources' | 'badges' | 'yl' | 'lets-create' | 'technical-accelerators' | 'onboarding-automation' | 'process-automation' | 'content-services' | 'decision-intelligence' | 'cp4ba' | 'conference' | 'think' | 'sessions' | 'techxchange' | 'schedule' | 'maps' | 'ibm' | 'insights' | 'info' | 'product' | 'community' | 'enablement' | 'ug' | 'surveys' | 'speaker'
+type Page = 'overview' | 'capabilities' | 'resource-table' | 'videos' | 'pm-resources' | 'pm-youtube' | 'badges' | 'yl' | 'lets-create' | 'technical-accelerators' | 'onboarding-automation' | 'process-automation' | 'content-services' | 'decision-intelligence' | 'cp4ba' | 'conference' | 'think' | 'sessions' | 'techxchange' | 'schedule' | 'maps' | 'ibm' | 'insights' | 'info' | 'product' | 'community' | 'enablement' | 'ug' | 'surveys' | 'speaker'
 
 const pageAnchors: Record<Page, string> = {
   overview: 'main',
@@ -20,6 +20,7 @@ const pageAnchors: Record<Page, string> = {
   'resource-table': 'resource-table-top',
   videos: 'videos-top',
   'pm-resources': 'pm-resources-top',
+  'pm-youtube': 'pm-youtube-top',
   badges: 'badges-top',
   yl: 'yl-top',
   'lets-create': 'lets-create-top',
@@ -52,6 +53,7 @@ const breadcrumbLabels: Record<Page, string> = {
   'resource-table': 'Resource Table View',
   videos: 'Videos',
   'pm-resources': 'Product Management Resources',
+  'pm-youtube': 'IBM Product Hub - YouTube',
   badges: 'Badge',
   yl: 'YL',
   'lets-create': 'Let\'s Create!',
@@ -83,6 +85,7 @@ const breadcrumbParents: Partial<Record<Page, Page>> = {
   'resource-table': 'capabilities',
   videos: 'overview',
   'pm-resources': 'overview',
+  'pm-youtube': 'pm-resources',
   badges: 'overview',
   yl: 'overview',
   'lets-create': 'overview',
@@ -126,7 +129,7 @@ function formatBreadcrumbSectionLabel(id: string) {
   if (id.startsWith('session-')) return id.slice('session-'.length).toUpperCase()
 
   const label = id
-    .replace(/^(capabilities-all|capabilities|portfolio|process-automation|content-services|decision-intelligence|cp4ba|conference|techxchange|think|sessions|maps|info|ug|surveys|av|enablement|onboarding-automation|badges|videos|pm-resources)-/, '')
+    .replace(/^(capabilities-all|capabilities|portfolio|process-automation|content-services|decision-intelligence|cp4ba|conference|techxchange|think|sessions|maps|info|ug|surveys|av|enablement|onboarding-automation|badges|videos|pm-resources|pm-youtube)-/, '')
     .replace(/-/g, ' ')
 
   return label.replace(/\b\w+/g, word => {
@@ -155,6 +158,7 @@ function pageForHash(hash: string): Page {
   if (id === 'resource-table-top' || id.startsWith('resource-table-')) return 'resource-table'
   if (id === 'videos-top' || id.startsWith('videos-')) return 'videos'
   if (id === 'pm-resources-top' || id.startsWith('pm-resources-')) return 'pm-resources'
+  if (id === 'pm-youtube-top' || id.startsWith('pm-youtube-')) return 'pm-youtube'
   if (id === 'badges-top' || id.startsWith('badges-')) return 'badges'
   if (id === 'yl-top' || id.startsWith('yl-')) return 'yl'
   if (id === 'lets-create-top' || id.startsWith('lets-create-')) return 'lets-create'
@@ -5078,6 +5082,638 @@ function ProductManagementResourcesPage() {
   )
 }
 
+function ProductHubYouTubePage() {
+  const [isRequirementsCollapsed, setIsRequirementsCollapsed] = useState(false)
+  const [isProcessCollapsed, setIsProcessCollapsed] = useState(false)
+  const [isLinkedinCollapsed, setIsLinkedinCollapsed] = useState(false)
+  const [isSampleCollapsed, setIsSampleCollapsed] = useState(false)
+
+  const cardClass = 'rounded-xl border border-white/[0.08] bg-[#161616] p-5 shadow-lg shadow-black/40'
+  const stepNumberClass = 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#78a9ff]/40 bg-[#0f62fe]/20 font-mono text-xs font-semibold text-[#78a9ff]'
+  const actionButtonClass = 'inline-flex items-center gap-1.5 rounded-md border border-[#4589ff]/35 bg-[#0f62fe]/10 px-2.5 py-1 text-xs font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff] hover:bg-[#0f62fe]/25 hover:text-white'
+
+  return (
+    <section id="pm-youtube-top" aria-labelledby="pm-youtube-heading" className="scroll-mt-28 space-y-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">IBM Data &amp; AI: Business Automation · Product Management</p>
+          <h2 id="pm-youtube-heading" className="mt-1 text-2xl font-semibold text-white">IBM Product Hub - YouTube</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#c6c6c6]">
+            Complete guide and operational workflow for publishing product demos, tutorials, and announcements to the IBM Product Hub channel on YouTube and distributing natively to LinkedIn.
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          <CopySectionLink id="pm-youtube-top" label="IBM Product Hub - YouTube page" />
+          <div className="flex flex-wrap items-center gap-2">
+            <a href="https://www.youtube.com/IBMSupportTV" target="_blank" rel="noreferrer" className={actionButtonClass}>
+              YouTube Channel <ExternalLinkIcon />
+            </a>
+            <a href="http://ibm.biz/business-automation-youtube" target="_blank" rel="noreferrer" className={actionButtonClass}>
+              BA Playlist <ExternalLinkIcon />
+            </a>
+            <a href="https://w3.ibm.com/w3publisher/ibm-product-hub-youtube-home" target="_blank" rel="noreferrer" className={actionButtonClass}>
+              Publisher Portal <ExternalLinkIcon />
+            </a>
+            <a href="https://slack.com/archives/C09PSNLGUJE" target="_blank" rel="noreferrer" className={actionButtonClass}>
+              #ibmproducthub-yt-stakeholders <ExternalLinkIcon />
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Links Overview Grid */}
+      <nav aria-label="YouTube Channel Quick Links" className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <a
+          href="https://www.youtube.com/IBMSupportTV"
+          target="_blank"
+          rel="noreferrer"
+          className="group rounded-lg border border-white/[0.08] bg-[#1c1c1c] p-4 transition-colors hover:border-[#ff4d4f]/60 hover:bg-[#222222]"
+        >
+          <div className="flex items-center justify-between text-xs text-[#c6c6c6]">
+            <span className="font-semibold uppercase tracking-wider text-[#ff8389]">YouTube</span>
+            <ExternalLinkIcon />
+          </div>
+          <h3 className="mt-1 font-semibold text-white group-hover:text-[#a6c8ff]">IBM Product Hub Channel</h3>
+          <p className="mt-1 text-xs text-[#c6c6c6]">youtube.com/IBMSupportTV</p>
+        </a>
+
+        <a
+          href="http://ibm.biz/business-automation-youtube"
+          target="_blank"
+          rel="noreferrer"
+          className="group rounded-lg border border-white/[0.08] bg-[#1c1c1c] p-4 transition-colors hover:border-[#0f62fe]/60 hover:bg-[#222222]"
+        >
+          <div className="flex items-center justify-between text-xs text-[#c6c6c6]">
+            <span className="font-semibold uppercase tracking-wider text-[#78a9ff]">Playlist</span>
+            <ExternalLinkIcon />
+          </div>
+          <h3 className="mt-1 font-semibold text-white group-hover:text-[#a6c8ff]">BA YouTube Playlist</h3>
+          <p className="mt-1 text-xs text-[#c6c6c6]">ibm.biz/business-automation-youtube</p>
+        </a>
+
+        <a
+          href="https://w3.ibm.com/w3publisher/ibm-product-hub-youtube-home"
+          target="_blank"
+          rel="noreferrer"
+          className="group rounded-lg border border-white/[0.08] bg-[#1c1c1c] p-4 transition-colors hover:border-[#4589ff]/60 hover:bg-[#222222]"
+        >
+          <div className="flex items-center justify-between text-xs text-[#c6c6c6]">
+            <span className="font-semibold uppercase tracking-wider text-[#78a9ff]">Portal</span>
+            <ExternalLinkIcon />
+          </div>
+          <h3 className="mt-1 font-semibold text-white group-hover:text-[#a6c8ff]">Creator Home &amp; Publisher</h3>
+          <p className="mt-1 text-xs text-[#c6c6c6]">w3publisher/ibm-product-hub-youtube-home</p>
+        </a>
+
+        <a
+          href="https://slack.com/archives/C09PSNLGUJE"
+          target="_blank"
+          rel="noreferrer"
+          className="group rounded-lg border border-white/[0.08] bg-[#1c1c1c] p-4 transition-colors hover:border-[#36c5f0]/60 hover:bg-[#222222]"
+        >
+          <div className="flex items-center justify-between text-xs text-[#c6c6c6]">
+            <span className="font-semibold uppercase tracking-wider text-[#7cd1f9]">Slack</span>
+            <ExternalLinkIcon />
+          </div>
+          <h3 className="mt-1 font-semibold text-white group-hover:text-[#a6c8ff]">#ibmproducthub-yt-stakeholders</h3>
+          <p className="mt-1 text-xs text-[#c6c6c6]">Creator community &amp; reviews</p>
+        </a>
+      </nav>
+
+      {/* Requirements Section */}
+      <article id="pm-youtube-requirements" aria-labelledby="pm-youtube-requirements-heading" className={cardClass}>
+        <div className="flex items-start justify-between gap-4 border-b border-white/[0.06] pb-3">
+          <div>
+            <h3 id="pm-youtube-requirements-heading" className="text-base font-semibold text-white">
+              <button
+                type="button"
+                onClick={() => setIsRequirementsCollapsed(c => !c)}
+                aria-expanded={!isRequirementsCollapsed}
+                aria-controls="pm-youtube-requirements-body"
+                className="inline-flex items-baseline gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+              >
+                Requirements &amp; Standards
+                <span className="text-xs font-medium text-[#c6c6c6]">5 core guidelines</span>
+                <span className="self-center text-[#78a9ff]"><VideoVisibilityIcon visible={!isRequirementsCollapsed} /></span>
+              </button>
+            </h3>
+            {!isRequirementsCollapsed && (
+              <p className="mt-1 text-xs text-[#c6c6c6]">
+                Review all guidelines before initiating a video publish request.
+              </p>
+            )}
+          </div>
+          <CopySectionLink id="pm-youtube-requirements" label="Requirements & Standards" />
+        </div>
+
+        <div id="pm-youtube-requirements-body" hidden={isRequirementsCollapsed} className="mt-4">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                num: '1',
+                title: 'Content Types',
+                url: 'https://w3.ibm.com/w3publisher/ibm-product-hub-youtube-home/content-pillars',
+                notes: 'Explore allowed content pillars including product demos, tutorials, launch announcements, and architecture deep dives.',
+                action: 'View Pillars',
+              },
+              {
+                num: '2',
+                title: 'Content Checklist',
+                url: 'https://w3.ibm.com/w3publisher/ibm-product-hub-youtube-home/video-publishing-checklist',
+                notes: 'Content standards, video publishing checklist, and editorial criteria.',
+                action: 'View Checklist',
+              },
+              {
+                num: '3',
+                title: 'Production Guidance',
+                url: 'https://w3.ibm.com/w3publisher/ibm-product-hub-youtube-home/video-coach',
+                notes: 'Video coach best practices: audio leveling, pacing, lighting, resolution, and presentation flow.',
+                action: 'Video Coach',
+              },
+              {
+                num: '4',
+                title: 'Resources & Assets',
+                url: 'https://w3.ibm.com/w3publisher/ibm-product-hub-youtube-home/resources',
+                notes: 'Download official intros, outro clips, IBM Plex typography guides, and branding assets.',
+                action: 'Download Assets',
+              },
+              {
+                num: '5',
+                title: 'Product Management Standards',
+                url: 'http://ibm.biz/pm-standards',
+                notes: 'Box repository for IBM Product Management governance, quality bars, and release standards.',
+                action: 'PM Standards',
+              },
+            ].map(item => (
+              <li key={item.title}>
+                <div className="flex h-full flex-col justify-between rounded-lg border border-white/[0.08] bg-[#1c1c1c] p-4 transition-colors hover:border-[#4589ff]/60 hover:bg-[#222222]">
+                  <div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono text-xs font-semibold text-[#78a9ff]">0{item.num}</span>
+                      <span className="rounded border border-[#78a9ff]/30 bg-[#0f62fe]/10 px-2 py-0.5 text-[10px] font-semibold text-[#78a9ff]">Requirement</span>
+                    </div>
+                    <h4 className="mt-2 text-sm font-semibold text-white">
+                      <a href={item.url} target="_blank" rel="noreferrer" className="hover:text-[#a6c8ff] hover:underline">
+                        {item.title}
+                      </a>
+                    </h4>
+                    <p className="mt-1 text-xs leading-relaxed text-[#c6c6c6]">{item.notes}</p>
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-white/[0.06]">
+                    <a href={item.url} target="_blank" rel="noreferrer" className={actionButtonClass}>
+                      {item.action} <ExternalLinkIcon />
+                    </a>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </article>
+
+      {/* Step-by-Step Publishing Process Section */}
+      <article id="pm-youtube-process" aria-labelledby="pm-youtube-process-heading" className={cardClass}>
+        <div className="flex items-start justify-between gap-4 border-b border-white/[0.06] pb-3">
+          <div>
+            <h3 id="pm-youtube-process-heading" className="text-base font-semibold text-white">
+              <button
+                type="button"
+                onClick={() => setIsProcessCollapsed(c => !c)}
+                aria-expanded={!isProcessCollapsed}
+                aria-controls="pm-youtube-process-body"
+                className="inline-flex items-baseline gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+              >
+                Request &amp; Publishing Process
+                <span className="text-xs font-medium text-[#c6c6c6]">6-step workflow</span>
+                <span className="self-center text-[#78a9ff]"><VideoVisibilityIcon visible={!isProcessCollapsed} /></span>
+              </button>
+            </h3>
+            {!isProcessCollapsed && (
+              <p className="mt-1 text-xs text-[#c6c6c6]">
+                Follow these steps to submit, review, and track videos for the IBM Product Hub YouTube channel.
+              </p>
+            )}
+          </div>
+          <CopySectionLink id="pm-youtube-process" label="Publishing Process" />
+        </div>
+
+        <div id="pm-youtube-process-body" hidden={isProcessCollapsed} className="mt-4 space-y-4">
+          {/* Step 1 */}
+          <div className="rounded-lg border border-white/[0.08] bg-[#1c1c1c] p-4">
+            <div className="flex items-start gap-3">
+              <span className={stepNumberClass}>1</span>
+              <div className="space-y-1.5 flex-1">
+                <h4 className="text-sm font-semibold text-white">Validate Assets Meet Requirements</h4>
+                <p className="text-xs text-[#c6c6c6]">Before uploading, ensure your video adheres to both:</p>
+                <ul className="list-disc space-y-1 pl-5 text-xs text-[#c6c6c6]">
+                  <li>
+                    <a href="https://w3.ibm.com/w3publisher/ibm-product-hub-youtube-home/video-publishing-checklist" target="_blank" rel="noreferrer" className="text-[#78a9ff] hover:underline">
+                      Content Checklist
+                    </a> (Content Standards &amp; Video Publishing Checklist)
+                  </li>
+                  <li>
+                    <a href="https://w3.ibm.com/w3publisher/ibm-product-hub-youtube-home/video-coach" target="_blank" rel="noreferrer" className="text-[#78a9ff] hover:underline">
+                      Production Guidance
+                    </a> (Video Coach best practices)
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 2 */}
+          <div className="rounded-lg border border-white/[0.08] bg-[#1c1c1c] p-4">
+            <div className="flex items-start gap-3">
+              <span className={stepNumberClass}>2</span>
+              <div className="space-y-2 flex-1">
+                <h4 className="text-sm font-semibold text-white">Create a Box Folder with Required Assets</h4>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="rounded border border-white/[0.06] bg-[#222222] p-2.5">
+                    <span className="font-semibold text-white text-xs block">a. .mp4 Master Video</span>
+                    <span className="text-[11px] text-[#ff8389] font-medium">Required</span>
+                  </div>
+                  <div className="rounded border border-white/[0.06] bg-[#222222] p-2.5">
+                    <span className="font-semibold text-white text-xs block">b. .srt Closed Captions</span>
+                    <span className="text-[11px] text-[#ff8389] font-medium">Required</span>
+                  </div>
+                  <div className="rounded border border-white/[0.06] bg-[#222222] p-2.5">
+                    <span className="font-semibold text-white text-xs block">c. Thumbnails</span>
+                    <a href="https://w3.ibm.com/w3publisher/ibm-product-hub-youtube-home/uploading-to-youtube/video-components" target="_blank" rel="noreferrer" className="text-[11px] text-[#78a9ff] hover:underline">
+                      View Thumbnail Specs →
+                    </a>
+                  </div>
+                  <div className="rounded border border-white/[0.06] bg-[#222222] p-2.5">
+                    <span className="font-semibold text-white text-xs block">d. Outro Clip (10 Seconds)</span>
+                    <a href="https://ibm.box.com/s/3unh209vpwcvsekl1fbghp08my43ldba" target="_blank" rel="noreferrer" className="text-[11px] text-[#78a9ff] hover:underline">
+                      Download Outro Clip from Box →
+                    </a>
+                  </div>
+                  <div className="rounded border border-white/[0.06] bg-[#222222] p-2.5 sm:col-span-2">
+                    <span className="font-semibold text-white text-xs block">e. Talent &amp; Music Release Forms</span>
+                    <a href="https://w3.ibm.com/w3publisher/legal-marketing-community/consents-release-documents" target="_blank" rel="noreferrer" className="text-[11px] text-[#78a9ff] hover:underline">
+                      Legal Consents &amp; Release Documentation →
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 3 */}
+          <div className="rounded-lg border border-[#0f62fe]/40 bg-[#0f62fe]/10 p-4">
+            <div className="flex items-start gap-3">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#78a9ff] bg-[#0f62fe] font-mono text-xs font-semibold text-white">3</span>
+              <div className="space-y-2 flex-1">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h4 className="text-sm font-semibold text-white">Submit via Slack Workflow: IBM Product Hub - Publish Request</h4>
+                  <a
+                    href="https://slack.com/shortcuts/Ft0AGEBZ7DNF/77b8aaf3de4da06703a6cc5ce2e0a9d0"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-[#78a9ff] bg-[#0f62fe] px-3 py-1 text-xs font-semibold text-white shadow-md transition-colors hover:bg-[#0043ce]"
+                  >
+                    Start Slack Workflow <ExternalLinkIcon />
+                  </a>
+                </div>
+                <p className="text-xs text-[#c6c6c6]">Click the Slack shortcut button above and fill in the request form:</p>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 text-xs text-[#c6c6c6]">
+                  <div className="rounded bg-[#161616] p-2.5 border border-white/5">
+                    <span className="font-semibold text-white block mb-1">Form Fields:</span>
+                    <ul className="list-disc pl-4 space-y-0.5">
+                      <li><strong>Box Link:</strong> URL to the folder from Step 2</li>
+                      <li><strong>Video Title:</strong> Max 20 characters</li>
+                      <li><strong>Video Description:</strong> Max 80 characters</li>
+                      <li><strong>Request Priority:</strong> Set SLA priority</li>
+                    </ul>
+                  </div>
+                  <div className="rounded bg-[#161616] p-2.5 border border-white/5">
+                    <span className="font-semibold text-white block mb-1">Calls to Action (CTAs):</span>
+                    <ul className="list-disc pl-4 space-y-0.5">
+                      <li>Learn more / Gain access</li>
+                      <li>Community / Documentation</li>
+                      <li>Use friendly <code className="text-[#78a9ff]">ibm.biz</code> links (e.g. <a href="https://ibm.biz/bwliq-video" target="_blank" rel="noreferrer" className="underline">https://ibm.biz/bwliq-video</a>)</li>
+                      <li className="text-[#f1c21b]">Note: Links may be used on YouTube End Cards</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 4 */}
+          <div className="rounded-lg border border-white/[0.08] bg-[#1c1c1c] p-4">
+            <div className="flex items-start gap-3">
+              <span className={stepNumberClass}>4</span>
+              <div className="space-y-2 flex-1">
+                <h4 className="text-sm font-semibold text-white">Support Content Lead Review (First Reviewer)</h4>
+                <p className="text-xs text-[#c6c6c6]">
+                  The Support Content Lead (
+                  <a href="https://ibm.enterprise.slack.com/team/W3TRF6M9R" target="_blank" rel="noreferrer" className="text-[#78a9ff] hover:underline font-semibold">@Thomas Yang</a> or{' '}
+                  <a href="https://ibm.enterprise.slack.com/team/W40S09C2F" target="_blank" rel="noreferrer" className="text-[#78a9ff] hover:underline font-semibold">@Walfrey Ng</a>
+                  ) validates the checklist and executes the review:
+                </p>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 text-xs">
+                  <div className="rounded border border-white/[0.06] bg-[#222222] p-2.5">
+                    <span className="font-semibold text-white block mb-1">a. Staging Box Folder</span>
+                    <a href="https://ibm.box.com/s/oy8la7nrpfr9xetsfadnoynrccijahup" target="_blank" rel="noreferrer" className="text-[#78a9ff] hover:underline">
+                      Open Staging Folder →
+                    </a>
+                  </div>
+                  <div className="rounded border border-white/[0.06] bg-[#222222] p-2.5">
+                    <span className="font-semibold text-white block mb-1">b. Uploading Process</span>
+                    <a href="https://w3.ibm.com/w3publisher/ibm-product-hub-youtube-home/uploading-to-youtube" target="_blank" rel="noreferrer" className="text-[#78a9ff] hover:underline">
+                      Review Publishing Specs →
+                    </a>
+                  </div>
+                  <div className="rounded border border-white/[0.06] bg-[#222222] p-2.5">
+                    <span className="font-semibold text-white block mb-1">c. Publish Checklist Note</span>
+                    <a href="https://ibm.box.com/s/qvcj79j63ac3zppxfo37a1gq3f02shqr" target="_blank" rel="noreferrer" className="text-[#78a9ff] hover:underline block">
+                      Template (.boxnote) →
+                    </a>
+                    <a href="https://ibm.box.com/s/stz7r6zw0wbh0733tl4cznnrekn39ofr" target="_blank" rel="noreferrer" className="text-[#78a9ff] hover:underline block mt-0.5">
+                      Checklist Folder →
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 5 & 6 */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="rounded-lg border border-white/[0.08] bg-[#1c1c1c] p-4">
+              <div className="flex items-start gap-3">
+                <span className={stepNumberClass}>5</span>
+                <div>
+                  <h4 className="text-sm font-semibold text-white">Track Progress on Slack List</h4>
+                  <p className="mt-1 text-xs text-[#c6c6c6]">
+                    Access the live request tracker to monitor status, review feedback, and publication dates:
+                  </p>
+                  <a
+                    href="https://ibm.enterprise.slack.com/lists/T02J3DPUE/F0AGZLY62P3"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[#78a9ff] hover:underline"
+                  >
+                    Request Tracker (#ba-social-media) <ExternalLinkIcon />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-white/[0.08] bg-[#1c1c1c] p-4">
+              <div className="flex items-start gap-3">
+                <span className={stepNumberClass}>6</span>
+                <div>
+                  <h4 className="text-sm font-semibold text-white">IBM Marketing Website / MediaCenter</h4>
+                  <p className="mt-1 text-xs text-[#c6c6c6]">
+                    If the video also needs to be published to the public IBM Marketing website, upload to MediaCenter:
+                  </p>
+                  <a
+                    href="https://mediacenter.ibm.com/home"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[#78a9ff] hover:underline"
+                  >
+                    IBM MediaCenter Portal <ExternalLinkIcon />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      {/* Posting to LinkedIn Best Practices */}
+      <article id="pm-youtube-linkedin" aria-labelledby="pm-youtube-linkedin-heading" className={cardClass}>
+        <div className="flex items-start justify-between gap-4 border-b border-white/[0.06] pb-3">
+          <div>
+            <h3 id="pm-youtube-linkedin-heading" className="text-base font-semibold text-white">
+              <button
+                type="button"
+                onClick={() => setIsLinkedinCollapsed(c => !c)}
+                aria-expanded={!isLinkedinCollapsed}
+                aria-controls="pm-youtube-linkedin-body"
+                className="inline-flex items-baseline gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+              >
+                Posting to LinkedIn Best Practices
+                <span className="text-xs font-medium text-[#c6c6c6]">Social distribution guide</span>
+                <span className="self-center text-[#78a9ff]"><VideoVisibilityIcon visible={!isLinkedinCollapsed} /></span>
+              </button>
+            </h3>
+            {!isLinkedinCollapsed && (
+              <p className="mt-1 text-xs text-[#c6c6c6]">
+                Maximize algorithm reach and audience engagement when sharing product videos on LinkedIn.
+              </p>
+            )}
+          </div>
+          <CopySectionLink id="pm-youtube-linkedin" label="LinkedIn Best Practices" />
+        </div>
+
+        <div id="pm-youtube-linkedin-body" hidden={isLinkedinCollapsed} className="mt-4 space-y-4">
+          <div className="rounded-lg border border-[#0077b5]/30 bg-[#0077b5]/10 p-4">
+            <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded bg-[#0077b5] font-bold text-white text-xs">in</span>
+              The 3-Step LinkedIn Posting Formula
+            </h4>
+            <ol className="mt-2 list-decimal space-y-1 pl-5 text-xs leading-relaxed text-[#c6c6c6]">
+              <li><strong>Upload the video natively to LinkedIn</strong> (.mp4 file upload).</li>
+              <li><strong>Add the YouTube link in the first comment</strong> (not in the main post body).</li>
+              <li><strong>Pin the comment</strong> for maximum visibility at the top of the comment thread.</li>
+            </ol>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {/* Native Upload */}
+            <div className="rounded-lg border border-[#24a148]/40 bg-[#24a148]/10 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-semibold text-white text-sm">Native Upload (Best Option)</span>
+                <span className="rounded-full bg-[#24a148]/30 px-2 py-0.5 text-[10px] font-semibold text-[#6fdc8c]">Recommended</span>
+              </div>
+              <ul className="space-y-1.5 text-xs text-[#c6c6c6]">
+                <li className="flex items-start gap-1.5">
+                  <span className="text-[#6fdc8c] font-bold">✓</span>
+                  <span><strong>Higher reach &amp; engagement:</strong> LinkedIn’s algorithm prioritizes native video content in feeds.</span>
+                </li>
+                <li className="flex items-start gap-1.5">
+                  <span className="text-[#6fdc8c] font-bold">✓</span>
+                  <span><strong>Auto-play in feed:</strong> Grabs attention immediately as people scroll their feed.</span>
+                </li>
+                <li className="flex items-start gap-1.5">
+                  <span className="text-[#6fdc8c] font-bold">✓</span>
+                  <span><strong>Rich analytics:</strong> Detailed view counts, watch time duration, and engagement metrics.</span>
+                </li>
+                <li className="flex items-start gap-1.5">
+                  <span className="text-[#6fdc8c] font-bold">✓</span>
+                  <span><strong>Keeps users on-platform:</strong> Social algorithms reward content that keeps viewers on LinkedIn.</span>
+                </li>
+              </ul>
+              <div className="mt-3 rounded border border-white/10 bg-black/20 p-2 text-[11px] text-[#6fdc8c]">
+                👉 Crucial for product demos and launches where maximum audience visibility is needed.
+              </div>
+            </div>
+
+            {/* YouTube Link */}
+            <div className="rounded-lg border border-[#f1c21b]/40 bg-[#f1c21b]/10 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-semibold text-white text-sm">YouTube Link in Post</span>
+                <span className="rounded-full bg-[#f1c21b]/30 px-2 py-0.5 text-[10px] font-semibold text-[#f1c21b]">Use Caution</span>
+              </div>
+              <div className="space-y-2 text-xs text-[#c6c6c6]">
+                <div>
+                  <span className="font-semibold text-white block mb-0.5">When to use:</span>
+                  <ul className="list-disc pl-4 space-y-0.5">
+                    <li>Drive subscriber traffic directly to YouTube channel</li>
+                    <li>Share longer full-length webinars or extensive walkthroughs</li>
+                    <li>Track external off-platform clicks</li>
+                  </ul>
+                </div>
+                <div>
+                  <span className="font-semibold text-white block mb-0.5">Downsides to avoid:</span>
+                  <ul className="list-disc pl-4 space-y-0.5 text-[#ff8389]">
+                    <li>Lower reach (LinkedIn significantly deprioritizes external outbound links)</li>
+                    <li>No auto-play preview in feed (much lower tap-through rate)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      {/* Sample Demo Video Showcase - Blueworks Live IQ */}
+      <article id="pm-youtube-sample" aria-labelledby="pm-youtube-sample-heading" className={cardClass}>
+        <div className="flex items-start justify-between gap-4 border-b border-white/[0.06] pb-3">
+          <div>
+            <h3 id="pm-youtube-sample-heading" className="text-base font-semibold text-white">
+              <button
+                type="button"
+                onClick={() => setIsSampleCollapsed(c => !c)}
+                aria-expanded={!isSampleCollapsed}
+                aria-controls="pm-youtube-sample-body"
+                className="inline-flex items-baseline gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+              >
+                Sample Demo Video &amp; Description Reference
+                <span className="text-xs font-medium text-[#c6c6c6]">Blueworks Live IQ</span>
+                <span className="self-center text-[#78a9ff]"><VideoVisibilityIcon visible={!isSampleCollapsed} /></span>
+              </button>
+            </h3>
+            {!isSampleCollapsed && (
+              <p className="mt-1 text-xs text-[#c6c6c6]">
+                Reference example showing ideal YouTube video description layout, chapter timestamps, and CTAs.
+              </p>
+            )}
+          </div>
+          <CopySectionLink id="pm-youtube-sample" label="Sample Video Reference" />
+        </div>
+
+        <div id="pm-youtube-sample-body" hidden={isSampleCollapsed} className="mt-4 space-y-4">
+          <div className="rounded-lg border border-white/[0.08] bg-[#1c1c1c] p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[#78a9ff]">
+                  Featured Example Demo
+                </span>
+                <h4 className="mt-1 text-base font-semibold text-white">
+                  Blueworks Live IQ Public Preview - Your Blueprints Can Now Analyze Themselves!
+                </h4>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href="https://ibm.biz/bwliq-video"
+                  target="_blank"
+                  rel="noreferrer"
+                  className={actionButtonClass}
+                >
+                  Watch Video <ExternalLinkIcon />
+                </a>
+                <button
+                  type="button"
+                  onClick={() => navigator.clipboard.writeText('https://ibm.biz/bwliq-video')}
+                  title="Copy Shortlink"
+                  className="rounded p-1 text-[#c6c6c6] transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  <svg aria-hidden="true" viewBox="0 0 16 16" className="h-4 w-4" fill="none">
+                    <path d="M5.5 4.5V2.5A1.5 1.5 0 0 1 7 1h5.5A1.5 1.5 0 0 1 14 2.5v7a1.5 1.5 0 0 1-1.5 1.5H10.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                    <rect x="2" y="4.5" width="8.5" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Chapters / Timestamps */}
+            <div className="mt-3 rounded border border-white/[0.06] bg-[#222222] p-3">
+              <span className="font-semibold text-xs text-white block mb-2">Video Chapters / Table of Contents:</span>
+              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-3 text-xs">
+                <a
+                  href="https://www.youtube.com/watch?v=aBABtIhka-8"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded px-2 py-1 text-[#78a9ff] hover:bg-white/5 hover:text-white"
+                >
+                  <span className="font-mono font-bold bg-[#0f62fe]/20 px-1.5 py-0.5 rounded text-[#78a9ff]">00:00</span>
+                  <span>Introduction to BWL IQ</span>
+                </a>
+                <a
+                  href="https://www.youtube.com/watch?v=aBABtIhka-8&t=95s"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded px-2 py-1 text-[#78a9ff] hover:bg-white/5 hover:text-white"
+                >
+                  <span className="font-mono font-bold bg-[#0f62fe]/20 px-1.5 py-0.5 rounded text-[#78a9ff]">01:35</span>
+                  <span>IQ for Process Assessment</span>
+                </a>
+                <a
+                  href="https://www.youtube.com/watch?v=aBABtIhka-8&t=219s"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded px-2 py-1 text-[#78a9ff] hover:bg-white/5 hover:text-white"
+                >
+                  <span className="font-mono font-bold bg-[#0f62fe]/20 px-1.5 py-0.5 rounded text-[#78a9ff]">03:39</span>
+                  <span>IQ for BPMN Hygiene</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Specimen Description */}
+            <div className="mt-4">
+              <span className="font-semibold text-xs text-white block mb-1">Specimen YouTube Description Copy:</span>
+              <div className="rounded border border-white/[0.06] bg-[#161616] p-3.5 font-mono text-xs text-[#c6c6c6] whitespace-pre-wrap leading-relaxed select-all">
+{`For years, Blueworks Live has helped teams document how work happens. Today, it goes further: your blueprints can now analyze themselves.
+
+IBM is excited to introduce the Public Preview of Blueworks Live IQ, a new AI-powered Process Agent, a major step in transforming Blueworks Live from a modeling workspace into an intelligent process platform. This agent works through a single, unified chat, making the experience simple and intuitive.
+
+Table of Contents:
+00:00 - Introduction to Blueworks Live IQ
+01:35 - IQ for Process Assessment
+03:39 - IQ for BPMN Hygiene
+
+Try this demo (no login needed): https://ibm.biz/BdprGM
+Gain access to Blueworks Live: https://ibm.biz/BdprGv
+Read the official announcement blog: https://ibm.biz/BdprGm`}
+              </div>
+            </div>
+
+            {/* Call to Actions bar */}
+            <div className="mt-3 flex flex-wrap items-center gap-2 pt-3 border-t border-white/[0.06]">
+              <span className="text-xs font-semibold text-white">Call to Action Links:</span>
+              <a href="https://ibm.biz/BdprGM" target="_blank" rel="noreferrer" className={actionButtonClass}>
+                Try Demo (No Login) <ExternalLinkIcon />
+              </a>
+              <a href="https://ibm.biz/BdprGv" target="_blank" rel="noreferrer" className={actionButtonClass}>
+                Gain Access to BWL <ExternalLinkIcon />
+              </a>
+              <a href="https://ibm.biz/BdprGm" target="_blank" rel="noreferrer" className={actionButtonClass}>
+                Announcement Blog <ExternalLinkIcon />
+              </a>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+  )
+}
+
 function BadgesPage() {
   // Search starts minimized.
   const [isFilterExpanded, setIsFilterExpanded] = useState(false)
@@ -8171,7 +8807,7 @@ function isPageWithin(page: Page, root: Page) {
 
 const globalSearchGatedPages: Page[] = ['ibm', 'insights', 'speaker']
 // Reached only by double-clicking the IBM logo, so not listed in search.
-const hiddenPages: Page[] = ['pm-resources']
+const hiddenPages: Page[] = ['pm-resources', 'pm-youtube']
 
 function buildGlobalSearchEntries(): GlobalSearchEntry[] {
   const entries: GlobalSearchEntry[] = []
@@ -9058,7 +9694,7 @@ export default function App() {
     currentPage === 'cp4ba' ||
     Boolean(activeBusinessAutomationCapability)
   const isCommunitySection = currentPage === 'community' || currentPage === 'enablement'
-  const isPmSection = currentPage === 'pm-resources'
+  const isPmSection = currentPage === 'pm-resources' || currentPage === 'pm-youtube'
   const isBusinessAutomationSection =
     !isPmSection && (
       currentPage === 'overview' ||
@@ -10896,6 +11532,8 @@ export default function App() {
     ? 'Videos'
     : currentPage === 'pm-resources'
     ? 'Product Management Resources'
+    : currentPage === 'pm-youtube'
+    ? 'IBM Product Hub - YouTube'
     : currentPage === 'badges'
     ? 'Badge'
     : currentPage === 'yl'
@@ -11051,6 +11689,34 @@ export default function App() {
                   <FullscreenIcon active={isFullscreen} />
                 </button>
               </div>
+              {isPmSection && (
+                <nav aria-label="Product Management subpages" className="flex w-full flex-wrap items-center gap-1.5 sm:justify-end">
+                  {([
+                    ['pm-resources', 'Overview'],
+                    ['pm-youtube', 'YT'],
+                  ] as const).map(([page, label]) => {
+                    const isActive = currentPage === page
+                    return (
+                      <a
+                        key={page}
+                        href={`#${pageAnchors[page]}`}
+                        onClick={event => {
+                          event.preventDefault()
+                          navigateToPage(page)
+                        }}
+                        aria-current={isActive ? 'page' : undefined}
+                        className={`inline-flex h-7 items-center justify-center whitespace-nowrap rounded px-2.5 text-[11px] font-semibold transition-colors ${
+                          isActive
+                            ? 'bg-[#0f62fe]/20 text-white'
+                            : 'text-[#c6c6c6] hover:bg-white/[0.04] hover:text-[#a6c8ff]'
+                        }`}
+                      >
+                        {label}
+                      </a>
+                    )
+                  })}
+                </nav>
+              )}
               {isCommunitySection && (
                 <nav aria-label="Community subpages" className="flex w-full flex-wrap items-center gap-1.5 sm:justify-end">
                   {([
@@ -11675,6 +12341,8 @@ export default function App() {
           <BadgesPage />
         ) : currentPage === 'pm-resources' ? (
           <ProductManagementResourcesPage />
+        ) : currentPage === 'pm-youtube' ? (
+          <ProductHubYouTubePage />
         ) : currentPage === 'resource-table' ? (
           <section id="resource-table-top" aria-labelledby="resource-table-heading" className="scroll-mt-28 overflow-hidden rounded-xl border border-[#ff832b]/25 bg-[#262626]">
             <div className="border-b border-white/[0.06] px-5 py-4 sm:px-6">
