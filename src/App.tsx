@@ -11756,7 +11756,68 @@ export default function App() {
                       </span>
                       <span className="ml-auto"><CopySectionLink id="lets-create-filters" label="Let's Create filters" /></span>
                     </div>
-                    <div id="lets-create-filters-body" hidden={!isLetsCreateFiltersExpanded} className="mt-4 grid gap-4 border-t border-white/[0.06] pt-4">
+                    <div id="lets-create-filters-body" hidden={!isLetsCreateFiltersExpanded} className="mt-4 grid gap-5 border-t border-white/[0.06] pt-4">
+                      {/* Catalog of Sections */}
+                      <div className="rounded-lg border border-white/[0.08] bg-[#161616] p-4">
+                        <div className="mb-3 flex items-center justify-between">
+                          <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-[#a6c8ff]">
+                            Catalog of Sections on this Page
+                          </h4>
+                          <span className="text-[11px] text-[#c6c6c6]">
+                            {letsCreateSections.length} sections · {letsCreateAssets.length} total assets
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                          {letsCreateSections.map((sec, idx) => {
+                            const count = letsCreateAssets.filter(a => a.section === sec.id).length
+                            const isSecShown = effectiveLetsCreateSections.has(sec.id)
+                            return (
+                              <button
+                                key={sec.id}
+                                type="button"
+                                onClick={() => {
+                                  if (!isSecShown) {
+                                    setLetsCreateVisibleSections(prev => new Set(prev).add(sec.id))
+                                  }
+                                  setCollapsedLetsCreateSections(prev => {
+                                    const next = new Set(prev)
+                                    next.delete(sec.id)
+                                    return next
+                                  })
+                                  window.requestAnimationFrame(() => {
+                                    const el = document.getElementById(`lets-create-${sec.id}`)
+                                    if (el) {
+                                      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                                    }
+                                  })
+                                }}
+                                className="group flex flex-col justify-between rounded-lg border border-white/[0.08] bg-[#222222] p-3 text-left transition-all hover:border-[#4589ff]/60 hover:bg-[#282828] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                              >
+                                <div>
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="font-mono text-[10px] font-semibold text-[#78a9ff]">
+                                      {String(idx + 1).padStart(2, '0')}
+                                    </span>
+                                    <span className="rounded-full bg-white/5 px-2 py-0.5 text-[9px] font-medium text-[#c6c6c6]">
+                                      {count} {count === 1 ? 'asset' : 'assets'}
+                                    </span>
+                                  </div>
+                                  <h5 className="mt-1 text-sm font-semibold text-white group-hover:text-[#a6c8ff]">
+                                    {sec.label}
+                                  </h5>
+                                  <p className="mt-1 line-clamp-2 text-xs text-[#c6c6c6]">
+                                    {sec.description}
+                                  </p>
+                                </div>
+                                <span className="mt-2.5 inline-flex items-center gap-1 text-[11px] font-semibold text-[#78a9ff] group-hover:text-white">
+                                  Jump to section <span aria-hidden="true">↓</span>
+                                </span>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+
                       <CommunityFilterGroup
                         id="lets-create-section-filter"
                         title="Sections"
@@ -11981,30 +12042,37 @@ export default function App() {
                   </div>
 
                   <section
-                    id="lets-create-summary"
-                    aria-labelledby="lets-create-summary-heading"
+                    id="lets-create-table-view"
+                    aria-labelledby="lets-create-table-view-heading"
                     className="mt-6 scroll-mt-28 rounded-xl border border-white/[0.07] bg-[#262626] p-5"
                   >
-                    <div className={`${isLetsCreateSummaryCollapsed ? '' : 'mb-4'} flex items-center justify-between gap-3`}>
-                      <h3 id="lets-create-summary-heading" className="text-lg font-semibold text-white">
-                        <button
-                          type="button"
-                          onClick={() => setIsLetsCreateSummaryCollapsed(collapsed => !collapsed)}
-                          aria-expanded={!isLetsCreateSummaryCollapsed}
-                          aria-controls="lets-create-summary-body"
-                          title={`${isLetsCreateSummaryCollapsed ? 'Expand' : 'Collapse'} Summary`}
-                          className="inline-flex items-baseline gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
-                        >
-                          Summary
-                          <span className="text-xs font-medium text-[#c6c6c6]">{letsCreateAssets.length} assets</span>
-                          <span className="self-center text-[#78a9ff]"><VideoVisibilityIcon visible={!isLetsCreateSummaryCollapsed} /></span>
-                        </button>
-                      </h3>
-                      <CopySectionLink id="lets-create-summary" label="Summary" />
+                    <div className={`${isLetsCreateSummaryCollapsed ? '' : 'mb-4'} flex items-start justify-between gap-3`}>
+                      <div>
+                        <h3 id="lets-create-table-view-heading" className="text-lg font-semibold text-white">
+                          <button
+                            type="button"
+                            onClick={() => setIsLetsCreateSummaryCollapsed(collapsed => !collapsed)}
+                            aria-expanded={!isLetsCreateSummaryCollapsed}
+                            aria-controls="lets-create-table-view-body"
+                            title={`${isLetsCreateSummaryCollapsed ? 'Expand' : 'Collapse'} Let's Create - Table View`}
+                            className="inline-flex items-baseline gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                          >
+                            Let&rsquo;s Create - Table View
+                            <span className="text-xs font-medium text-[#c6c6c6]">{letsCreateAssets.length} assets</span>
+                            <span className="self-center text-[#78a9ff]"><VideoVisibilityIcon visible={!isLetsCreateSummaryCollapsed} /></span>
+                          </button>
+                        </h3>
+                        {!isLetsCreateSummaryCollapsed && (
+                          <p className="mt-1 text-xs text-[#c6c6c6]">
+                            Searchable, sortable table view of all Let&rsquo;s Create assets across all sections, capabilities, and product areas.
+                          </p>
+                        )}
+                      </div>
+                      <CopySectionLink id="lets-create-table-view" label="Let's Create - Table View" />
                     </div>
-                    <div id="lets-create-summary-body" hidden={isLetsCreateSummaryCollapsed}>
+                    <div id="lets-create-table-view-body" hidden={isLetsCreateSummaryCollapsed}>
                       <TableView
-                        label="Summary"
+                        label="Let's Create - Table View"
                         columns={[
                           { key: 'index', label: '#', col: 'w-14', placeholder: '#', getValue: r => r.index },
                           {
