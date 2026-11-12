@@ -1602,6 +1602,20 @@ interface LetsCreateAsset {
   section: LetsCreateSection
   capability: PortfolioResourcePage
   products: string[]
+  // Date published as YYYY-MM-DD. Shown on the card and in tables when set.
+  published?: string
+}
+
+// Formats a YYYY-MM-DD date as "Mar 4, 2025" without time zone shifts.
+function formatPublishedDate(published?: string) {
+  if (!published) return ""
+  const [year, month, day] = published.split("-").map(Number)
+  if (!year || !month || !day) return published
+  return new Date(year, month - 1, day).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  })
 }
 
 const letsCreateSections: {
@@ -1689,6 +1703,8 @@ const technicalAcceleratorFolders: {
   folder?: string
   capability: PortfolioResourcePage
   products: string[]
+  // Date published as YYYY-MM-DD, e.g. "2025-03-04".
+  published?: string
 }[] = [
   {
     name: "DBA Technical Sales Accelerators (all folders)",
@@ -2161,6 +2177,14 @@ function LetsCreateAssetCard({
         <p className="mt-1.5 line-clamp-3 text-[11px] leading-relaxed text-[#c6c6c6]">
           {asset.description}
         </p>
+        {asset.published && (
+          <p className="mt-1.5 text-[10px] text-[#8d8d8d]">
+            Published{" "}
+            <time dateTime={asset.published}>
+              {formatPublishedDate(asset.published)}
+            </time>
+          </p>
+        )}
         <div className="mt-auto flex max-h-[3.25rem] flex-wrap gap-1 overflow-hidden pt-2">
           {capability && (
             <span
@@ -12960,6 +12984,27 @@ function BackToCapabilityTopButton({
   )
 }
 
+// Makes a search result glow and bounce once it is on screen. Accepts an
+// element or an id; ids are retried briefly because the page may still be
+// rendering after navigation.
+function highlightSearchTarget(target: string | HTMLElement) {
+  const className = "search-target-highlight"
+  let attempts = 0
+  const apply = () => {
+    const element =
+      typeof target === "string" ? document.getElementById(target) : target
+    if (!element) {
+      if (attempts++ < 30) window.requestAnimationFrame(apply)
+      return
+    }
+    element.classList.remove(className)
+    void element.offsetWidth
+    element.classList.add(className)
+    window.setTimeout(() => element.classList.remove(className), 3600)
+  }
+  window.setTimeout(apply, 350)
+}
+
 function scrollElementBelowPageHeader(
   id: string,
   behavior: ScrollBehavior = "auto",
@@ -14599,12 +14644,7 @@ function GlobalSearch({
     const element = entry.element
     if (element) {
       element.scrollIntoView({ behavior: "smooth", block: "center" })
-      const previous = element.style.outline
-      element.style.outline = "2px solid #78a9ff"
-      element.style.outlineOffset = "4px"
-      window.setTimeout(() => {
-        element.style.outline = previous
-      }, 2000)
+      highlightSearchTarget(element)
       return
     }
     onSelect(entry)
@@ -15307,6 +15347,7 @@ export default function App() {
     } else {
       window.location.hash = entry.id
     }
+    highlightSearchTarget(entry.id)
   }
   const navigateToBreadcrumbPage = (page: Page) => {
     navigateToPage(page, pageAnchors[page])
@@ -20168,6 +20209,28 @@ export default function App() {
                                     ),
                                   },
                                   {
+                                    key: "published",
+                                    label: "Published",
+                                    col: "w-32",
+                                    placeholder: "Filter date",
+                                    getValue: (r) => r.published ?? "",
+                                    getFilterValue: (r) =>
+                                      `${r.published ?? ""} ${formatPublishedDate(r.published)}`,
+                                    render: (r) =>
+                                      r.published ? (
+                                        <time
+                                          dateTime={r.published}
+                                          className="whitespace-nowrap text-xs text-[#c6c6c6]"
+                                        >
+                                          {formatPublishedDate(r.published)}
+                                        </time>
+                                      ) : (
+                                        <span className="text-xs text-[#8d8d8d]">
+                                          &mdash;
+                                        </span>
+                                      ),
+                                  },
+                                  {
                                     key: "link",
                                     label: "Box Link",
                                     col: "w-24",
@@ -20644,6 +20707,28 @@ export default function App() {
                               {r.description}
                             </p>
                           ),
+                        },
+                        {
+                          key: "published",
+                          label: "Published",
+                          col: "w-32",
+                          placeholder: "Filter date",
+                          getValue: (r) => r.published ?? "",
+                          getFilterValue: (r) =>
+                            `${r.published ?? ""} ${formatPublishedDate(r.published)}`,
+                          render: (r) =>
+                            r.published ? (
+                              <time
+                                dateTime={r.published}
+                                className="whitespace-nowrap text-xs text-[#c6c6c6]"
+                              >
+                                {formatPublishedDate(r.published)}
+                              </time>
+                            ) : (
+                              <span className="text-xs text-[#8d8d8d]">
+                                &mdash;
+                              </span>
+                            ),
                         },
                         {
                           key: "link",
