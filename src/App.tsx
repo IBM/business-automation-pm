@@ -2221,14 +2221,15 @@ function LetsCreateAssetCard({
           {capability.label}
         </span>
       )}
-      {asset.products.map((product) => (
-        <span
-          key={product}
-          className="rounded-full border border-white/[0.1] bg-white/[0.03] px-1.5 py-0.5 text-[9px] font-medium text-[#c6c6c6]"
-        >
-          {product}
-        </span>
-      ))}
+      {asset.section !== "irt-solutions" &&
+        asset.products.map((product) => (
+          <span
+            key={product}
+            className="rounded-full border border-white/[0.1] bg-white/[0.03] px-1.5 py-0.5 text-[9px] font-medium text-[#c6c6c6]"
+          >
+            {product}
+          </span>
+        ))}
     </div>
   )
   const heading = (
