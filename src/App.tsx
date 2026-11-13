@@ -2278,7 +2278,7 @@ function LetsCreateAssetCard({
     isEmbedded ? "border-[#4589ff]/60" : "border-white/[0.07]"
   }`
 
-  // Video cards: the player follows the description, with View Below under it. The link covers only the heading
+  // Video cards: the player follows the description on the right side, with View Below under it. The link covers only the heading
   // and description so the player and button stay separate controls.
   if (hasVideo)
     return (
@@ -2289,7 +2289,7 @@ function LetsCreateAssetCard({
         >
           {heading}
         </a>
-        <div className="mt-1.5 flex flex-col items-start gap-1">
+        <div className="mt-1.5 flex flex-col items-end gap-1">
           <LetsCreateCardVideo asset={asset} />
           {viewBelowButton}
         </div>
