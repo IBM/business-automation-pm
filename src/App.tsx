@@ -1598,7 +1598,7 @@ interface LetsCreateAsset {
   name: string
   description: string
   url: string
-  // When set, the card gets a View Below button that plays this embed URL (for example a YouTube video) inside an enlarged tile.
+  // When set, the card is a wider tile with this embed URL (for example a YouTube video) playing inside it.
   embedUrl?: string
   // When set, the asset opens this page inside the site instead of the external url.
   page?: Page
@@ -1999,7 +1999,7 @@ const letsCreateAssets: LetsCreateAsset[] = [
     description:
       "Multi-application workflow covering the shipment lifecycle across Shipment, Warehouse, and Carrier apps: inventory validation, shortage handling, carrier assignment, delivery, AI-assisted decisions, email notifications, and GenAI document creation. Uses BAW, BAA, Content Cortex, DI, BAI, GenAI, agentic AI, and predictive AI. Interactive demo: https://demo-now.techzone.ibm.com/psl/01s087v",
     url: "https://github.ibm.com/dba/IRT-Solution-Scenarios/tree/main/ShipmentManagement",
-    embedUrl: "https://www.youtube.com/embed/nX3UKtNRIkw?autoplay=1",
+    embedUrl: "https://www.youtube.com/embed/nX3UKtNRIkw",
     section: "irt-solutions",
     capability: "cp4ba",
     products: ["IBM Cloud Pak for Business Automation"],
@@ -2455,67 +2455,115 @@ function LimitedGrid<T>({
   )
 }
 
-// Enlarged tile that plays the asset's embedUrl video inside the tile, next to its details.
+// Tile with the asset's embedUrl video playing inside it, like the video on the Overview header.
+// View Below enlarges the tile to the full section width, with the details next to the video.
 function LetsCreateVideoTile({
   asset,
-  onHide,
+  isExpanded,
+  onToggle,
 }: {
   asset: LetsCreateAsset
-  onHide: () => void
+  isExpanded: boolean
+  onToggle: () => void
 }) {
   const tileRef = useRef<HTMLDivElement>(null)
+  const firstRender = useRef(true)
   useEffect(() => {
-    tileRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
-  }, [])
+    if (firstRender.current) {
+      firstRender.current = false
+      return
+    }
+    if (isExpanded)
+      tileRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
+  }, [isExpanded])
+  const capability = businessAutomationCapabilityFilters.find(
+    (filter) => filter.page === asset.capability,
+  )
   const watchUrl = asset.embedUrl?.replace(/\/embed\/([^?]+).*/, "/watch?v=$1")
   return (
     <div
       ref={tileRef}
-      className="scroll-mt-28 overflow-hidden rounded-lg border border-[#4589ff]/60 bg-[#161616]"
+      className={`flex h-full scroll-mt-28 flex-col overflow-hidden rounded-lg border bg-[#161616] ${
+        isExpanded ? "border-[#4589ff]/60" : "border-white/[0.07]"
+      }`}
     >
-      <div className="flex items-center gap-2 border-b border-white/[0.06] bg-[#1c1c1c] px-3 py-2">
-        <h4
-          className="min-w-0 flex-1 truncate text-xs font-semibold text-white"
-          title={asset.name}
-        >
-          {asset.name}
-        </h4>
-        <a
-          href={watchUrl}
-          target="_blank"
-          rel="noreferrer"
-          className={letsCreateControlClass}
-        >
-          Open video
-        </a>
-        <button type="button" className={letsCreateControlClass} onClick={onHide}>
-          Hide video
-        </button>
-      </div>
-      <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <div className="aspect-video w-full overflow-hidden rounded-md bg-black">
+      <div
+        className={`grid gap-3 p-3 ${
+          isExpanded ? "lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-5" : ""
+        }`}
+      >
+        <div className="overflow-hidden rounded-md border border-[#4589ff]/35 bg-black">
           <iframe
             src={asset.embedUrl}
-            title={asset.name}
-            className="h-full w-full border-0"
-            allow="fullscreen; clipboard-write; autoplay; encrypted-media; picture-in-picture"
-            sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"
+            title={`${asset.name} video`}
+            className="aspect-video w-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerPolicy="strict-origin-when-cross-origin"
-            loading="lazy"
+            allowFullScreen
           />
         </div>
-        <div className="min-w-0">
-          <p className="text-[12px] leading-relaxed text-[#c6c6c6]">
-            {asset.description}
-          </p>
+        <div className="flex min-w-0 flex-col">
           <a
             href={asset.url}
             target="_blank"
             rel="noreferrer"
-            className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-[#78a9ff] hover:text-white"
+            title={`${asset.name} — ${asset.description}`}
+            className="group flex items-start justify-between gap-2"
           >
-            Open scenario folder <ExternalLinkIcon />
+            <h4 className="text-[13px] font-semibold leading-snug text-white group-hover:text-[#a6c8ff]">
+              {asset.name}
+            </h4>
+            <span className="mt-0.5 shrink-0 text-[#78a9ff]">
+              <ExternalLinkIcon />
+            </span>
           </a>
+          <p
+            className={`mt-1.5 text-[11px] leading-relaxed text-[#c6c6c6] ${
+              isExpanded ? "" : "line-clamp-3"
+            }`}
+          >
+            {asset.description}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-1">
+            {capability && (
+              <span
+                className="rounded-full border px-1.5 py-0.5 text-[9px] font-semibold text-white"
+                style={{
+                  borderColor: `${capability.color}bb`,
+                  backgroundColor: `${capability.color}20`,
+                }}
+              >
+                {capability.label}
+              </span>
+            )}
+            {asset.products.map((product) => (
+              <span
+                key={product}
+                className="rounded-full border border-white/[0.1] bg-white/[0.03] px-1.5 py-0.5 text-[9px] font-medium text-[#c6c6c6]"
+              >
+                {product}
+              </span>
+            ))}
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={onToggle}
+              aria-pressed={isExpanded}
+              aria-label={`${isExpanded ? "Shrink" : "Enlarge"} the ${asset.name} video tile`}
+              className="inline-flex h-6 items-center rounded-md border border-white/[0.1] bg-[#262626] px-2 text-[10px] font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+            >
+              {isExpanded ? "Showing below" : "View Below"}
+            </button>
+            <a
+              href={watchUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-[10px] font-semibold text-[#78a9ff] hover:text-white"
+            >
+              Open on YouTube
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -2538,8 +2586,10 @@ function LetsCreateAssetGrid({
   const [embeddedAsset, setEmbeddedAsset] = useState<LetsCreateAsset | null>(
     null,
   )
-  // Name of the asset whose video is playing inside its own enlarged tile.
-  const [videoTileName, setVideoTileName] = useState<string | null>(null)
+  // Name of the video tile that View Below has enlarged to the full section width.
+  const [expandedVideoName, setExpandedVideoName] = useState<string | null>(
+    null,
+  )
   return (
     <>
       <LimitedGrid
@@ -2547,29 +2597,34 @@ function LetsCreateAssetGrid({
         rows={rows}
         itemKey={(asset) => `${asset.section}-${asset.name}`}
         itemClassName={(asset) =>
-          asset.embedUrl && asset.name === videoTileName
-            ? "col-span-full"
-            : "aspect-square"
+          !asset.embedUrl
+            ? "aspect-square"
+            : asset.name === expandedVideoName
+              ? "col-span-full"
+              : "md:col-span-2"
         }
         onOpenFullList={
           fullListPage ? () => onOpenPage(fullListPage) : undefined
         }
         renderItem={(asset) =>
-          asset.embedUrl && asset.name === videoTileName ? (
+          asset.embedUrl ? (
             <LetsCreateVideoTile
               asset={asset}
-              onHide={() => setVideoTileName(null)}
+              isExpanded={asset.name === expandedVideoName}
+              onToggle={() =>
+                setExpandedVideoName((name) =>
+                  name === asset.name ? null : asset.name,
+                )
+              }
             />
           ) : (
             <LetsCreateAssetCard
               asset={asset}
               onOpenPage={onOpenPage}
               onEmbed={
-                asset.embedUrl
-                  ? () => setVideoTileName(asset.name)
-                  : embeddable && !asset.page
-                    ? () => setEmbeddedAsset(asset)
-                    : undefined
+                embeddable && !asset.page
+                  ? () => setEmbeddedAsset(asset)
+                  : undefined
               }
               isEmbedded={embeddedAsset?.name === asset.name}
             />
