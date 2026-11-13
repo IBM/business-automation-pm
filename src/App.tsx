@@ -2142,7 +2142,7 @@ const letsCreateProductOptions = Array.from(
 function LetsCreateCardVideo({ asset }: { asset: LetsCreateAsset }) {
   const [playing, setPlaying] = useState(false)
   return (
-    <div className="relative aspect-video w-[40%] shrink-0 overflow-hidden rounded border border-[#4589ff]/35 bg-black">
+    <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded border border-[#4589ff]/35 bg-black">
       {playing ? (
         <iframe
           src={`${asset.embedUrl}?autoplay=1`}
@@ -2326,7 +2326,7 @@ function LetsCreateAssetCard({
     isEmbedded ? "border-[#4589ff]/60" : "border-white/[0.07]"
   }`
 
-  // Video cards: the player follows the description on the right side, with View Below under it. The link covers only the heading
+  // Video cards: the player sits in the lower-right corner with View Below under it, and the tags in the lower left. The link covers only the heading
   // and description so the player and button stay separate controls.
   if (hasVideo)
     return (
@@ -2344,11 +2344,13 @@ function LetsCreateAssetCard({
           >
             {heading}
           </a>
-          <div className="mt-1.5 flex flex-col items-end gap-1">
-            <LetsCreateCardVideo asset={asset} />
-            {viewBelowButton}
+          <div className="mt-auto flex items-end justify-between gap-2 pt-2">
+            <div className="min-w-0 flex-1">{tags}</div>
+            <div className="flex w-[62%] shrink-0 flex-col items-end gap-1">
+              <LetsCreateCardVideo asset={asset} />
+              {viewBelowButton}
+            </div>
           </div>
-          {tags}
         </div>
         {hoverText}
       </div>
