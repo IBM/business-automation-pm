@@ -1598,7 +1598,7 @@ interface LetsCreateAsset {
   name: string
   description: string
   url: string
-  // When set, the card gets a View Below button that shows this URL in the embedded frame (for example a YouTube embed URL).
+  // When set, the card gets a View Below button that plays this embed URL (for example a YouTube video) inside an enlarged tile.
   embedUrl?: string
   // When set, the asset opens this page inside the site instead of the external url.
   page?: Page
@@ -2324,7 +2324,7 @@ function LetsCreateEmbedFrame({
       >
         {children ?? (
           <iframe
-            src={asset.embedUrl ?? asset.url}
+            src={asset.url}
             title={asset.name}
             className="h-full w-full border-0 bg-white"
             allow="fullscreen; clipboard-write; autoplay; encrypted-media; picture-in-picture"
@@ -2359,7 +2359,7 @@ function LimitedGrid<T>({
   rows?: number
   gridClass?: string
   itemKey: (item: T) => string
-  itemClassName?: string
+  itemClassName?: string | ((item: T) => string)
   renderItem: (item: T, index: number) => ReactNode
   onOpenFullList?: () => void
 }) {
@@ -2395,7 +2395,14 @@ function LimitedGrid<T>({
     <>
       <ul ref={gridRef} className={gridClass}>
         {shown.map((item, offset) => (
-          <li key={itemKey(item)} className={itemClassName}>
+          <li
+            key={itemKey(item)}
+            className={
+              typeof itemClassName === "function"
+                ? itemClassName(item)
+                : itemClassName
+            }
+          >
             {renderItem(item, start + offset)}
           </li>
         ))}
@@ -2448,6 +2455,73 @@ function LimitedGrid<T>({
   )
 }
 
+// Enlarged tile that plays the asset's embedUrl video inside the tile, next to its details.
+function LetsCreateVideoTile({
+  asset,
+  onHide,
+}: {
+  asset: LetsCreateAsset
+  onHide: () => void
+}) {
+  const tileRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    tileRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
+  }, [])
+  const watchUrl = asset.embedUrl?.replace(/\/embed\/([^?]+).*/, "/watch?v=$1")
+  return (
+    <div
+      ref={tileRef}
+      className="scroll-mt-28 overflow-hidden rounded-lg border border-[#4589ff]/60 bg-[#161616]"
+    >
+      <div className="flex items-center gap-2 border-b border-white/[0.06] bg-[#1c1c1c] px-3 py-2">
+        <h4
+          className="min-w-0 flex-1 truncate text-xs font-semibold text-white"
+          title={asset.name}
+        >
+          {asset.name}
+        </h4>
+        <a
+          href={watchUrl}
+          target="_blank"
+          rel="noreferrer"
+          className={letsCreateControlClass}
+        >
+          Open video
+        </a>
+        <button type="button" className={letsCreateControlClass} onClick={onHide}>
+          Hide video
+        </button>
+      </div>
+      <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <div className="aspect-video w-full overflow-hidden rounded-md bg-black">
+          <iframe
+            src={asset.embedUrl}
+            title={asset.name}
+            className="h-full w-full border-0"
+            allow="fullscreen; clipboard-write; autoplay; encrypted-media; picture-in-picture"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"
+            referrerPolicy="strict-origin-when-cross-origin"
+            loading="lazy"
+          />
+        </div>
+        <div className="min-w-0">
+          <p className="text-[12px] leading-relaxed text-[#c6c6c6]">
+            {asset.description}
+          </p>
+          <a
+            href={asset.url}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-[#78a9ff] hover:text-white"
+          >
+            Open scenario folder <ExternalLinkIcon />
+          </a>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function LetsCreateAssetGrid({
   assets,
   rows,
@@ -2464,34 +2538,48 @@ function LetsCreateAssetGrid({
   const [embeddedAsset, setEmbeddedAsset] = useState<LetsCreateAsset | null>(
     null,
   )
+  // Name of the asset whose video is playing inside its own enlarged tile.
+  const [videoTileName, setVideoTileName] = useState<string | null>(null)
   return (
     <>
       <LimitedGrid
         items={assets}
         rows={rows}
         itemKey={(asset) => `${asset.section}-${asset.name}`}
-        itemClassName="aspect-square"
+        itemClassName={(asset) =>
+          asset.embedUrl && asset.name === videoTileName
+            ? "col-span-full"
+            : "aspect-square"
+        }
         onOpenFullList={
           fullListPage ? () => onOpenPage(fullListPage) : undefined
         }
-        renderItem={(asset) => (
-          <LetsCreateAssetCard
-            asset={asset}
-            onOpenPage={onOpenPage}
-            onEmbed={
-              (embeddable || asset.embedUrl) && !asset.page
-                ? () => setEmbeddedAsset(asset)
-                : undefined
-            }
-            isEmbedded={embeddedAsset?.name === asset.name}
-          />
-        )}
+        renderItem={(asset) =>
+          asset.embedUrl && asset.name === videoTileName ? (
+            <LetsCreateVideoTile
+              asset={asset}
+              onHide={() => setVideoTileName(null)}
+            />
+          ) : (
+            <LetsCreateAssetCard
+              asset={asset}
+              onOpenPage={onOpenPage}
+              onEmbed={
+                asset.embedUrl
+                  ? () => setVideoTileName(asset.name)
+                  : embeddable && !asset.page
+                    ? () => setEmbeddedAsset(asset)
+                    : undefined
+              }
+              isEmbedded={embeddedAsset?.name === asset.name}
+            />
+          )
+        }
       />
       {embeddedAsset && (
         <LetsCreateEmbedFrame
           key={embeddedAsset.url}
           asset={embeddedAsset}
-          openUrl={embeddedAsset.embedUrl?.replace(/\/embed\/([^?]+).*/, "/watch?v=$1")}
           onExit={() => setEmbeddedAsset(null)}
         />
       )}
