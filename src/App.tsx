@@ -2195,6 +2195,54 @@ function LetsCreateAssetCard({
     (filter) => filter.page === asset.capability,
   )
   const hasVideo = Boolean(asset.embedUrl)
+  // Hover or focus shows the full description in a popover. It uses fixed positioning, so the section's
+  // overflow clipping does not cut it off; it opens under the tile, or above it when there is no room below.
+  const [popover, setPopover] = useState<{
+    left: number
+    top?: number
+    bottom?: number
+  } | null>(null)
+  const popoverTimer = useRef<number>(undefined)
+  const showPopover = (event: React.SyntheticEvent<HTMLElement>, delay: number) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    window.clearTimeout(popoverTimer.current)
+    popoverTimer.current = window.setTimeout(() => {
+      // clientWidth excludes the page scrollbar, which innerWidth includes.
+      const viewportWidth = document.documentElement.clientWidth
+      const width = Math.min(288, viewportWidth - 16)
+      const left = Math.max(8, Math.min(rect.left, viewportWidth - width - 8))
+      setPopover(
+        window.innerHeight - rect.bottom > 200
+          ? { left, top: rect.bottom + 4 }
+          : { left, bottom: window.innerHeight - rect.top + 4 },
+      )
+    }, delay)
+  }
+  const hidePopover = () => {
+    window.clearTimeout(popoverTimer.current)
+    setPopover(null)
+  }
+  useEffect(() => {
+    if (!popover) return
+    window.addEventListener("scroll", hidePopover, { passive: true, capture: true })
+    return () => window.removeEventListener("scroll", hidePopover, true)
+  }, [popover])
+  useEffect(() => () => window.clearTimeout(popoverTimer.current), [])
+  const hoverText = popover && (
+    <div
+      role="presentation"
+      aria-hidden="true"
+      style={popover}
+      className="pointer-events-none fixed z-[90] w-72 max-w-[calc(100vw-16px)] rounded-lg border border-[#4589ff]/50 bg-[#262626] p-3 text-left shadow-[0_12px_32px_rgba(0,0,0,0.5)]"
+    >
+      <p className="text-[13px] font-semibold leading-snug text-white">
+        {asset.name}
+      </p>
+      <p className="mt-1.5 whitespace-pre-line text-[11px] leading-relaxed text-[#c6c6c6]">
+        {asset.description}
+      </p>
+    </div>
+  )
   const viewBelowButton = onEmbed && (
     <button
       type="button"
@@ -2265,7 +2313,6 @@ function LetsCreateAssetCard({
   )
   const linkProps = {
     href: asset.url,
-    title: `${asset.name} — ${asset.description}`,
     ...(asset.page
       ? {
           onClick: (event: React.MouseEvent) => {
@@ -2283,28 +2330,44 @@ function LetsCreateAssetCard({
   // and description so the player and button stay separate controls.
   if (hasVideo)
     return (
-      <div className={cardClass}>
-        <a
-          {...linkProps}
-          className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
-        >
-          {heading}
-        </a>
-        <div className="mt-1.5 flex flex-col items-end gap-1">
-          <LetsCreateCardVideo asset={asset} />
-          {viewBelowButton}
+      <div
+        className="relative h-full"
+        onMouseEnter={(event) => showPopover(event, 300)}
+        onMouseLeave={hidePopover}
+        onFocus={(event) => showPopover(event, 0)}
+        onBlur={hidePopover}
+      >
+        <div className={cardClass}>
+          <a
+            {...linkProps}
+            className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+          >
+            {heading}
+          </a>
+          <div className="mt-1.5 flex flex-col items-end gap-1">
+            <LetsCreateCardVideo asset={asset} />
+            {viewBelowButton}
+          </div>
+          {tags}
         </div>
-        {tags}
+        {hoverText}
       </div>
     )
 
   return (
-    <div className="relative h-full">
+    <div
+      className="relative h-full"
+      onMouseEnter={(event) => showPopover(event, 300)}
+      onMouseLeave={hidePopover}
+      onFocus={(event) => showPopover(event, 0)}
+      onBlur={hidePopover}
+    >
       <a {...linkProps} className={`${cardClass} ${onEmbed ? "pb-10" : ""}`}>
         {heading}
         {tags}
       </a>
       {viewBelowButton}
+      {hoverText}
     </div>
   )
 }
