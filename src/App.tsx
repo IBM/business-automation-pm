@@ -2142,7 +2142,7 @@ const letsCreateProductOptions = Array.from(
 function LetsCreateCardVideo({ asset }: { asset: LetsCreateAsset }) {
   const [playing, setPlaying] = useState(false)
   return (
-    <div className="relative aspect-video w-[48%] shrink-0 overflow-hidden rounded border border-[#4589ff]/35 bg-black">
+    <div className="relative aspect-video w-[40%] shrink-0 overflow-hidden rounded border border-[#4589ff]/35 bg-black">
       {playing ? (
         <iframe
           src={`${asset.embedUrl}?autoplay=1`}
@@ -2289,7 +2289,7 @@ function LetsCreateAssetCard({
         >
           {heading}
         </a>
-        <div className="mt-2 flex flex-col items-start gap-1.5">
+        <div className="mt-1.5 flex flex-col items-start gap-1">
           <LetsCreateCardVideo asset={asset} />
           {viewBelowButton}
         </div>
