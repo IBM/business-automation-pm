@@ -1598,8 +1598,10 @@ interface LetsCreateAsset {
   name: string
   description: string
   url: string
-  // When set, the card shows this embed URL (for example a YouTube video) in a small player in its corner, and View Below plays it in the large frame.
+  // When set, the card shows this embed URL (for example a YouTube video) in a small player after the description, with View Below under it to play it in the large frame.
   embedUrl?: string
+  // Poster image shown on the card's small player until it is played. Defaults to the YouTube thumbnail.
+  thumbnail?: string
   // When set, the asset opens this page inside the site instead of the external url.
   page?: Page
   section: LetsCreateSection
@@ -2000,6 +2002,7 @@ const letsCreateAssets: LetsCreateAsset[] = [
       "Multi-application workflow covering the shipment lifecycle across Shipment, Warehouse, and Carrier apps: inventory validation, shortage handling, carrier assignment, delivery, AI-assisted decisions, email notifications, and GenAI document creation. Uses BAW, BAA, Content Cortex, DI, BAI, GenAI, agentic AI, and predictive AI. Interactive demo: https://demo-now.techzone.ibm.com/psl/01s087v",
     url: "https://github.ibm.com/dba/IRT-Solution-Scenarios/tree/main/ShipmentManagement",
     embedUrl: "https://www.youtube.com/embed/nX3UKtNRIkw",
+    thumbnail: asset("lets-create/shipment-management-thumbnail.jpg"),
     section: "irt-solutions",
     capability: "cp4ba",
     products: ["IBM Cloud Pak for Business Automation"],
@@ -2135,6 +2138,48 @@ const letsCreateProductOptions = Array.from(
   .sort((a, b) => a.localeCompare(b))
   .map((product) => ({ id: product, label: product }))
 
+// Small video player for a card: shows the poster image, and loads the embedded video when played.
+function LetsCreateCardVideo({ asset }: { asset: LetsCreateAsset }) {
+  const [playing, setPlaying] = useState(false)
+  return (
+    <div className="relative aspect-video w-[48%] shrink-0 overflow-hidden rounded border border-[#4589ff]/35 bg-black">
+      {playing ? (
+        <iframe
+          src={`${asset.embedUrl}?autoplay=1`}
+          title={`${asset.name} video`}
+          className="h-full w-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerPolicy="strict-origin-when-cross-origin"
+          allowFullScreen
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => setPlaying(true)}
+          aria-label={`Play the ${asset.name} video`}
+          className="group/play absolute inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+        >
+          {asset.thumbnail && (
+            <img
+              src={asset.thumbnail}
+              alt=""
+              loading="lazy"
+              className="h-full w-full object-cover"
+            />
+          )}
+          <span className="absolute inset-0 flex items-center justify-center bg-black/20 transition-colors group-hover/play:bg-black/5">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#0f62fe] text-white">
+              <svg width="8" height="8" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <path d="M4 2l10 6-10 6z" />
+              </svg>
+            </span>
+          </span>
+        </button>
+      )}
+    </div>
+  )
+}
+
 function LetsCreateAssetCard({
   asset,
   onOpenPage,
@@ -2149,95 +2194,116 @@ function LetsCreateAssetCard({
   const capability = businessAutomationCapabilityFilters.find(
     (filter) => filter.page === asset.capability,
   )
+  const hasVideo = Boolean(asset.embedUrl)
+  const viewBelowButton = onEmbed && (
+    <button
+      type="button"
+      onClick={onEmbed}
+      aria-pressed={isEmbedded}
+      aria-label={`Show ${asset.name} in an embedded frame`}
+      className={`inline-flex h-6 items-center rounded-md border border-white/[0.1] bg-[#262626] px-2 text-[10px] font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${
+        hasVideo ? "" : "absolute bottom-2 left-3"
+      }`}
+    >
+      {isEmbedded ? "Showing below" : "View Below"}
+    </button>
+  )
+  const tags = (
+    <div className="mt-auto flex max-h-[3.25rem] flex-wrap gap-1 overflow-hidden pt-2">
+      {capability && (
+        <span
+          className="rounded-full border px-1.5 py-0.5 text-[9px] font-semibold text-white"
+          style={{
+            borderColor: `${capability.color}bb`,
+            backgroundColor: `${capability.color}20`,
+          }}
+        >
+          {capability.label}
+        </span>
+      )}
+      {asset.products.map((product) => (
+        <span
+          key={product}
+          className="rounded-full border border-white/[0.1] bg-white/[0.03] px-1.5 py-0.5 text-[9px] font-medium text-[#c6c6c6]"
+        >
+          {product}
+        </span>
+      ))}
+    </div>
+  )
+  const heading = (
+    <>
+      <div className="flex items-start justify-between gap-2">
+        <h4 className="line-clamp-3 text-[13px] font-semibold leading-snug text-white group-hover:text-[#a6c8ff]">
+          {asset.name}
+        </h4>
+        <span className="mt-0.5 shrink-0 text-[#78a9ff]">
+          {asset.page ? (
+            <span aria-hidden="true">&rarr;</span>
+          ) : (
+            <ExternalLinkIcon />
+          )}
+        </span>
+      </div>
+      <p
+        className={`mt-1.5 text-[11px] leading-relaxed text-[#c6c6c6] ${
+          hasVideo ? "line-clamp-2" : "line-clamp-3"
+        }`}
+      >
+        {asset.description}
+      </p>
+      {asset.published && (
+        <p className="mt-1.5 text-[10px] text-[#8d8d8d]">
+          Published{" "}
+          <time dateTime={asset.published}>
+            {formatPublishedDate(asset.published)}
+          </time>
+        </p>
+      )}
+    </>
+  )
+  const linkProps = {
+    href: asset.url,
+    title: `${asset.name} — ${asset.description}`,
+    ...(asset.page
+      ? {
+          onClick: (event: React.MouseEvent) => {
+            event.preventDefault()
+            onOpenPage(asset.page!)
+          },
+        }
+      : { target: "_blank", rel: "noreferrer" }),
+  }
+  const cardClass = `group flex h-full flex-col overflow-hidden rounded-lg border bg-[#161616] p-3 transition-colors hover:border-[#4589ff]/60 hover:bg-[#1c1c1c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${
+    isEmbedded ? "border-[#4589ff]/60" : "border-white/[0.07]"
+  }`
+
+  // Video cards: the player follows the description, with View Below under it. The link covers only the heading
+  // and description so the player and button stay separate controls.
+  if (hasVideo)
+    return (
+      <div className={cardClass}>
+        <a
+          {...linkProps}
+          className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+        >
+          {heading}
+        </a>
+        <div className="mt-2 flex flex-col items-start gap-1.5">
+          <LetsCreateCardVideo asset={asset} />
+          {viewBelowButton}
+        </div>
+        {tags}
+      </div>
+    )
+
   return (
     <div className="relative h-full">
-      <a
-        href={asset.url}
-        {...(asset.page
-          ? {
-              onClick: (event: React.MouseEvent) => {
-                event.preventDefault()
-                onOpenPage(asset.page!)
-              },
-            }
-          : { target: "_blank", rel: "noreferrer" })}
-        title={`${asset.name} — ${asset.description}`}
-        className={`group flex h-full flex-col overflow-hidden rounded-lg border bg-[#161616] p-3 transition-colors hover:border-[#4589ff]/60 hover:bg-[#1c1c1c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${
-          isEmbedded ? "border-[#4589ff]/60" : "border-white/[0.07]"
-        } ${onEmbed ? "pb-10" : ""}`}
-      >
-        <div className="flex items-start justify-between gap-2">
-          <h4 className="line-clamp-3 text-[13px] font-semibold leading-snug text-white group-hover:text-[#a6c8ff]">
-            {asset.name}
-          </h4>
-          <span className="mt-0.5 shrink-0 text-[#78a9ff]">
-            {asset.page ? (
-              <span aria-hidden="true">&rarr;</span>
-            ) : (
-              <ExternalLinkIcon />
-            )}
-          </span>
-        </div>
-        <p className="mt-1.5 line-clamp-3 text-[11px] leading-relaxed text-[#c6c6c6]">
-          {asset.description}
-        </p>
-        {asset.published && (
-          <p className="mt-1.5 text-[10px] text-[#8d8d8d]">
-            Published{" "}
-            <time dateTime={asset.published}>
-              {formatPublishedDate(asset.published)}
-            </time>
-          </p>
-        )}
-        <div
-          className={`mt-auto flex max-h-[3.25rem] flex-wrap gap-1 overflow-hidden pt-2 ${
-            asset.embedUrl ? "pr-[52%]" : ""
-          }`}
-        >
-          {capability && (
-            <span
-              className="rounded-full border px-1.5 py-0.5 text-[9px] font-semibold text-white"
-              style={{
-                borderColor: `${capability.color}bb`,
-                backgroundColor: `${capability.color}20`,
-              }}
-            >
-              {capability.label}
-            </span>
-          )}
-          {asset.products.map((product) => (
-            <span
-              key={product}
-              className="rounded-full border border-white/[0.1] bg-white/[0.03] px-1.5 py-0.5 text-[9px] font-medium text-[#c6c6c6]"
-            >
-              {product}
-            </span>
-          ))}
-        </div>
+      <a {...linkProps} className={`${cardClass} ${onEmbed ? "pb-10" : ""}`}>
+        {heading}
+        {tags}
       </a>
-      {asset.embedUrl && (
-        <div className="absolute bottom-2 right-2 w-[48%] overflow-hidden rounded border border-[#4589ff]/35 bg-black">
-          <iframe
-            src={asset.embedUrl}
-            title={`${asset.name} video`}
-            className="aspect-video w-full"
-            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
-            allowFullScreen
-          />
-        </div>
-      )}
-      {onEmbed && (
-        <button
-          type="button"
-          onClick={onEmbed}
-          aria-pressed={isEmbedded}
-          aria-label={`Show ${asset.name} in an embedded frame`}
-          className="absolute bottom-2 left-3 inline-flex h-6 items-center rounded-md border border-white/[0.1] bg-[#262626] px-2 text-[10px] font-semibold text-[#78a9ff] transition-colors hover:border-[#4589ff]/55 hover:bg-[#0f62fe]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
-        >
-          {isEmbedded ? "Showing below" : "View Below"}
-        </button>
-      )}
+      {viewBelowButton}
     </div>
   )
 }
