@@ -1598,6 +1598,8 @@ interface LetsCreateAsset {
   name: string
   description: string
   url: string
+  // When set, the card gets a View Below button that shows this URL in the embedded frame (for example a YouTube embed URL).
+  embedUrl?: string
   // When set, the asset opens this page inside the site instead of the external url.
   page?: Page
   section: LetsCreateSection
@@ -1661,7 +1663,7 @@ const letsCreateSections: {
   },
   {
     id: "irt-solutions",
-    label: "IRT Solutions",
+    label: "CP4BA Demos - IRT Solutions",
     description:
       "End-to-end solution scenarios built and maintained by the IRT Team on Cloud Pak for Business Automation, hosted in the IRT-Solution-Scenarios repository on github.ibm.com (IBM internal).",
     details: [
@@ -1997,6 +1999,7 @@ const letsCreateAssets: LetsCreateAsset[] = [
     description:
       "Multi-application workflow covering the shipment lifecycle across Shipment, Warehouse, and Carrier apps: inventory validation, shortage handling, carrier assignment, delivery, AI-assisted decisions, email notifications, and GenAI document creation. Uses BAW, BAA, Content Cortex, DI, BAI, GenAI, agentic AI, and predictive AI. Interactive demo: https://demo-now.techzone.ibm.com/psl/01s087v",
     url: "https://github.ibm.com/dba/IRT-Solution-Scenarios/tree/main/ShipmentManagement",
+    embedUrl: "https://www.youtube.com/embed/nX3UKtNRIkw?autoplay=1",
     section: "irt-solutions",
     capability: "cp4ba",
     products: ["IBM Cloud Pak for Business Automation"],
@@ -2321,7 +2324,7 @@ function LetsCreateEmbedFrame({
       >
         {children ?? (
           <iframe
-            src={asset.url}
+            src={asset.embedUrl ?? asset.url}
             title={asset.name}
             className="h-full w-full border-0 bg-white"
             allow="fullscreen; clipboard-write; autoplay; encrypted-media; picture-in-picture"
@@ -2476,7 +2479,7 @@ function LetsCreateAssetGrid({
             asset={asset}
             onOpenPage={onOpenPage}
             onEmbed={
-              embeddable && !asset.page
+              (embeddable || asset.embedUrl) && !asset.page
                 ? () => setEmbeddedAsset(asset)
                 : undefined
             }
@@ -2488,6 +2491,7 @@ function LetsCreateAssetGrid({
         <LetsCreateEmbedFrame
           key={embeddedAsset.url}
           asset={embeddedAsset}
+          openUrl={embeddedAsset.embedUrl?.replace(/\/embed\/([^?]+).*/, "/watch?v=$1")}
           onExit={() => setEmbeddedAsset(null)}
         />
       )}
