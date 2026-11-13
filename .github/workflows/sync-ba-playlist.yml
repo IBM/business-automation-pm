@@ -1,0 +1,50 @@
+name: Sync Business Automation YouTube playlist
+
+on:
+  schedule:
+    - cron: '30 6 * * *' # daily at 06:30 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write # commit src/businessAutomationPlaylist.json
+  actions: write # dispatch the Pages deploy (pushes made with GITHUB_TOKEN do not trigger it)
+
+concurrency:
+  group: sync-ba-playlist
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Fetch playlist videos
+        run: node scripts/sync-ba-playlist.mjs
+      - name: Commit changes and redeploy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- src/businessAutomationPlaylist.json; then
+            echo "Playlist unchanged; nothing to deploy."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/businessAutomationPlaylist.json
+          git commit -m "chore: sync Business Automation playlist videos"
+          # main may have moved since checkout; rebase onto it and retry if the push loses a race
+          for attempt in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            if git push; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "Push failed after $attempt attempts"
+              exit 1
+            fi
+            sleep 5
+          done
+          gh workflow run deploy.yml --ref "${GITHUB_REF_NAME}"

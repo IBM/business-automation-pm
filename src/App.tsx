@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from "react"
 import enablementData from "./enablement.json"
+import businessAutomationPlaylistData from "./businessAutomationPlaylist.json"
 import { youtubePlaylistVideos, type PlaylistVideo } from "./youtubePlaylists"
 import {
   onboardingAutomationSections,
@@ -3299,85 +3300,21 @@ const IBM_PRODUCT_HUB_CHANNEL_URL = "https://www.youtube.com/@IBMProductHub"
 const BUSINESS_AUTOMATION_PLAYLIST_ID = "PL_4RxtD-BL5vuomQEnSVy1qoWY5FOG0Aw"
 
 // Videos in the IBM Business Automation playlist on the IBM Product Hub channel, in the order shown on the Videos page.
-// The first BUSINESS_AUTOMATION_RECOMMENDED_COUNT videos are tagged Recommended.
-const BUSINESS_AUTOMATION_RECOMMENDED_COUNT = 4
+// Maintained by the daily "Sync Business Automation YouTube playlist" workflow (scripts/sync-ba-playlist.mjs).
+// Videos flagged `recommended` are pinned by hand and never touched by the sync; videos with a recent `addedAt` show a New indicator.
+const NEW_VIDEO_DAYS = 30
 const businessAutomationPlaylistVideos: {
   id: string
   title: string
   duration: string
-}[] = [
-  { id: "CuxTmVCbG80", title: "IBM Business Automation", duration: "1:45" },
-  {
-    id: "6am17ENg5k4",
-    title: "IBM Content Cortex: AI‑Driven Content, Reimagined",
-    duration: "1:09",
-  },
-  {
-    id: "bsQnnNIcFEc",
-    title: "IBM Content Cortex: Agentic Content Services Platform",
-    duration: "2:39",
-  },
-  {
-    id: "exj7qyVNcBE",
-    title:
-      "IBM Decision Intelligence Enterprise Edition - Every Decision Matters",
-    duration: "1:13",
-  },
-  {
-    id: "KpjL5EXQ-Bo",
-    title: "IBM Decision Intelligence - Transform Decision Automation with AI",
-    duration: "2:16",
-  },
-  {
-    id: "ZTvbegjd0wc",
-    title:
-      "IBM named a Leader in the 2026 IDC MarketScape for Decision Intelligence Platforms",
-    duration: "3:50",
-  },
-  {
-    id: "aBABtIhka-8",
-    title:
-      "Blueworks Live IQ Public Preview - Your Blueprints Can Now Analyze Themselves!",
-    duration: "5:06",
-  },
-  {
-    id: "TIflVIDgcS4",
-    title:
-      "Blueworks Live IQ – Transform any Image and Diagram into a Process Map!",
-    duration: "3:57",
-  },
-  {
-    id: "et3MY7M04c8",
-    title: "Blueworks Live IQ – Describe your Process and Let AI Build it!",
-    duration: "4:55",
-  },
-  {
-    id: "glyzVCScdg0",
-    title:
-      "IBM Recognized as a Leader in the 2026 Gartner Magic Quadrant for Decision Intelligence Platforms",
-    duration: "3:04",
-  },
-  {
-    id: "ep7sByXUaFc",
-    title: "Invoking IBM watsonx Orchestrate Agents from Workflow",
-    duration: "3:16",
-  },
-  {
-    id: "7feBwKkR1bQ",
-    title: "Triggering workflow automations using a local MCP Server",
-    duration: "3:58",
-  },
-  {
-    id: "AD5GFMbH2ok",
-    title: "Connect Salesforce CRM Content to FileNet",
-    duration: "6:30",
-  },
-  {
-    id: "N9j0DBxC2PM",
-    title: "Simplify Development using the FileNet GraphQL API",
-    duration: "7:19",
-  },
-]
+  recommended?: boolean
+  addedAt?: string
+}[] = businessAutomationPlaylistData.videos
+
+const isNewVideo = (video: { addedAt?: string }) =>
+  !!video.addedAt &&
+  Date.now() - new Date(video.addedAt).getTime() <
+    NEW_VIDEO_DAYS * 24 * 60 * 60 * 1000
 
 // Other Business Automation playlists on the IBM Product Hub channel.
 const businessAutomationRelatedPlaylists: {
@@ -3544,6 +3481,7 @@ function VideoCard({
   badge,
   index,
   recommended,
+  isNew,
   href,
   isShown,
   onViewBelow,
@@ -3554,6 +3492,7 @@ function VideoCard({
   badge?: string
   index?: number
   recommended?: boolean
+  isNew?: boolean
   href: string
   isShown: boolean
   onViewBelow: () => void
@@ -3603,6 +3542,24 @@ function VideoCard({
                     aria-hidden="true"
                   >
                     <path d="M8 1.2l2.1 4.3 4.7.7-3.4 3.3.8 4.7L8 11.9l-4.2 2.2.8-4.7L1.2 6.2l4.7-.7L8 1.2z" />
+                  </svg>
+                </span>
+              )}
+              {isNew && (
+                <span
+                  role="img"
+                  aria-label="New"
+                  title="New"
+                  className="text-[#42be65]"
+                >
+                  <svg
+                    width="11"
+                    height="11"
+                    viewBox="0 0 16 16"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M8 0l1.6 4.8L14.4 3l-1.8 4.8L16 8l-3.4.2 1.8 4.8-4.8-1.8L8 16l-1.6-4.8L1.6 13l1.8-4.8L0 8l3.4-.2L1.6 3l4.8 1.8L8 0z" />
                   </svg>
                 </span>
               )}
@@ -3897,9 +3854,8 @@ function VideosPage() {
                     thumbnail={`https://i.ytimg.com/vi/${item.id}/hqdefault.jpg`}
                     badge={item.duration}
                     index={index}
-                    recommended={
-                      index - 1 < BUSINESS_AUTOMATION_RECOMMENDED_COUNT
-                    }
+                    recommended={item.recommended}
+                    isNew={isNewVideo(item)}
                     href={`https://www.youtube.com/watch?v=${item.id}&list=${BUSINESS_AUTOMATION_PLAYLIST_ID}`}
                     isShown={
                       typeof shownBaItem === "object" &&

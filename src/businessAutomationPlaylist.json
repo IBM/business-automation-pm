@@ -1,0 +1,20 @@
+{
+ "generatedAt": "2026-11-13",
+ "videos": [
+  {"id":"CuxTmVCbG80","title":"IBM Business Automation","duration":"1:45","recommended":true},
+  {"id":"6am17ENg5k4","title":"IBM Content Cortex: AI‑Driven Content, Reimagined","duration":"1:09","recommended":true},
+  {"id":"bsQnnNIcFEc","title":"IBM Content Cortex: Agentic Content Services Platform","duration":"2:39","recommended":true},
+  {"id":"exj7qyVNcBE","title":"IBM Decision Intelligence Enterprise Edition - Every Decision Matters","duration":"1:13","recommended":true},
+  {"id":"nX3UKtNRIkw","title":"End-to-End Shipment Automation with IBM Cloud Pak for Business Automation","duration":"5:09","addedAt":"2026-11-13"},
+  {"id":"KpjL5EXQ-Bo","title":"IBM Decision Intelligence - Transform Decision Automation with AI","duration":"2:16"},
+  {"id":"ZTvbegjd0wc","title":"IBM named a Leader in the 2026 IDC MarketScape for Decision Intelligence Platforms","duration":"3:50"},
+  {"id":"aBABtIhka-8","title":"Blueworks Live IQ Public Preview - Your Blueprints Can Now Analyze Themselves!","duration":"5:06"},
+  {"id":"TIflVIDgcS4","title":"Blueworks Live IQ – Transform any Image and Diagram into a Process Map!","duration":"3:57"},
+  {"id":"et3MY7M04c8","title":"Blueworks Live IQ – Describe your Process and Let AI Build it!","duration":"4:55"},
+  {"id":"glyzVCScdg0","title":"IBM Recognized as a Leader in the 2026 Gartner Magic Quadrant for Decision Intelligence Platforms","duration":"3:04"},
+  {"id":"ep7sByXUaFc","title":"Invoking IBM watsonx Orchestrate Agents from Workflow","duration":"3:16"},
+  {"id":"7feBwKkR1bQ","title":"Triggering workflow automations using a local MCP Server","duration":"3:58"},
+  {"id":"AD5GFMbH2ok","title":"Connect Salesforce CRM Content to FileNet","duration":"6:30"},
+  {"id":"N9j0DBxC2PM","title":"Simplify Development using the FileNet GraphQL API","duration":"7:19"}
+ ]
+}
