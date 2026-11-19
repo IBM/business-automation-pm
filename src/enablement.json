@@ -1,6 +1,6 @@
 {
  "boardName": "Business Automation Enablement Tracker",
- "generatedAt": "2026-11-11",
+ "generatedAt": "2026-11-18",
  "items": [
   {
    "name": "Content - User Group",
@@ -1209,6 +1209,16 @@
    "quarter": "Q4",
    "audience": "Sellers",
    "link": "https://ibm.box.com/s/2p8599drbwqejkoap4m1vf5ci7bv3ws4"
+  },
+  {
+   "name": "DIEE Select Seller Enablement",
+   "group": "BA Enablement",
+   "type": "Sales Enablement - BA Team",
+   "product": "Decisions",
+   "status": "Working on it",
+   "date": "2026-11-20",
+   "quarter": "Q4",
+   "audience": "Sellers"
   },
   {
    "name": "CP4BA - User Group",
