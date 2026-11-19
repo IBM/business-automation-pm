@@ -441,6 +441,8 @@ const SITE_ACCESS_COUNTED_KEY = "site-access-counted"
 const SITE_ACCESS_COUNTER_URL = "https://abacus.jasoncameron.dev"
 const SITE_ACCESS_COUNTER_NAMESPACE = "business-automation-pm-ibm"
 const SITE_ACCESS_COUNTER_KEY = "site-accesses"
+const PAGE_ACCESS_COUNTED_PREFIX = "page-access-counted-"
+const PAGE_ACCESS_COUNTER_PREFIX = "page-accesses-"
 
 const IBM_PASSWORD_HASH =
   "d4b720fc558f69d4e4e29c789a25f505a19b662fef228e853dcb67006536e592"
@@ -15011,6 +15013,48 @@ export default function App() {
       })
     return () => controller.abort()
   }, [])
+  const [pageAccessCount, setPageAccessCount] = useState<number | null>(null)
+  useEffect(() => {
+    const controller = new AbortController()
+    let alreadyCounted = false
+    try {
+      alreadyCounted =
+        sessionStorage.getItem(
+          `${PAGE_ACCESS_COUNTED_PREFIX}${currentPage}`,
+        ) === "true"
+    } catch {
+      // sessionStorage unavailable; count this load.
+    }
+    fetch(
+      `${SITE_ACCESS_COUNTER_URL}/${
+        alreadyCounted ? "get" : "hit"
+      }/${SITE_ACCESS_COUNTER_NAMESPACE}/${PAGE_ACCESS_COUNTER_PREFIX}${currentPage}`,
+      {
+        signal: controller.signal,
+      },
+    )
+      .then((response) =>
+        response.ok
+          ? response.json()
+          : Promise.reject(new Error(String(response.status))),
+      )
+      .then((data: { value?: number }) => {
+        if (typeof data.value !== "number") return
+        setPageAccessCount(data.value)
+        try {
+          sessionStorage.setItem(
+            `${PAGE_ACCESS_COUNTED_PREFIX}${currentPage}`,
+            "true",
+          )
+        } catch {
+          // ignore
+        }
+      })
+      .catch(() => {
+        // Counter unavailable or blocked; the footer simply omits the count.
+      })
+    return () => controller.abort()
+  }, [currentPage])
   const currentPageRef = useRef(currentPage)
   const previousPageRef = useRef<Page | null>(null)
   const [selectedCapabilityPages, setSelectedCapabilityPages] =
@@ -25701,7 +25745,13 @@ export default function App() {
             {siteAccessCount !== null && (
               <span className="whitespace-nowrap" title="Total site accesses">
                 · {siteAccessCount.toLocaleString("en-US")}{" "}
-                {siteAccessCount === 1 ? "visit" : "visits"}
+                {siteAccessCount === 1 ? "site visit" : "site visits"}
+              </span>
+            )}
+            {pageAccessCount !== null && (
+              <span className="whitespace-nowrap" title="Page accesses">
+                · {pageAccessCount.toLocaleString("en-US")}{" "}
+                {pageAccessCount === 1 ? "page visit" : "page visits"}
               </span>
             )}
           </div>
