@@ -14976,7 +14976,14 @@ export default function App() {
     )
     setOnboardingContentsCollapsed(collapseAll)
   }
-  const [siteAccessCount, setSiteAccessCount] = useState<number | null>(null)
+  const [siteAccessCount, setSiteAccessCount] = useState<number | null>(() => {
+    try {
+      const cached = localStorage.getItem("site-access-cached")
+      return cached ? Number.parseInt(cached, 10) : null
+    } catch {
+      return null
+    }
+  })
   useEffect(() => {
     const controller = new AbortController()
     let alreadyCounted = false
@@ -14986,35 +14993,60 @@ export default function App() {
     } catch {
       // sessionStorage unavailable; count this load.
     }
-    fetch(
-      `${SITE_ACCESS_COUNTER_URL}/${
-        alreadyCounted ? "get" : "hit"
-      }/${SITE_ACCESS_COUNTER_NAMESPACE}/${SITE_ACCESS_COUNTER_KEY}`,
-      {
-        signal: controller.signal,
-      },
-    )
-      .then((response) =>
-        response.ok
-          ? response.json()
-          : Promise.reject(new Error(String(response.status))),
-      )
-      .then((data: { value?: number }) => {
-        if (typeof data.value !== "number") return
-        setSiteAccessCount(data.value)
-        try {
-          sessionStorage.setItem(SITE_ACCESS_COUNTED_KEY, "true")
-        } catch {
-          // ignore
+    const fetchSiteCount = async () => {
+      try {
+        let endpoint = alreadyCounted ? "get" : "hit"
+        let res = await fetch(
+          `${SITE_ACCESS_COUNTER_URL}/${endpoint}/${SITE_ACCESS_COUNTER_NAMESPACE}/${SITE_ACCESS_COUNTER_KEY}`,
+          { signal: controller.signal },
+        )
+        if (res.status === 404 && alreadyCounted) {
+          res = await fetch(
+            `${SITE_ACCESS_COUNTER_URL}/hit/${SITE_ACCESS_COUNTER_NAMESPACE}/${SITE_ACCESS_COUNTER_KEY}`,
+            { signal: controller.signal },
+          )
         }
-      })
-      .catch(() => {
-        // Counter unavailable or blocked; the footer simply omits the count.
-      })
+        if (!res.ok) return
+        const data = (await res.json()) as { value?: number }
+        if (typeof data.value === "number") {
+          setSiteAccessCount(data.value)
+          try {
+            sessionStorage.setItem(SITE_ACCESS_COUNTED_KEY, "true")
+            localStorage.setItem("site-access-cached", String(data.value))
+          } catch {
+            // ignore
+          }
+        }
+      } catch {
+        // Counter unavailable or blocked; keep cached or omit.
+      }
+    }
+    fetchSiteCount()
     return () => controller.abort()
   }, [])
-  const [pageAccessCount, setPageAccessCount] = useState<number | null>(null)
+
+  const [pageAccessCount, setPageAccessCount] = useState<number | null>(() => {
+    try {
+      const initialPage = pageForHash(window.location.hash)
+      const cached = localStorage.getItem(
+        `${PAGE_ACCESS_COUNTER_PREFIX}${initialPage}`,
+      )
+      return cached ? Number.parseInt(cached, 10) : null
+    } catch {
+      return null
+    }
+  })
   useEffect(() => {
+    try {
+      const cached = localStorage.getItem(
+        `${PAGE_ACCESS_COUNTER_PREFIX}${currentPage}`,
+      )
+      if (cached) {
+        setPageAccessCount(Number.parseInt(cached, 10))
+      }
+    } catch {
+      // ignore
+    }
     const controller = new AbortController()
     let alreadyCounted = false
     try {
@@ -15025,34 +15057,41 @@ export default function App() {
     } catch {
       // sessionStorage unavailable; count this load.
     }
-    fetch(
-      `${SITE_ACCESS_COUNTER_URL}/${
-        alreadyCounted ? "get" : "hit"
-      }/${SITE_ACCESS_COUNTER_NAMESPACE}/${PAGE_ACCESS_COUNTER_PREFIX}${currentPage}`,
-      {
-        signal: controller.signal,
-      },
-    )
-      .then((response) =>
-        response.ok
-          ? response.json()
-          : Promise.reject(new Error(String(response.status))),
-      )
-      .then((data: { value?: number }) => {
-        if (typeof data.value !== "number") return
-        setPageAccessCount(data.value)
-        try {
-          sessionStorage.setItem(
-            `${PAGE_ACCESS_COUNTED_PREFIX}${currentPage}`,
-            "true",
+    const fetchPageCount = async () => {
+      try {
+        let endpoint = alreadyCounted ? "get" : "hit"
+        let res = await fetch(
+          `${SITE_ACCESS_COUNTER_URL}/${endpoint}/${SITE_ACCESS_COUNTER_NAMESPACE}/${PAGE_ACCESS_COUNTER_PREFIX}${currentPage}`,
+          { signal: controller.signal },
+        )
+        if (res.status === 404 && alreadyCounted) {
+          res = await fetch(
+            `${SITE_ACCESS_COUNTER_URL}/hit/${SITE_ACCESS_COUNTER_NAMESPACE}/${PAGE_ACCESS_COUNTER_PREFIX}${currentPage}`,
+            { signal: controller.signal },
           )
-        } catch {
-          // ignore
         }
-      })
-      .catch(() => {
-        // Counter unavailable or blocked; the footer simply omits the count.
-      })
+        if (!res.ok) return
+        const data = (await res.json()) as { value?: number }
+        if (typeof data.value === "number") {
+          setPageAccessCount(data.value)
+          try {
+            sessionStorage.setItem(
+              `${PAGE_ACCESS_COUNTED_PREFIX}${currentPage}`,
+              "true",
+            )
+            localStorage.setItem(
+              `${PAGE_ACCESS_COUNTER_PREFIX}${currentPage}`,
+              String(data.value),
+            )
+          } catch {
+            // ignore
+          }
+        }
+      } catch {
+        // Counter unavailable or blocked; keep cached or omit.
+      }
+    }
+    fetchPageCount()
     return () => controller.abort()
   }, [currentPage])
   const currentPageRef = useRef(currentPage)
