@@ -9506,6 +9506,7 @@ interface BiteSizedDemo {
   audience?: "business" | "technical"
   purpose?: "sales" | "enablement" | "learning"
   categories: string[]
+  products?: string[]
   url: string
 }
 
@@ -9558,10 +9559,13 @@ const biteSizedTagClass =
 function BiteSizedDemoGrid({
   demos,
   cardAnchors = false,
+  showProducts = false,
 }: {
   demos: BiteSizedDemo[]
   // Gives each card its own anchor so site search can jump to it. Use it on one grid per page.
   cardAnchors?: boolean
+  // Product Resources variant: shows product tags and leaves out the "Link" format tag.
+  showProducts?: boolean
 }) {
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3">
@@ -9572,15 +9576,17 @@ function BiteSizedDemoGrid({
           className="flex scroll-mt-28 flex-col rounded-xl border border-white/[0.07] bg-[#161616] p-4"
         >
           <div className="flex flex-wrap items-center gap-1.5">
-            <span
-              className={`${biteSizedTagClass} ${
-                demo.format === "Video"
-                  ? "border-[#4589ff]/50 text-[#a6c8ff]"
-                  : ""
-              }`}
-            >
-              {demo.format}
-            </span>
+            {!(showProducts && demo.format === "Link") && (
+              <span
+                className={`${biteSizedTagClass} ${
+                  demo.format === "Video"
+                    ? "border-[#4589ff]/50 text-[#a6c8ff]"
+                    : ""
+                }`}
+              >
+                {demo.format}
+              </span>
+            )}
             {demo.audience && (
               <span className={biteSizedTagClass}>
                 {capitalize(demo.audience)}
@@ -9598,6 +9604,21 @@ function BiteSizedDemoGrid({
           <p className="mt-1.5 text-xs leading-relaxed text-[#c6c6c6]">
             {demo.description}
           </p>
+          {showProducts && demo.products && demo.products.length > 0 && (
+            <ul
+              aria-label={`Products for ${demo.title}`}
+              className="mt-3 flex flex-wrap gap-1.5"
+            >
+              {demo.products.map((product) => (
+                <li
+                  key={product}
+                  className="rounded-full border border-[#ff832b]/40 bg-[#ff832b]/10 px-2 py-0.5 text-[10px] font-medium text-[#ffb784]"
+                >
+                  {product}
+                </li>
+              ))}
+            </ul>
+          )}
           <div className="mt-3 flex flex-wrap gap-1.5">
             {demo.categories.map((category) => (
               <span
@@ -17512,7 +17533,7 @@ export default function App() {
                   </div>
                   {!collapsedProductResourceSections.has("bite-sized") && (
                     <div id={`${`${sectionId}-bite-sized`}-content`} className="mt-3">
-                      <BiteSizedDemoGrid demos={biteSizedResourceDemos} />
+                      <BiteSizedDemoGrid demos={biteSizedResourceDemos} showProducts />
                     </div>
                   )}
                 </div>
@@ -18438,7 +18459,7 @@ export default function App() {
                   </div>
                   {!collapsedProductResourceSections.has("bite-sized") && (
                     <div id={`${"portfolio-product-resources-bite-sized"}-content`} className="mt-3">
-                      <BiteSizedDemoGrid demos={biteSizedResourceDemos} />
+                      <BiteSizedDemoGrid demos={biteSizedResourceDemos} showProducts />
                     </div>
                   )}
                 </div>
@@ -18623,16 +18644,28 @@ export default function App() {
           ),
         )
       } else if (filter.id === "bite-sized") {
-        biteSizedDemosForCapabilities(groups.map((g) => g.page)).forEach((d) =>
+        biteSizedDemosForCapabilities(groups.map((g) => g.page)).forEach((d) => {
+          // Same capabilities the tile is shown under; a demo shared by several shows as "BA".
+          const matched = groups.filter((g) =>
+            biteSizedDemosForCapabilities([g.page]).includes(d),
+          )
+          const single = matched.length === 1 ? matched[0] : undefined
+          // Everything the tile displays, so the column filters can find it.
+          const meta = [
+            d.products?.length ? `Products: ${d.products.join(", ")}` : "",
+            d.audience ? `Audience: ${capitalize(d.audience)}` : "",
+            d.purpose ? `Purpose: ${capitalize(d.purpose)}` : "",
+            `Categories: ${d.categories.map(biteSizedDemoCategoryLabel).join(", ")}`,
+          ].filter(Boolean)
           baseRows.push({
             section,
-            capability: "BA",
-            color: "#4589ff",
+            capability: single?.label ?? "BA",
+            color: single?.color ?? "#4589ff",
             name: d.title,
-            detail: d.description,
+            detail: `${d.description} (${meta.join(" · ")})`,
             url: d.url,
-          }),
-        )
+          })
+        })
       }
     }
 

@@ -65,6 +65,9 @@
         "ai",
         "bwl-pm"
       ],
+      "products": [
+        "IBM Blueworks Live"
+      ],
       "url": "https://ibm.box.com/s/krjdsk4yyo001akjqweslrkdgjii09xo"
     },
     {
@@ -78,6 +81,9 @@
         "ai",
         "content"
       ],
+      "products": [
+        "IBM Content Cortex"
+      ],
       "url": "https://ibm.box.com/s/fomvjxdk2jsrnehirexo9xdvof4v2pzj"
     },
     {
@@ -89,6 +95,9 @@
       "purpose": "sales",
       "categories": [
         "ai"
+      ],
+      "products": [
+        "IBM Planning Analytics"
       ],
       "url": "https://ibm.box.com/s/ez6iifazwqqxay7wh8aiqg090vnzb7ro"
     },
@@ -103,6 +112,11 @@
         "ai",
         "baw"
       ],
+      "products": [
+        "IBM Business Automation Workflow",
+        "IBM watsonx.ai",
+        "IBM Bob"
+      ],
       "url": "https://ibm.box.com/s/h4fic9rryo3eo4eqon2quymjtxw6xx4x"
     },
     {
@@ -116,6 +130,11 @@
         "ai",
         "content"
       ],
+      "products": [
+        "IBM Content Cortex",
+        "IBM watsonx.ai",
+        "IBM Bob"
+      ],
       "url": "https://ibm.box.com/s/jraecln4yr249mxhmycfzruo88j12ihi"
     },
     {
@@ -128,6 +147,9 @@
       "categories": [
         "ai"
       ],
+      "products": [
+        "IBM Planning Analytics"
+      ],
       "url": "https://ibm.box.com/s/njcwyb12algzjrir2nfnyjwdyq7rmd7f"
     },
     {
@@ -139,6 +161,9 @@
       "purpose": "sales",
       "categories": [
         "ai"
+      ],
+      "products": [
+        "IBM Cognos Analytics"
       ],
       "url": "https://ibm.box.com/s/ihxr9nx6e35pecl398q2woiu64tq8tzy"
     },
@@ -153,6 +178,9 @@
         "ai",
         "content"
       ],
+      "products": [
+        "IBM FileNet Content Manager"
+      ],
       "url": "https://ibm.box.com/s/klnr156seejx1ehn9kf7jc2lqqwnfit0"
     },
     {
@@ -164,6 +192,10 @@
       "purpose": "enablement",
       "categories": [
         "ai"
+      ],
+      "products": [
+        "IBM Datacap",
+        "IBM watsonx.ai"
       ],
       "url": "https://ibm.box.com/s/3je772vmrkrwa6kvridixz560l697abd"
     },
@@ -178,6 +210,9 @@
         "ai",
         "content"
       ],
+      "products": [
+        "IBM FileNet Content Manager"
+      ],
       "url": "https://ibm.box.com/s/boatruocetyv62ddpm94tajsbm7qs12c"
     },
     {
@@ -188,6 +223,10 @@
       "categories": [
         "ai",
         "content"
+      ],
+      "products": [
+        "IBM Datacap",
+        "IBM watsonx.ai"
       ],
       "url": "https://ibm.box.com/s/7nr9xv35ld1o955qv66y2f5tw1qabzey"
     },
@@ -204,6 +243,11 @@
         "decisions",
         "baw"
       ],
+      "products": [
+        "IBM Business Automation Workflow",
+        "IBM Operational Decision Manager",
+        "IBM FileNet Content Manager"
+      ],
       "url": "https://ibm.ent.box.com/s/5q5xbtkyp994dkiybv9k2o2hmi3v8t8b/file/1277028474846"
     },
     {
@@ -215,6 +259,11 @@
         "ai",
         "content",
         "baw"
+      ],
+      "products": [
+        "IBM Datacap",
+        "IBM Business Automation Workflow",
+        "IBM watsonx.ai"
       ],
       "url": "https://ibm.box.com/s/7oi74aph5gogni0u5x3dmc1r9g9q7pyu"
     },
@@ -228,6 +277,10 @@
         "content",
         "baw"
       ],
+      "products": [
+        "IBM Business Automation Workflow",
+        "IBM watsonx.ai"
+      ],
       "url": "https://ibm.box.com/s/ojrebvaolh5laxwv6hrapro6warjvb9u"
     },
     {
@@ -238,6 +291,9 @@
       "categories": [
         "ai",
         "baw"
+      ],
+      "products": [
+        "IBM Business Automation Workflow"
       ],
       "url": "https://ibm.seismic.com/Link/Content/DCQdDpG77VJb4GHBc2j673bXgmBP"
     },
@@ -250,6 +306,9 @@
         "ai",
         "baw"
       ],
+      "products": [
+        "IBM Business Automation Workflow"
+      ],
       "url": "https://ibm.seismic.com/Link/Content/DCTFdPb4hGQhdG4MQ9BMpXQpppcj"
     },
     {
@@ -260,6 +319,10 @@
       "categories": [
         "content"
       ],
+      "products": [
+        "IBM Content Manager OnDemand",
+        "IBM Content Navigator"
+      ],
       "url": "https://ibm.box.com/s/u074fr471d9ua6cyxbw0e8b0vonhdkyx"
     },
     {
@@ -269,6 +332,9 @@
       "format": "Video",
       "categories": [
         "content"
+      ],
+      "products": [
+        "IBM Content Cortex"
       ],
       "url": "https://ibm.ent.box.com/s/5q5xbtkyp994dkiybv9k2o2hmi3v8t8b/file/1354956935383"
     },
@@ -282,6 +348,9 @@
       "categories": [
         "content"
       ],
+      "products": [
+        "IBM Content Cortex"
+      ],
       "url": "https://ibm.ent.box.com/s/5q5xbtkyp994dkiybv9k2o2hmi3v8t8b/file/995371259971"
     },
     {
@@ -292,6 +361,9 @@
       "categories": [
         "content"
       ],
+      "products": [
+        "IBM Content Cortex"
+      ],
       "url": "https://ibm.ent.box.com/s/5q5xbtkyp994dkiybv9k2o2hmi3v8t8b/file/1354958943723"
     },
     {
@@ -301,6 +373,9 @@
       "format": "Video",
       "categories": [
         "content"
+      ],
+      "products": [
+        "IBM Content Cortex"
       ],
       "url": "https://ibm.ent.box.com/s/5q5xbtkyp994dkiybv9k2o2hmi3v8t8b/file/1354955834348?sb=/details"
     },
@@ -314,6 +389,9 @@
       "categories": [
         "content"
       ],
+      "products": [
+        "IBM Content Collector for Email"
+      ],
       "url": "https://ibm.box.com/s/0kujkarimih44bt359iugpiwtg8r7pa7"
     },
     {
@@ -326,6 +404,10 @@
       "categories": [
         "content",
         "rpa"
+      ],
+      "products": [
+        "IBM Robotic Process Automation",
+        "IBM Content Manager OnDemand"
       ],
       "url": "https://ibm.box.com/s/6yzt435lyouxrf2bj3awiewxbq0jd3cp"
     },
@@ -344,6 +426,9 @@
         "rpa",
         "baw"
       ],
+      "products": [
+        "IBM Cloud Pak for Business Automation"
+      ],
       "url": "https://ibm.box.com/s/lp9yc75pui9ca311f9t21bva5juzw2gw"
     },
     {
@@ -353,6 +438,10 @@
       "format": "Link",
       "categories": [
         "decisions"
+      ],
+      "products": [
+        "IBM Operational Decision Manager",
+        "IBM Bob"
       ],
       "url": "https://ibm.box.com/s/yrfwmwoc7c2gw5e63elly5ms9y92zvw2"
     },
@@ -366,6 +455,9 @@
       "categories": [
         "decisions"
       ],
+      "products": [
+        "IBM Business Automation Manager Open Editions"
+      ],
       "url": "https://ibm.box.com/s/iyi3fshec62rd67j0pmt3wv4z7clruqv"
     },
     {
@@ -377,6 +469,9 @@
       "purpose": "sales",
       "categories": [
         "decisions"
+      ],
+      "products": [
+        "IBM Business Automation Manager Open Editions"
       ],
       "url": "https://ibm.box.com/s/9nlt0f3cghm1qc3tedh4b618dbs14s5s"
     },
@@ -390,6 +485,10 @@
       "categories": [
         "bai"
       ],
+      "products": [
+        "IBM Business Automation Insights",
+        "IBM Operational Decision Manager"
+      ],
       "url": "https://ibm.ent.box.com/s/5q5xbtkyp994dkiybv9k2o2hmi3v8t8b/file/1066047017398"
     },
     {
@@ -402,6 +501,9 @@
       "categories": [
         "bwl-pm"
       ],
+      "products": [
+        "IBM Process Mining"
+      ],
       "url": "https://ibm.box.com/s/l4vqcsbwi9st9piz75ajeovudgni1ahi"
     },
     {
@@ -413,6 +515,10 @@
       "purpose": "sales",
       "categories": [
         "bwl-pm"
+      ],
+      "products": [
+        "IBM Blueworks Live",
+        "IBM Process Mining"
       ],
       "url": "https://ibm.box.com/s/i7rx2fpbob40t9s3w9vmhei7zkwuyo6o"
     },
@@ -427,6 +533,10 @@
         "bwl-pm",
         "rpa"
       ],
+      "products": [
+        "IBM Robotic Process Automation",
+        "IBM Blueworks Live"
+      ],
       "url": "https://ibm.box.com/s/hzdgnrks8j26tjsdp1fimj1cag09g6wu"
     },
     {
@@ -438,6 +548,10 @@
       "purpose": "sales",
       "categories": [
         "baw"
+      ],
+      "products": [
+        "IBM Business Automation Manager Open Editions",
+        "IBM Bob"
       ],
       "url": "https://ibm.box.com/s/5p75av32cob90yvw5rouy829bdkt0wkl"
     },
@@ -451,6 +565,10 @@
       "categories": [
         "baw"
       ],
+      "products": [
+        "IBM Business Automation Manager Open Editions",
+        "IBM Bob"
+      ],
       "url": "https://ibm.box.com/s/raq5lbep362lmnhsf2754md7k6rgfymr"
     },
     {
@@ -462,6 +580,9 @@
       "purpose": "learning",
       "categories": [
         "baw"
+      ],
+      "products": [
+        "IBM Business Automation Workflow"
       ],
       "url": "https://ibm.box.com/s/qc2wz2ovhlo514rfjsu36mdupp2gkjvt"
     },
@@ -475,6 +596,9 @@
       "categories": [
         "baw"
       ],
+      "products": [
+        "IBM Business Automation Workflow"
+      ],
       "url": "https://ibm.box.com/s/23jvxvwdajypuvky3lej4vevwb8yo3ka"
     },
     {
@@ -486,6 +610,9 @@
       "purpose": "learning",
       "categories": [
         "baw"
+      ],
+      "products": [
+        "IBM Business Automation Workflow"
       ],
       "url": "https://ibm.box.com/s/5dn1mvakxzxjyb7baokinl0fiqd5qt6l"
     },
@@ -499,6 +626,9 @@
       "categories": [
         "baw"
       ],
+      "products": [
+        "IBM Business Automation Workflow"
+      ],
       "url": "https://ibm.box.com/s/2pamhhf1qcnp55khfg9blluogodvek89"
     },
     {
@@ -510,6 +640,9 @@
       "purpose": "enablement",
       "categories": [
         "baw"
+      ],
+      "products": [
+        "IBM Business Automation Workflow"
       ],
       "url": "https://ibm.box.com/s/yljvo7zbitudyuu2ppd9ddaft8uh8qgc"
     }
