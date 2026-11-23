@@ -1657,7 +1657,7 @@ const letsCreateSections: {
     id: "bite-sized-demos",
     label: "Bite-Sized Demos",
     description:
-      "Short, focused demos for Business Automation: every demo in one list, then grouped by product area. A demo that spans several areas appears under each one. IBM internal.",
+      "Short, focused demos for Business Automation: every demo in one list, then grouped by product area. A demo that spans several areas appears under each one. IBM internal. For the latest list of demos, visit: ibm.biz/bite-sized-demos",
   },
   {
     id: "jam-in-a-box",
@@ -20906,7 +20906,23 @@ export default function App() {
                                     title={section.tooltip}
                                     tabIndex={section.tooltip ? 0 : undefined}
                                   >
-                                    {section.description}
+                                    {section.description
+                                      .split(/(ibm\.biz\/[\w-]+)/)
+                                      .map((part, partIndex) =>
+                                        partIndex % 2 === 1 ? (
+                                          <a
+                                            key={part}
+                                            href={`https://${part}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="font-medium text-[#78a9ff] underline underline-offset-2 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+                                          >
+                                            {part}
+                                          </a>
+                                        ) : (
+                                          part
+                                        ),
+                                      )}
                                   </p>
                                   {section.author && (
                                     <p className="mt-1 text-[11px] text-[#8d8d8d]">
