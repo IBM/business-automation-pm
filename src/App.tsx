@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from "react"
 import enablementData from "./enablement.json"
+import biteSizedDemosData from "./biteSizedDemos.json"
 import businessAutomationPlaylistData from "./businessAutomationPlaylist.json"
 import { youtubePlaylistVideos, type PlaylistVideo } from "./youtubePlaylists"
 import {
@@ -24,7 +25,7 @@ import {
 const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`
 
 type SessionType = "Lab" | "Meet the Expert" | "Meetup" | "Tech Talk" | "Breakout" | "Client Advisory Board"
-type Page = "overview" | "capabilities" | "resource-table" | "videos" | "pm-resources" | "pm-youtube" | "pm-faq" | "badges" | "yl" | "lets-create" | "technical-accelerators" | "onboarding-automation" | "process-automation" | "content-services" | "decision-intelligence" | "cp4ba" | "conference" | "think" | "sessions" | "techxchange" | "schedule" | "maps" | "ibm" | "insights" | "info" | "product" | "community" | "enablement" | "ug" | "surveys" | "speaker"
+type Page = "overview" | "capabilities" | "resource-table" | "videos" | "pm-resources" | "pm-youtube" | "pm-faq" | "badges" | "yl" | "lets-create" | "bite-sized-demos" | "technical-accelerators" | "onboarding-automation" | "process-automation" | "content-services" | "decision-intelligence" | "cp4ba" | "conference" | "think" | "sessions" | "techxchange" | "schedule" | "maps" | "ibm" | "insights" | "info" | "product" | "community" | "enablement" | "ug" | "surveys" | "speaker"
 
 const pageAnchors: Record<Page, string> = {
   overview: "main",
@@ -37,6 +38,7 @@ const pageAnchors: Record<Page, string> = {
   badges: "badges-top",
   yl: "yl-top",
   "lets-create": "lets-create-top",
+  "bite-sized-demos": "bite-sized-demos-top",
   "technical-accelerators": "technical-accelerators-top",
   "onboarding-automation": "onboarding-automation-top",
   "process-automation": "capabilities-process-automation",
@@ -71,6 +73,7 @@ const breadcrumbLabels: Record<Page, string> = {
   badges: "Badge",
   yl: "YL",
   "lets-create": "Let's Create!",
+  "bite-sized-demos": "Bite-Sized Demos",
   "technical-accelerators": "Technical Accelerators",
   "onboarding-automation": "Onboarding Automation",
   "process-automation": "Process Automation",
@@ -104,6 +107,7 @@ const breadcrumbParents: Partial<Record<Page, Page>> = {
   badges: "overview",
   yl: "overview",
   "lets-create": "overview",
+  "bite-sized-demos": "overview",
   "technical-accelerators": "lets-create",
   "onboarding-automation": "lets-create",
   "process-automation": "capabilities",
@@ -208,6 +212,8 @@ function pageForHash(hash: string): Page {
   if (id === "yl-top" || id.startsWith("yl-")) return "yl"
   if (id === "lets-create-top" || id.startsWith("lets-create-"))
     return "lets-create"
+  if (id === "bite-sized-demos-top" || id.startsWith("bite-sized-demos-"))
+    return "bite-sized-demos"
   if (id === "capabilities-top") return "capabilities"
   if (id === "capabilities-all") return "capabilities"
   if (id.startsWith("capabilities-all-")) return "capabilities"
@@ -9491,6 +9497,254 @@ function ProductManagementFaqPage({
   )
 }
 
+interface BiteSizedDemo {
+  id: string
+  title: string
+  description: string
+  format: "Video" | "Link"
+  audience?: "business" | "technical"
+  purpose?: "sales" | "enablement" | "learning"
+  categories: string[]
+  url: string
+}
+
+const biteSizedDemoCategories = biteSizedDemosData.categories
+const biteSizedDemos = biteSizedDemosData.demos as BiteSizedDemo[]
+const biteSizedDemoCategoryLabel = (id: string) =>
+  biteSizedDemoCategories.find((category) => category.id === id)?.label ?? id
+const biteSizedDemoAnchor = (id: string) => `bite-sized-demos-${id}`
+const capitalize = (value: string) =>
+  `${value.charAt(0).toUpperCase()}${value.slice(1)}`
+
+function BiteSizedDemosPage() {
+  const [query, setQuery] = useState("")
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
+    () => new Set(),
+  )
+  const [selectedFormat, setSelectedFormat] = useState<
+    BiteSizedDemo["format"] | null
+  >(null)
+  const tokens = query.toLowerCase().split(/\s+/).filter(Boolean)
+  const visibleDemos = biteSizedDemos.filter(
+    (demo) =>
+      (selectedCategories.size === 0 ||
+        demo.categories.some((category) => selectedCategories.has(category))) &&
+      (selectedFormat === null || demo.format === selectedFormat) &&
+      tokens.every((token) =>
+        [
+          demo.title,
+          demo.description,
+          demo.audience,
+          demo.purpose,
+          ...demo.categories.map(biteSizedDemoCategoryLabel),
+        ]
+          .join(" ")
+          .toLowerCase()
+          .includes(token),
+      ),
+  )
+  const countFor = (id: string) =>
+    biteSizedDemos.filter((demo) => demo.categories.includes(id)).length
+  const toggleCategory = (id: string) =>
+    setSelectedCategories((current) => {
+      const next = new Set(current)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  const pillClass = (active: boolean) =>
+    `inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${
+      active
+        ? "border-[#78a9ff]/70 bg-[#0f62fe]/20 text-white"
+        : "border-white/[0.1] bg-white/[0.03] text-[#a8a8a8] hover:border-[#4589ff]/45 hover:text-white"
+    }`
+  const countClass = (active: boolean) =>
+    `rounded-full px-1.5 py-0.5 font-mono text-[9px] ${
+      active ? "bg-white/10 text-white" : "bg-black/20 text-[#a8a8a8]"
+    }`
+  const tagClass =
+    "rounded-full border border-white/[0.1] bg-white/[0.03] px-2 py-0.5 text-[10px] font-medium text-[#c6c6c6]"
+  const isFiltered =
+    selectedCategories.size > 0 || selectedFormat !== null || tokens.length > 0
+  return (
+    <section
+      id="bite-sized-demos-top"
+      aria-labelledby="bite-sized-demos-heading"
+      className="scroll-mt-28"
+    >
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">
+            IBM Data &amp; AI: Business Automation
+          </p>
+          <h2
+            id="bite-sized-demos-heading"
+            className="mt-1 text-2xl font-semibold text-white"
+          >
+            Bite-Sized Demos
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#c6c6c6]">
+            Short, focused demos for Business Automation, organized by product
+            area. A demo that spans several areas appears under each one. IBM
+            internal.
+          </p>
+        </div>
+        <CopySectionLink id="bite-sized-demos-top" label="Bite-Sized Demos page" />
+      </div>
+
+      <div className="mb-6 rounded-xl border border-[#4589ff]/30 bg-[#1c1c1c] p-4 sm:p-5">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <label
+            htmlFor="bite-sized-demos-search"
+            className="text-base font-semibold text-white"
+          >
+            Search
+          </label>
+          <span
+            aria-live="polite"
+            className="text-xs font-medium text-[#c6c6c6]"
+          >
+            {visibleDemos.length} of {biteSizedDemos.length} demos
+          </span>
+          {isFiltered && (
+            <button
+              type="button"
+              onClick={() => {
+                setQuery("")
+                setSelectedCategories(new Set())
+                setSelectedFormat(null)
+              }}
+              className={`${letsCreateControlClass} ml-auto`}
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
+        <div className="relative mt-3">
+          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8d8d8d]" />
+          <input
+            id="bite-sized-demos-search"
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search title, description, category"
+            className="h-9 w-full rounded-md border border-white/[0.1] bg-[#262626] pl-9 pr-3 text-sm text-white placeholder:text-[#8d8d8d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+          />
+        </div>
+        <div
+          role="group"
+          aria-label="Filter by category"
+          className="mt-3 flex flex-wrap gap-2"
+        >
+          {biteSizedDemoCategories.map((category) => {
+            const active = selectedCategories.has(category.id)
+            return (
+              <button
+                key={category.id}
+                type="button"
+                onClick={() => toggleCategory(category.id)}
+                aria-pressed={active}
+                title={category.description}
+                className={pillClass(active)}
+              >
+                {category.label}
+                <span className={countClass(active)}>
+                  {countFor(category.id)}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+        <div
+          role="group"
+          aria-label="Filter by format"
+          className="mt-2 flex flex-wrap gap-2"
+        >
+          {(["Video", "Link"] as const).map((format) => {
+            const active = selectedFormat === format
+            return (
+              <button
+                key={format}
+                type="button"
+                onClick={() => setSelectedFormat(active ? null : format)}
+                aria-pressed={active}
+                className={pillClass(active)}
+              >
+                {format === "Link" ? "Link or package" : "Video"}
+                <span className={countClass(active)}>
+                  {biteSizedDemos.filter((demo) => demo.format === format).length}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {visibleDemos.length === 0 ? (
+        <p className="text-sm text-[#c6c6c6]">
+          No bite-sized demos match the current search or filters.
+        </p>
+      ) : (
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3">
+          {visibleDemos.map((demo) => (
+            <article
+              key={demo.id}
+              id={biteSizedDemoAnchor(demo.id)}
+              className="flex scroll-mt-28 flex-col rounded-xl border border-white/[0.07] bg-[#262626] p-4"
+            >
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span
+                  className={`${tagClass} ${
+                    demo.format === "Video"
+                      ? "border-[#4589ff]/50 text-[#a6c8ff]"
+                      : ""
+                  }`}
+                >
+                  {demo.format}
+                </span>
+                {demo.audience && (
+                  <span className={tagClass}>{capitalize(demo.audience)}</span>
+                )}
+                {demo.purpose && (
+                  <span className={tagClass}>{capitalize(demo.purpose)}</span>
+                )}
+              </div>
+              <h3 className="mt-3 text-sm font-semibold text-white">
+                {demo.title}
+              </h3>
+              <p className="mt-1.5 text-xs leading-relaxed text-[#c6c6c6]">
+                {demo.description}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {demo.categories.map((category) => (
+                  <span
+                    key={category}
+                    className="rounded-full bg-[#0f62fe]/15 px-2 py-0.5 text-[10px] font-medium text-[#a6c8ff]"
+                  >
+                    {biteSizedDemoCategoryLabel(category)}
+                  </span>
+                ))}
+              </div>
+              <div className="mt-auto pt-4">
+                <a
+                  href={demo.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`Open ${demo.title}`}
+                  className={`${letsCreateControlClass} w-fit gap-1.5`}
+                >
+                  {demo.format === "Video" ? "Watch" : "Open"}
+                  <ExternalLinkIcon />
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
 function BadgesPage() {
   // Search starts minimized.
   const [isFilterExpanded, setIsFilterExpanded] = useState(false)
@@ -14572,6 +14826,26 @@ function buildGlobalSearchEntries(): GlobalSearchEntry[] {
     ),
   )
 
+  biteSizedDemos.forEach((demo) =>
+    add(
+      {
+        id: biteSizedDemoAnchor(demo.id),
+        pages: ["bite-sized-demos"],
+        title: demo.title,
+        subtitle: [
+          demo.format,
+          demo.audience && capitalize(demo.audience),
+          demo.purpose && capitalize(demo.purpose),
+        ]
+          .filter(Boolean)
+          .join(" · "),
+        category: "Bite-sized demo",
+      },
+      demo.description,
+      demo.categories.map(biteSizedDemoCategoryLabel),
+    ),
+  )
+
   // Onboarding Automation page: index every block of text in every (nested) section.
   const plainOnboardingText = (value: string) =>
     value.replace(/\[([^\]]+)\]\([^)\s]+\)/g, "$1").replace(/\*\*/g, "")
@@ -15721,6 +15995,7 @@ export default function App() {
       currentPage === "badges" ||
       currentPage === "yl" ||
       currentPage === "lets-create" ||
+      currentPage === "bite-sized-demos" ||
       currentPage === "technical-accelerators" ||
       currentPage === "onboarding-automation" ||
       isCapabilitiesPage)
@@ -18849,6 +19124,8 @@ export default function App() {
               ? "Badge"
               : currentPage === "yl"
                 ? "YL"
+                : currentPage === "bite-sized-demos"
+                  ? "Bite-Sized Demos"
                 : currentPage === "lets-create"
                   ? "Let's Create!"
                   : currentPage === "conference"
@@ -19090,6 +19367,7 @@ export default function App() {
                       ["badges", "Badge"],
                       ["yl", "YL"],
                       ["lets-create", "Let's Create!"],
+                      ["bite-sized-demos", "Bite-Sized Demos"],
                     ] as const).map(([page, label]) => {
                       const isActive =
                         page === "capabilities"
@@ -19242,6 +19520,8 @@ export default function App() {
                                       ? `${badgeEntries.length} Business Automation badges`
                                       : currentPage === "yl"
                                         ? "Learning plan courses by level"
+                                        : currentPage === "bite-sized-demos"
+                                          ? `${biteSizedDemos.length} bite-sized demos across ${biteSizedDemoCategories.length} categories`
                                         : currentPage === "lets-create"
                                           ? "Learn, demo, and build with Business Automation"
                                           : currentPage === "overview"
@@ -19916,6 +20196,8 @@ export default function App() {
           <VideosPage />
         ) : currentPage === "yl" ? (
           <YLPage />
+        ) : currentPage === "bite-sized-demos" ? (
+          <BiteSizedDemosPage />
         ) : currentPage === "lets-create" ? (
           <section
             id="lets-create-top"

@@ -1,0 +1,373 @@
+{
+  "categories": [
+    { "id": "ai", "label": "AI", "description": "Generative AI, agents, MCP, and Bob across Business Automation." },
+    { "id": "content", "label": "Content & Document Processing", "description": "Content Services, Content Cortex, CMOD, Datacap, and document processing." },
+    { "id": "decisions", "label": "Decisions", "description": "ODM and BAMOE decision services." },
+    { "id": "bai", "label": "Business Automation Insights", "description": "Operational intelligence and dashboards." },
+    { "id": "bwl-pm", "label": "Blueworks Live & Process Mining", "description": "Process discovery, modeling, and mining." },
+    { "id": "rpa", "label": "RPA", "description": "Robotic process automation." },
+    { "id": "baw", "label": "Workflow (BAW)", "description": "Business Automation Workflow and BAMOE BPMN." }
+  ],
+  "demos": [
+    {
+      "id": "bwl-iq-process-generation",
+      "title": "BWL IQ process generation",
+      "description": "Blueworks Live IQ used to generate a process from a meeting transcript for claims management.",
+      "format": "Link",
+      "audience": "business",
+      "purpose": "sales",
+      "categories": ["ai", "bwl-pm"],
+      "url": "https://ibm.box.com/s/krjdsk4yyo001akjqweslrkdgjii09xo"
+    },
+    {
+      "id": "content-cortex-redaction-agent",
+      "title": "Content Cortex Redaction Agent",
+      "description": "Using Content Cortex's Redaction Agent and MCP Resource files to automate the classification and redaction of documents.",
+      "format": "Link",
+      "audience": "business",
+      "purpose": "sales",
+      "categories": ["ai", "content"],
+      "url": "https://ibm.box.com/s/fomvjxdk2jsrnehirexo9xdvof4v2pzj"
+    },
+    {
+      "id": "planning-analytics-antigravity-mcp",
+      "title": "Planning Analytics with Google Antigravity and MCP",
+      "description": "Demo connecting to Planning Analytics with Google Antigravity agentic development tool and MCP.",
+      "format": "Link",
+      "audience": "business",
+      "purpose": "sales",
+      "categories": ["ai"],
+      "url": "https://ibm.box.com/s/ez6iifazwqqxay7wh8aiqg090vnzb7ro"
+    },
+    {
+      "id": "bob-generative-ai-baw",
+      "title": "Bob and Generative AI in BAW",
+      "description": "IBM Business Automation Workflow (CP4BA) with the native Generative AI task powered by watsonx.ai (llama-3-3-70b-instruct); business rules routing to a supervisor; IBM Bob (BAW Blueprint Parser mode) generating the process from a requirements document; Bob as an agent invoking the BAW REST service through MCP. Human-in-the-loop: AI suggests, people decide.",
+      "format": "Link",
+      "audience": "technical",
+      "purpose": "enablement",
+      "categories": ["ai", "baw"],
+      "url": "https://ibm.box.com/s/h4fic9rryo3eo4eqon2quymjtxw6xx4x"
+    },
+    {
+      "id": "bob-content-cortex-navigator-core-agent",
+      "title": "Bob and Content Cortex with Navigator Core Agent",
+      "description": "IBM Content Cortex v26 Ask AI Agents (Navigator Core Agent, RAG over governed content, watsonx.ai gpt-oss-120b) answering and acting on insurance claim files; IBM Bob calling the filenet-core MCP server over Content Services GraphQL for structured queries; optional Process Engine approval workflow with AI as approver copilot.",
+      "format": "Link",
+      "audience": "technical",
+      "purpose": "enablement",
+      "categories": ["ai", "content"],
+      "url": "https://ibm.box.com/s/jraecln4yr249mxhmycfzruo88j12ihi"
+    },
+    {
+      "id": "claude-desktop-planning-analytics-mcp",
+      "title": "Claude Desktop with Planning Analytics and MCP",
+      "description": "Technical sample for integrating Claude Desktop to Planning Analytics MCP via OAuth. Authenticating via OAuth is not trivial with Planning Analytics currently, and these scripts help to simplify the process.",
+      "format": "Link",
+      "audience": "technical",
+      "purpose": "enablement",
+      "categories": ["ai"],
+      "url": "https://ibm.box.com/s/njcwyb12algzjrir2nfnyjwdyq7rmd7f"
+    },
+    {
+      "id": "cognos-analytics-assistant",
+      "title": "Cognos Analytics Assistant",
+      "description": "Cognos Analytics Dashboarding and AI Assistant.",
+      "format": "Link",
+      "audience": "business",
+      "purpose": "sales",
+      "categories": ["ai"],
+      "url": "https://ibm.box.com/s/ihxr9nx6e35pecl398q2woiu64tq8tzy"
+    },
+    {
+      "id": "content-assistant-filenet-us-mortgages",
+      "title": "Content Assistant for FileNet - US Mortgages",
+      "description": "Business demo for technical preview of IBM Content Assistant for FileNet Content Manager based on US mortgage tax documents from the IRS. Includes recording and slides.",
+      "format": "Link",
+      "audience": "business",
+      "purpose": "sales",
+      "categories": ["ai", "content"],
+      "url": "https://ibm.box.com/s/klnr156seejx1ehn9kf7jc2lqqwnfit0"
+    },
+    {
+      "id": "datacap-watsonx-ai",
+      "title": "Datacap and watsonx.ai",
+      "description": "Technical enablement demo of the Datacap watsonx.ai connector to use LLMs in document processing flows. Includes video and documentation.",
+      "format": "Link",
+      "audience": "technical",
+      "purpose": "enablement",
+      "categories": ["ai"],
+      "url": "https://ibm.box.com/s/3je772vmrkrwa6kvridixz560l697abd"
+    },
+    {
+      "id": "content-assistant-filenet-quick-enablement",
+      "title": "Content Assistant for FileNet - Quick Enablement",
+      "description": "Enablement demo for technical preview of IBM Content Assistant for FileNet Content Manager based on various business documents. Includes recording.",
+      "format": "Link",
+      "audience": "business",
+      "purpose": "enablement",
+      "categories": ["ai", "content"],
+      "url": "https://ibm.box.com/s/boatruocetyv62ddpm94tajsbm7qs12c"
+    },
+    {
+      "id": "datacap-redaction-watsonx-ai",
+      "title": "Datacap redaction with watsonx.ai",
+      "description": "A Datacap redaction use case augmented with watsonx.ai for LLM based processing.",
+      "format": "Video",
+      "categories": ["ai", "content"],
+      "url": "https://ibm.box.com/s/7nr9xv35ld1o955qv66y2f5tw1qabzey"
+    },
+    {
+      "id": "loan-origination-content-decisions-workflow",
+      "title": "Loan Origination Demo - Content, Decisions, and Workflow",
+      "description": "Demo that can be used for business and learning showcasing a loan origination use case using decisions, content, and workflow capabilities.",
+      "format": "Video",
+      "audience": "technical",
+      "purpose": "learning",
+      "categories": ["ai", "content", "decisions", "baw"],
+      "url": "https://ibm.ent.box.com/s/5q5xbtkyp994dkiybv9k2o2hmi3v8t8b/file/1277028474846"
+    },
+    {
+      "id": "datacap-redaction-baw-watsonx-ai",
+      "title": "Datacap redaction with BAW and watsonx.ai",
+      "description": "A Datacap redaction use case that integrates to both BAW for the surrounding business workflow and watsonx.ai for LLM based processing.",
+      "format": "Video",
+      "categories": ["ai", "content", "baw"],
+      "url": "https://ibm.box.com/s/7oi74aph5gogni0u5x3dmc1r9g9q7pyu"
+    },
+    {
+      "id": "baw-embedded-generative-ai",
+      "title": "BAW and embedded Generative AI",
+      "description": "A BAW use case for embedding a call to the new Generative AI component for document extraction.",
+      "format": "Video",
+      "categories": ["ai", "content", "baw"],
+      "url": "https://ibm.box.com/s/ojrebvaolh5laxwv6hrapro6warjvb9u"
+    },
+    {
+      "id": "gen-ai-task-client-onboarding",
+      "title": "Gen AI Task - Client Onboarding Demo",
+      "description": "Video demo of BAW using generative AI during a client onboarding use case.",
+      "format": "Video",
+      "categories": ["ai", "baw"],
+      "url": "https://ibm.seismic.com/Link/Content/DCQdDpG77VJb4GHBc2j673bXgmBP"
+    },
+    {
+      "id": "gen-ai-task-hiring-sample",
+      "title": "Gen AI Task - Hiring Sample Demo",
+      "description": "Video demo of BAW using a gen AI task during a hiring workflow use case.",
+      "format": "Video",
+      "categories": ["ai", "baw"],
+      "url": "https://ibm.seismic.com/Link/Content/DCTFdPb4hGQhdG4MQ9BMpXQpppcj"
+    },
+    {
+      "id": "cmod-content-navigator",
+      "title": "CMOD and Content Navigator",
+      "description": "Using Content Navigator (ICN) to access and review CMOD content.",
+      "format": "Link",
+      "categories": ["content"],
+      "url": "https://ibm.box.com/s/u074fr471d9ua6cyxbw0e8b0vonhdkyx"
+    },
+    {
+      "id": "search-watermarks-content-services",
+      "title": "Search Watermarks - IBM Content Services",
+      "description": "No audio demo showcasing search watermarks capability.",
+      "format": "Video",
+      "categories": ["content"],
+      "url": "https://ibm.ent.box.com/s/5q5xbtkyp994dkiybv9k2o2hmi3v8t8b/file/1354956935383"
+    },
+    {
+      "id": "merge-review-documents-content-services",
+      "title": "Merge and Review Documents in Content Services",
+      "description": "Quick and easily replicable enablement demo showcasing how we can merge and review documents using Content Services.",
+      "format": "Video",
+      "audience": "business",
+      "purpose": "learning",
+      "categories": ["content"],
+      "url": "https://ibm.ent.box.com/s/5q5xbtkyp994dkiybv9k2o2hmi3v8t8b/file/995371259971"
+    },
+    {
+      "id": "graphql-introduction",
+      "title": "GraphQL Introduction",
+      "description": "Demo introducing GraphQL interface.",
+      "format": "Video",
+      "categories": ["content"],
+      "url": "https://ibm.ent.box.com/s/5q5xbtkyp994dkiybv9k2o2hmi3v8t8b/file/1354958943723"
+    },
+    {
+      "id": "salesforce-user-demo",
+      "title": "Salesforce User Demo",
+      "description": "Bite sized demo with no audio showing Salesforce connection.",
+      "format": "Video",
+      "categories": ["content"],
+      "url": "https://ibm.ent.box.com/s/5q5xbtkyp994dkiybv9k2o2hmi3v8t8b/file/1354955834348?sb=/details"
+    },
+    {
+      "id": "content-collector-email-intro",
+      "title": "IBM Content Collector for Email Intro",
+      "description": "Demo showcasing how ICC for Email can help archive emails in a repository and manage access to archived emails. Includes recording and slides.",
+      "format": "Link",
+      "audience": "technical",
+      "purpose": "sales",
+      "categories": ["content"],
+      "url": "https://ibm.box.com/s/0kujkarimih44bt359iugpiwtg8r7pa7"
+    },
+    {
+      "id": "expedite-accounts-payable-rpa-cmod",
+      "title": "Expedite Accounts Payable with IBM RPA and CMOD",
+      "description": "Video and resources to replicate demo of IBM RPA and CMOD including automating emailing content and extracting text from PDFs. Includes recording, slides, .wal files, and walkthrough instructions.",
+      "format": "Link",
+      "audience": "technical",
+      "purpose": "sales",
+      "categories": ["content", "rpa"],
+      "url": "https://ibm.box.com/s/6yzt435lyouxrf2bj3awiewxbq0jd3cp"
+    },
+    {
+      "id": "client-onboarding-end-to-end",
+      "title": "Client Onboarding End-to-End Demo",
+      "description": "End-to-end demo showcasing all capabilities of the Cloud Pak for Business Automation (process mining, decisions, content services, document processing, workflow, RPA, and operational intelligence). Great for a 1st introduction to CP4BA. Includes recording and slides.",
+      "format": "Link",
+      "audience": "business",
+      "purpose": "sales",
+      "categories": ["content", "decisions", "bai", "bwl-pm", "rpa", "baw"],
+      "url": "https://ibm.box.com/s/lp9yc75pui9ca311f9t21bva5juzw2gw"
+    },
+    {
+      "id": "odm-bob-mode-skills-mcp",
+      "title": "ODM with Bob mode, skills, and MCP",
+      "description": "Use the latest Bob mode and skills with ODM, including ODM Rule Project & Decision Service extension, Rule Designer mode, Builder skills, and Management MCP server.",
+      "format": "Link",
+      "categories": ["decisions"],
+      "url": "https://ibm.box.com/s/yrfwmwoc7c2gw5e63elly5ms9y92zvw2"
+    },
+    {
+      "id": "bamoe-dmn-v8-to-v9-migration",
+      "title": "BAMOE DMN v8 to v9 migration",
+      "description": "IBM Business Automation Manager Open Edition (BAMOE) DMN decision service migrated from v8 to v9 equivalent supported by specs defined in public IBM BAMOE migrator repo.",
+      "format": "Link",
+      "audience": "technical",
+      "purpose": "enablement",
+      "categories": ["decisions"],
+      "url": "https://ibm.box.com/s/iyi3fshec62rd67j0pmt3wv4z7clruqv"
+    },
+    {
+      "id": "bamoe-decisions-overview",
+      "title": "BAMOE Decisions Overview",
+      "description": "Overview for technical sales of Decisions on Business Automation Manager Open Editions (BAMOE).",
+      "format": "Link",
+      "audience": "technical",
+      "purpose": "sales",
+      "categories": ["decisions"],
+      "url": "https://ibm.box.com/s/9nlt0f3cghm1qc3tedh4b618dbs14s5s"
+    },
+    {
+      "id": "bai-intro",
+      "title": "BAI Intro",
+      "description": "Demo walkthrough for BAI, including some dashboards for ODM.",
+      "format": "Video",
+      "audience": "business",
+      "purpose": "sales",
+      "categories": ["bai"],
+      "url": "https://ibm.ent.box.com/s/5q5xbtkyp994dkiybv9k2o2hmi3v8t8b/file/1066047017398"
+    },
+    {
+      "id": "process-mining-overview",
+      "title": "Process Mining Overview",
+      "description": "Quick overview of process mining capability for introducing clients to Process Mining capability. Includes recording and slides.",
+      "format": "Link",
+      "audience": "business",
+      "purpose": "sales",
+      "categories": ["bwl-pm"],
+      "url": "https://ibm.box.com/s/l4vqcsbwi9st9piz75ajeovudgni1ahi"
+    },
+    {
+      "id": "blueworks-live-process-mining-intro",
+      "title": "Blueworks Live and Process Mining Intro",
+      "description": "Introductory enablement demo for using Process Mining on Blueworks Live processes.",
+      "format": "Video",
+      "audience": "business",
+      "purpose": "sales",
+      "categories": ["bwl-pm"],
+      "url": "https://ibm.box.com/s/i7rx2fpbob40t9s3w9vmhei7zkwuyo6o"
+    },
+    {
+      "id": "rpa-blueworks-live",
+      "title": "Using RPA to interact with Blueworks Live",
+      "description": "5-minute long demo showcasing how to access Blueworks Live using IBM RPA. Includes recording, slides, and .wal files.",
+      "format": "Link",
+      "audience": "technical",
+      "purpose": "sales",
+      "categories": ["bwl-pm", "rpa"],
+      "url": "https://ibm.box.com/s/hzdgnrks8j26tjsdp1fimj1cag09g6wu"
+    },
+    {
+      "id": "bob-bamoe-bpmn-mcp",
+      "title": "Bob with BAMOE BPMN MCP",
+      "description": "Bob connecting to BAMOE (PAMOE BPMN) processes using MCP.",
+      "format": "Link",
+      "audience": "technical",
+      "purpose": "sales",
+      "categories": ["baw"],
+      "url": "https://ibm.box.com/s/5p75av32cob90yvw5rouy829bdkt0wkl"
+    },
+    {
+      "id": "bob-devin-bamoe-v8-to-v9-migration",
+      "title": "Bob and Devin for BAMOE v8 to v9 migration",
+      "description": "IBM Bob modes that would support a BAMOE v8 to v9 migration which were converted to Devin plugin equivalents, to support the sanctioned tooling at a major financial service client.",
+      "format": "Link",
+      "audience": "technical",
+      "purpose": "enablement",
+      "categories": ["baw"],
+      "url": "https://ibm.box.com/s/raq5lbep362lmnhsf2754md7k6rgfymr"
+    },
+    {
+      "id": "building-baw-rest-services-javascript",
+      "title": "Building BAW REST Services with JavaScript",
+      "description": "Enablement/education demo showcasing how to build BAW REST services with JavaScript. Includes recordings and slides.",
+      "format": "Link",
+      "audience": "technical",
+      "purpose": "learning",
+      "categories": ["baw"],
+      "url": "https://ibm.box.com/s/qc2wz2ovhlo514rfjsu36mdupp2gkjvt"
+    },
+    {
+      "id": "invoking-services-baw-coach",
+      "title": "Invoking Services from BAW Coach",
+      "description": "Enablement materials for invoking services from a BAW/BPMN coach. Includes recording and slides.",
+      "format": "Link",
+      "audience": "technical",
+      "purpose": "enablement",
+      "categories": ["baw"],
+      "url": "https://ibm.box.com/s/23jvxvwdajypuvky3lej4vevwb8yo3ka"
+    },
+    {
+      "id": "rest-requests-baw-containers",
+      "title": "REST Requests on BAW Containers",
+      "description": "Demo and assets showing how to use BAW to make REST requests. Includes recording, slides, .yml Swagger template, and .twx file.",
+      "format": "Link",
+      "audience": "technical",
+      "purpose": "learning",
+      "categories": ["baw"],
+      "url": "https://ibm.box.com/s/5dn1mvakxzxjyb7baokinl0fiqd5qt6l"
+    },
+    {
+      "id": "audit-process-admin-console-changes",
+      "title": "Audit Process Admin Console Changes",
+      "description": "Enablement demo for updates to the Process Admin Console in BAW that includes an audit log.",
+      "format": "Video",
+      "audience": "technical",
+      "purpose": "enablement",
+      "categories": ["baw"],
+      "url": "https://ibm.box.com/s/2pamhhf1qcnp55khfg9blluogodvek89"
+    },
+    {
+      "id": "oauth-2-baw",
+      "title": "OAuth 2.0 in BAW",
+      "description": "Enablement demo for updates to support OAuth 2.0 in BAW.",
+      "format": "Video",
+      "audience": "technical",
+      "purpose": "enablement",
+      "categories": ["baw"],
+      "url": "https://ibm.box.com/s/yljvo7zbitudyuu2ppd9ddaft8uh8qgc"
+    }
+  ]
+}
