@@ -9585,13 +9585,10 @@ const biteSizedTagClass =
 function BiteSizedDemoGrid({
   demos,
   cardAnchors = false,
-  showProducts = false,
 }: {
   demos: BiteSizedDemo[]
   // Gives each card its own anchor so site search can jump to it. Use it on one grid per page.
   cardAnchors?: boolean
-  // Product Resources variant: also shows product tags.
-  showProducts?: boolean
 }) {
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3">
@@ -9630,7 +9627,7 @@ function BiteSizedDemoGrid({
           <p className="mt-1.5 text-xs leading-relaxed text-[#c6c6c6]">
             {demo.description}
           </p>
-          {showProducts && demo.products && demo.products.length > 0 && (
+          {demo.products && demo.products.length > 0 && (
             <ul
               aria-label={`Products for ${demo.title}`}
               className="mt-3 flex flex-wrap gap-1.5"
@@ -9727,6 +9724,7 @@ function BiteSizedDemosGroup({
           demo.description,
           demo.audience,
           demo.purpose,
+          ...(demo.products ?? []),
           ...demo.categories.map(biteSizedDemoCategoryLabel),
         ]
           .join(" ")
@@ -9832,7 +9830,7 @@ function BiteSizedDemosGroup({
                 type="search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search title, description, category"
+                placeholder="Search title, description, product, category"
                 className="h-9 w-full rounded-md border border-white/[0.1] bg-[#262626] pl-9 pr-3 text-sm text-white placeholder:text-[#8d8d8d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
               />
             </div>
@@ -9869,7 +9867,7 @@ function BiteSizedDemosGroup({
               aria-label="Filter by format"
               className="mt-2 flex flex-wrap gap-2"
             >
-              {(["Video", "Link"] as const).map((format) => {
+              {(["Video"] as const).map((format) => {
                 const active = selectedFormat === format
                 return (
                   <button
@@ -9879,7 +9877,7 @@ function BiteSizedDemosGroup({
                     aria-pressed={active}
                     className={pillClass(active)}
                   >
-                    {format === "Link" ? "Link or package" : "Video"}
+                    {format}
                     <span className={countClass(active)}>
                       {demos.filter((demo) => demo.format === format).length}
                     </span>
@@ -15039,6 +15037,7 @@ function buildGlobalSearchEntries(): GlobalSearchEntry[] {
         category: "Bite-sized demo",
       },
       demo.description,
+      demo.products,
       demo.categories.map(biteSizedDemoCategoryLabel),
     ),
   )
@@ -17571,7 +17570,7 @@ export default function App() {
                   </div>
                   {!collapsedProductResourceSections.has("bite-sized") && (
                     <div id={`${`${sectionId}-bite-sized`}-content`} className="mt-3">
-                      <BiteSizedDemoGrid demos={biteSizedResourceDemos} showProducts />
+                      <BiteSizedDemoGrid demos={biteSizedResourceDemos} />
                     </div>
                   )}
                 </div>
@@ -18497,7 +18496,7 @@ export default function App() {
                   </div>
                   {!collapsedProductResourceSections.has("bite-sized") && (
                     <div id={`${"portfolio-product-resources-bite-sized"}-content`} className="mt-3">
-                      <BiteSizedDemoGrid demos={biteSizedResourceDemos} showProducts />
+                      <BiteSizedDemoGrid demos={biteSizedResourceDemos} />
                     </div>
                   )}
                 </div>
