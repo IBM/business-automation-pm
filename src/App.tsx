@@ -21185,7 +21185,8 @@ export default function App() {
                           >
                             Let&rsquo;s Create - Table View
                             <span className="text-xs font-medium text-[#c6c6c6]">
-                              {letsCreateAssets.length} assets
+                              {letsCreateAssets.length + biteSizedDemos.length}{" "}
+                              items
                             </span>
                             <span className="self-center text-[#78a9ff]">
                               <VideoVisibilityIcon
@@ -21270,26 +21271,36 @@ export default function App() {
                             col: "w-40",
                             placeholder: "Filter",
                             getValue: (r) =>
-                              businessAutomationCapabilityFilters.find(
-                                (f) => f.page === r.capability,
-                              )?.label ?? r.capability,
-                            render: (r) => {
-                              const opt =
-                                businessAutomationCapabilityFilters.find(
-                                  (f) => f.page === r.capability,
+                              r.capabilities
+                                .map(
+                                  (page) =>
+                                    businessAutomationCapabilityFilters.find(
+                                      (f) => f.page === page,
+                                    )?.label ?? page,
                                 )
-                              return opt ? (
-                                <span
-                                  className="rounded-full border px-2 py-0.5 text-[10px] font-semibold text-white"
-                                  style={{
-                                    borderColor: `${opt.color}bb`,
-                                    backgroundColor: `${opt.color}20`,
-                                  }}
-                                >
-                                  {opt.label}
-                                </span>
-                              ) : null
-                            },
+                                .join(", "),
+                            render: (r) => (
+                              <div className="flex flex-wrap gap-1">
+                                {r.capabilities.map((page) => {
+                                  const opt =
+                                    businessAutomationCapabilityFilters.find(
+                                      (f) => f.page === page,
+                                    )
+                                  return opt ? (
+                                    <span
+                                      key={page}
+                                      className="rounded-full border px-2 py-0.5 text-[10px] font-semibold text-white"
+                                      style={{
+                                        borderColor: `${opt.color}bb`,
+                                        backgroundColor: `${opt.color}20`,
+                                      }}
+                                    >
+                                      {opt.label}
+                                    </span>
+                                  ) : null
+                                })}
+                              </div>
+                            ),
                           },
                           {
                             key: "products",
@@ -21380,18 +21391,50 @@ export default function App() {
                               ),
                           },
                         ]}
-                        rows={letsCreateAssets.map((asset, idx) => ({
-                          ...asset,
-                          index: idx + 1,
-                          sectionLabel:
-                            letsCreateSections.find(
-                              (s) => s.id === asset.section,
-                            )?.label ?? asset.section,
-                          site: asset.page
-                            ? "Internal page"
-                            : formatHost(asset.url),
-                        }))}
-                        rowKey={(r) => `${r.section}-${r.name}`}
+                        rows={[
+                          ...letsCreateAssets.map((asset) => ({
+                            key: `${asset.section}-${asset.name}`,
+                            name: asset.name,
+                            description: asset.description,
+                            url: asset.url,
+                            page: asset.page,
+                            section: asset.section,
+                            sectionLabel:
+                              letsCreateSections.find(
+                                (s) => s.id === asset.section,
+                              )?.label ?? asset.section,
+                            capabilities: [asset.capability] as string[],
+                            products: asset.products,
+                            site: asset.page
+                              ? "Internal page"
+                              : formatHost(asset.url),
+                          })),
+                          ...biteSizedDemos.map((demo) => ({
+                            key: `bite-sized-demos-${demo.id}`,
+                            name: demo.title,
+                            description: demo.description,
+                            url: demo.url,
+                            page: undefined as Page | undefined,
+                            section: "bite-sized-demos" as LetsCreateSection,
+                            sectionLabel:
+                              letsCreateSections.find(
+                                (s) => s.id === "bite-sized-demos",
+                              )?.label ?? "Bite-Sized Demos",
+                            capabilities: [
+                              ...new Set(
+                                demo.categories.flatMap(
+                                  (categoryId) =>
+                                    biteSizedDemoCategories.find(
+                                      (category) => category.id === categoryId,
+                                    )?.capabilities ?? [],
+                                ),
+                              ),
+                            ],
+                            products: demo.products ?? [],
+                            site: formatHost(demo.url),
+                          })),
+                        ].map((row, idx) => ({ ...row, index: idx + 1 }))}
+                        rowKey={(r) => r.key}
                         emptyMessage="No assets match the current filters."
                       />
                     </div>
