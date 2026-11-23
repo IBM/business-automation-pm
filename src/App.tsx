@@ -25,7 +25,7 @@ import {
 const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`
 
 type SessionType = "Lab" | "Meet the Expert" | "Meetup" | "Tech Talk" | "Breakout" | "Client Advisory Board"
-type Page = "overview" | "capabilities" | "resource-table" | "videos" | "pm-resources" | "pm-youtube" | "pm-faq" | "badges" | "yl" | "lets-create" | "bite-sized-demos" | "technical-accelerators" | "onboarding-automation" | "process-automation" | "content-services" | "decision-intelligence" | "cp4ba" | "conference" | "think" | "sessions" | "techxchange" | "schedule" | "maps" | "ibm" | "insights" | "info" | "product" | "community" | "enablement" | "ug" | "surveys" | "speaker"
+type Page = "overview" | "capabilities" | "resource-table" | "videos" | "pm-resources" | "pm-youtube" | "pm-faq" | "badges" | "yl" | "lets-create" | "technical-accelerators" | "onboarding-automation" | "process-automation" | "content-services" | "decision-intelligence" | "cp4ba" | "conference" | "think" | "sessions" | "techxchange" | "schedule" | "maps" | "ibm" | "insights" | "info" | "product" | "community" | "enablement" | "ug" | "surveys" | "speaker"
 
 const pageAnchors: Record<Page, string> = {
   overview: "main",
@@ -38,7 +38,6 @@ const pageAnchors: Record<Page, string> = {
   badges: "badges-top",
   yl: "yl-top",
   "lets-create": "lets-create-top",
-  "bite-sized-demos": "bite-sized-demos-top",
   "technical-accelerators": "technical-accelerators-top",
   "onboarding-automation": "onboarding-automation-top",
   "process-automation": "capabilities-process-automation",
@@ -73,7 +72,6 @@ const breadcrumbLabels: Record<Page, string> = {
   badges: "Badge",
   yl: "YL",
   "lets-create": "Let's Create!",
-  "bite-sized-demos": "Bite-Sized Demos",
   "technical-accelerators": "Technical Accelerators",
   "onboarding-automation": "Onboarding Automation",
   "process-automation": "Process Automation",
@@ -107,7 +105,6 @@ const breadcrumbParents: Partial<Record<Page, Page>> = {
   badges: "overview",
   yl: "overview",
   "lets-create": "overview",
-  "bite-sized-demos": "overview",
   "technical-accelerators": "lets-create",
   "onboarding-automation": "lets-create",
   "process-automation": "capabilities",
@@ -212,8 +209,6 @@ function pageForHash(hash: string): Page {
   if (id === "yl-top" || id.startsWith("yl-")) return "yl"
   if (id === "lets-create-top" || id.startsWith("lets-create-"))
     return "lets-create"
-  if (id === "bite-sized-demos-top" || id.startsWith("bite-sized-demos-"))
-    return "bite-sized-demos"
   if (id === "capabilities-top") return "capabilities"
   if (id === "capabilities-all") return "capabilities"
   if (id.startsWith("capabilities-all-")) return "capabilities"
@@ -1600,7 +1595,7 @@ const communityProductOptions = Array.from(
   .sort((a, b) => a.localeCompare(b))
   .map((product) => ({ id: product, label: product }))
 
-type LetsCreateSection = "yourlearning" | "navattic" | "jam-in-a-box" | "irt-solutions" | "technical-accelerators" | "content-cortex-cae"
+type LetsCreateSection = "yourlearning" | "navattic" | "bite-sized-demos" | "jam-in-a-box" | "irt-solutions" | "technical-accelerators" | "content-cortex-cae"
 
 interface LetsCreateAsset {
   name: string
@@ -1657,6 +1652,12 @@ const letsCreateSections: {
     label: "Navattic",
     description: "Interactive product demos built with Navattic.",
     embeddable: true,
+  },
+  {
+    id: "bite-sized-demos",
+    label: "Bite-Sized Demos",
+    description:
+      "Short, focused demos for Business Automation: every demo in one list, then grouped by product area. A demo that spans several areas appears under each one. IBM internal.",
   },
   {
     id: "jam-in-a-box",
@@ -9521,7 +9522,8 @@ const biteSizedDemoCategories =
 const biteSizedDemos = biteSizedDemosData.demos as BiteSizedDemo[]
 const biteSizedDemoCategoryLabel = (id: string) =>
   biteSizedDemoCategories.find((category) => category.id === id)?.label ?? id
-const biteSizedDemoAnchor = (id: string) => `bite-sized-demos-${id}`
+// Anchor of one demo card on the Let's Create! page.
+const biteSizedDemoAnchor = (id: string) => `lets-create-bite-sized-demos-${id}`
 const capitalize = (value: string) =>
   `${value.charAt(0).toUpperCase()}${value.slice(1)}`
 // Demos for the selected Product capabilities. CP4BA is the whole platform, so it shows every demo.
@@ -9536,28 +9538,111 @@ const biteSizedDemosForCapabilities = (pages: string[]) =>
         ),
       )
 
-function BiteSizedDemosSection({
+// Number of items in a Let's Create! section. Bite-sized demos are not assets, so they are counted separately.
+const letsCreateSectionCount = (sectionId: LetsCreateSection) =>
+  sectionId === "bite-sized-demos"
+    ? biteSizedDemos.length
+    : letsCreateAssets.filter((asset) => asset.section === sectionId).length
+const letsCreateSectionNoun = (sectionId: LetsCreateSection, count: number) =>
+  sectionId === "bite-sized-demos"
+    ? count === 1
+      ? "demo"
+      : "demos"
+    : count === 1
+      ? "asset"
+      : "assets"
+
+const biteSizedTagClass =
+  "rounded-full border border-white/[0.1] bg-white/[0.03] px-2 py-0.5 text-[10px] font-medium text-[#c6c6c6]"
+
+function BiteSizedDemoGrid({
+  demos,
+  cardAnchors = false,
+}: {
+  demos: BiteSizedDemo[]
+  // Gives each card its own anchor so site search can jump to it. Use it on one grid per page.
+  cardAnchors?: boolean
+}) {
+  return (
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3">
+      {demos.map((demo) => (
+        <div
+          key={demo.id}
+          id={cardAnchors ? biteSizedDemoAnchor(demo.id) : undefined}
+          className="flex scroll-mt-28 flex-col rounded-xl border border-white/[0.07] bg-[#161616] p-4"
+        >
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span
+              className={`${biteSizedTagClass} ${
+                demo.format === "Video"
+                  ? "border-[#4589ff]/50 text-[#a6c8ff]"
+                  : ""
+              }`}
+            >
+              {demo.format}
+            </span>
+            {demo.audience && (
+              <span className={biteSizedTagClass}>
+                {capitalize(demo.audience)}
+              </span>
+            )}
+            {demo.purpose && (
+              <span className={biteSizedTagClass}>
+                {capitalize(demo.purpose)}
+              </span>
+            )}
+          </div>
+          <h5 className="mt-3 text-sm font-semibold text-white">
+            {demo.title}
+          </h5>
+          <p className="mt-1.5 text-xs leading-relaxed text-[#c6c6c6]">
+            {demo.description}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {demo.categories.map((category) => (
+              <span
+                key={category}
+                className="rounded-full bg-[#0f62fe]/15 px-2 py-0.5 text-[10px] font-medium text-[#a6c8ff]"
+              >
+                {biteSizedDemoCategoryLabel(category)}
+              </span>
+            ))}
+          </div>
+          <div className="mt-auto pt-4">
+            <a
+              href={demo.url}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Open ${demo.title}`}
+              className={`${letsCreateControlClass} w-fit gap-1.5`}
+            >
+              {demo.format === "Video" ? "Watch" : "Open"}
+              <ExternalLinkIcon />
+            </a>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// A collapsible group of demos inside the Bite-Sized Demos section on Let's Create!.
+function BiteSizedDemosGroup({
   id,
   title,
   description,
   demos,
-  eyebrow = "Bite-Sized Demos",
   filterable = true,
   defaultCollapsed = false,
   cardAnchors = false,
-  onOpenPage,
 }: {
   id: string
   title: string
   description?: string
   demos: BiteSizedDemo[]
-  eyebrow?: string
   filterable?: boolean
   defaultCollapsed?: boolean
-  // Gives each card its own anchor so site search can jump to it. Use it on one section per page.
   cardAnchors?: boolean
-  // When set, shows a button that opens the full Bite-Sized Demos page.
-  onOpenPage?: (page: Page) => void
 }) {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed)
   const [query, setQuery] = useState("")
@@ -9602,9 +9687,6 @@ function BiteSizedDemosSection({
           .includes(token),
       ),
   )
-  const sectionCategories = biteSizedDemoCategories.filter((category) =>
-    demos.some((demo) => demo.categories.includes(category.id)),
-  )
   const toggleCategory = (categoryId: string) =>
     setSelectedCategories((current) => {
       const next = new Set(current)
@@ -9622,29 +9704,24 @@ function BiteSizedDemosSection({
     `rounded-full px-1.5 py-0.5 font-mono text-[9px] ${
       active ? "bg-white/10 text-white" : "bg-black/20 text-[#a8a8a8]"
     }`
-  const tagClass =
-    "rounded-full border border-white/[0.1] bg-white/[0.03] px-2 py-0.5 text-[10px] font-medium text-[#c6c6c6]"
   const isFiltered =
     selectedCategories.size > 0 || selectedFormat !== null || tokens.length > 0
   const bodyId = `${id}-body`
   return (
-    <article
+    <div
       id={id}
       aria-labelledby={`${id}-heading`}
-      className="mt-6 scroll-mt-28 overflow-hidden rounded-xl border border-white/[0.07] bg-[#262626]"
+      className="scroll-mt-28 overflow-hidden rounded-lg border border-white/[0.08] bg-[#1c1c1c]"
     >
       <div
-        className={`flex items-start justify-between gap-4 px-5 py-4 ${
+        className={`flex items-start justify-between gap-4 px-4 py-3 ${
           isCollapsed ? "" : "border-b border-white/[0.06]"
         }`}
       >
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#78a9ff]">
-            {eyebrow}
-          </p>
-          <h3
+          <h4
             id={`${id}-heading`}
-            className="mt-1 text-base font-semibold text-white"
+            className="text-sm font-semibold text-white"
           >
             <button
               type="button"
@@ -9662,29 +9739,18 @@ function BiteSizedDemosSection({
                 <VideoVisibilityIcon visible={!isCollapsed} />
               </span>
             </button>
-          </h3>
+          </h4>
           {!isCollapsed && description && (
             <p className="mt-1 max-w-3xl text-xs leading-relaxed text-[#c6c6c6]">
               {description}
             </p>
           )}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          {onOpenPage && (
-            <button
-              type="button"
-              onClick={() => onOpenPage("bite-sized-demos")}
-              className={letsCreateControlClass}
-            >
-              Open full page
-            </button>
-          )}
-          <CopySectionLink id={id} label={title} />
-        </div>
+        <CopySectionLink id={id} label={title} />
       </div>
-      <div id={bodyId} hidden={isCollapsed} className="p-5">
+      <div id={bodyId} hidden={isCollapsed} className="p-4">
         {filterable && (
-          <div className="mb-5 rounded-lg border border-white/[0.08] bg-[#161616] p-4">
+          <div className="mb-4 rounded-lg border border-white/[0.08] bg-[#161616] p-4">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
               <label
                 htmlFor={`${id}-search`}
@@ -9728,7 +9794,7 @@ function BiteSizedDemosSection({
               aria-label="Filter by category"
               className="mt-3 flex flex-wrap gap-2"
             >
-              {sectionCategories.map((category) => {
+              {biteSizedDemoCategories.map((category) => {
                 const active = selectedCategories.has(category.id)
                 return (
                   <button
@@ -9778,112 +9844,31 @@ function BiteSizedDemosSection({
         )}
         {visibleDemos.length === 0 ? (
           <p className="text-sm text-[#c6c6c6]">
-            {demos.length === 0
-              ? "No bite-sized demos have been added for this area yet."
-              : "No bite-sized demos match the current search or filters."}
+            No bite-sized demos match the current search or filters.
           </p>
         ) : (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3">
-            {visibleDemos.map((demo) => (
-              <div
-                key={demo.id}
-                id={cardAnchors ? biteSizedDemoAnchor(demo.id) : undefined}
-                className="flex scroll-mt-28 flex-col rounded-xl border border-white/[0.07] bg-[#161616] p-4"
-              >
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span
-                    className={`${tagClass} ${
-                      demo.format === "Video"
-                        ? "border-[#4589ff]/50 text-[#a6c8ff]"
-                        : ""
-                    }`}
-                  >
-                    {demo.format}
-                  </span>
-                  {demo.audience && (
-                    <span className={tagClass}>{capitalize(demo.audience)}</span>
-                  )}
-                  {demo.purpose && (
-                    <span className={tagClass}>{capitalize(demo.purpose)}</span>
-                  )}
-                </div>
-                <h4 className="mt-3 text-sm font-semibold text-white">
-                  {demo.title}
-                </h4>
-                <p className="mt-1.5 text-xs leading-relaxed text-[#c6c6c6]">
-                  {demo.description}
-                </p>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {demo.categories.map((category) => (
-                    <span
-                      key={category}
-                      className="rounded-full bg-[#0f62fe]/15 px-2 py-0.5 text-[10px] font-medium text-[#a6c8ff]"
-                    >
-                      {biteSizedDemoCategoryLabel(category)}
-                    </span>
-                  ))}
-                </div>
-                <div className="mt-auto pt-4">
-                  <a
-                    href={demo.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={`Open ${demo.title}`}
-                    className={`${letsCreateControlClass} w-fit gap-1.5`}
-                  >
-                    {demo.format === "Video" ? "Watch" : "Open"}
-                    <ExternalLinkIcon />
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
+          <BiteSizedDemoGrid demos={visibleDemos} cardAnchors={cardAnchors} />
         )}
       </div>
-    </article>
+    </div>
   )
 }
 
-function BiteSizedDemosPage() {
+// Body of the Bite-Sized Demos section on Let's Create!: every demo, then one group per product area.
+function BiteSizedDemosGroups() {
   return (
-    <section
-      id="bite-sized-demos-top"
-      aria-labelledby="bite-sized-demos-heading"
-      className="scroll-mt-28"
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">
-            IBM Data &amp; AI: Business Automation
-          </p>
-          <h2
-            id="bite-sized-demos-heading"
-            className="mt-1 text-2xl font-semibold text-white"
-          >
-            Bite-Sized Demos
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#c6c6c6]">
-            Short, focused demos for Business Automation: every demo in one
-            list, then grouped by product area. A demo that spans several areas
-            appears under each one. IBM internal.
-          </p>
-        </div>
-        <CopySectionLink
-          id="bite-sized-demos-top"
-          label="Bite-Sized Demos page"
-        />
-      </div>
-      <BiteSizedDemosSection
-        id="bite-sized-demos-all"
+    <div className="grid gap-4">
+      <BiteSizedDemosGroup
+        id="lets-create-bite-sized-demos-all"
         title="All demos"
-        description="Every bite-sized demo. Search, or filter by category and format."
+        description="Every bite-sized demo. A demo that spans several product areas also appears under each one below."
         demos={biteSizedDemos}
         cardAnchors
       />
       {biteSizedDemoCategories.map((category) => (
-        <BiteSizedDemosSection
+        <BiteSizedDemosGroup
           key={category.id}
-          id={`bite-sized-demos-category-${category.id}`}
+          id={`lets-create-bite-sized-demos-category-${category.id}`}
           title={category.label}
           description={category.description}
           demos={biteSizedDemos.filter((demo) =>
@@ -9893,7 +9878,7 @@ function BiteSizedDemosPage() {
           defaultCollapsed
         />
       ))}
-    </section>
+    </div>
   )
 }
 
@@ -11935,7 +11920,7 @@ const productDemoGroups = [
 ]
 
 type PortfolioResourcePage = "process-automation" | "content-services" | "decision-intelligence" | "cp4ba"
-type ProductResourceSection = "reference" | "previews" | "ai-capabilities" | "demos" | "sales-kits" | "environments" | "techzone-collections" | "youtube-playlists"
+type ProductResourceSection = "reference" | "previews" | "ai-capabilities" | "demos" | "sales-kits" | "environments" | "techzone-collections" | "youtube-playlists" | "bite-sized"
 
 const productResourceSectionFilters: {
   id: ProductResourceSection
@@ -11949,6 +11934,7 @@ const productResourceSectionFilters: {
   { id: "techzone-collections", label: "TechZone Collections" },
   { id: "youtube-playlists", label: "IBM Product Hub on YouTube" },
   { id: "ai-capabilities", label: "AI capabilities" },
+  { id: "bite-sized", label: "Bite-sized demos" },
 ]
 const businessAutomationSalesKitNames = [
   "Business Automation Sales Kits",
@@ -14982,7 +14968,7 @@ function buildGlobalSearchEntries(): GlobalSearchEntry[] {
     add(
       {
         id: biteSizedDemoAnchor(demo.id),
-        pages: ["bite-sized-demos"],
+        pages: ["lets-create"],
         title: demo.title,
         subtitle: [
           demo.format,
@@ -15377,11 +15363,12 @@ export default function App() {
         setIsLetsCreateSummaryCollapsed(false)
         return
       }
-      if (!letsCreateSections.some((section) => section.id === id)) return
+      const sectionId = id.startsWith("bite-sized-demos") ? "bite-sized-demos" : id
+      if (!letsCreateSections.some((section) => section.id === sectionId)) return
       setCollapsedLetsCreateSections((current) => {
-        if (!current.has(id)) return current
+        if (!current.has(sectionId)) return current
         const next = new Set(current)
-        next.delete(id)
+        next.delete(sectionId)
         return next
       })
     }
@@ -16147,7 +16134,6 @@ export default function App() {
       currentPage === "badges" ||
       currentPage === "yl" ||
       currentPage === "lets-create" ||
-      currentPage === "bite-sized-demos" ||
       currentPage === "technical-accelerators" ||
       currentPage === "onboarding-automation" ||
       isCapabilitiesPage)
@@ -16736,6 +16722,7 @@ export default function App() {
     const allPlaylistFramesHidden = playlistEmbedUrls.every((embedUrl) =>
       hiddenYoutubePlaylistFrames.has(embedUrl),
     )
+    const biteSizedResourceDemos = biteSizedDemosForCapabilities([page])
     const sectionCounts: Record<ProductResourceSection, number> = {
       reference: resources.references.length,
       previews: resources.previews.length,
@@ -16748,6 +16735,7 @@ export default function App() {
       environments: resources.environments.length,
       "techzone-collections": resources.techZoneCollections.length,
       "youtube-playlists": resources.youtubePlaylists.length,
+      "bite-sized": biteSizedResourceDemos.length,
     }
     return (
       <section
@@ -16847,7 +16835,7 @@ export default function App() {
                           )}
                         </span>
                         <span className="font-mono text-[10px] text-[#8d8d8d]">
-                          01 / 08
+                          01 / 09
                         </span>
                         <CopySectionLink
                           id={`${sectionId}-reference`}
@@ -16906,7 +16894,7 @@ export default function App() {
                           )}
                         </span>
                         <span className="font-mono text-[10px] text-[#8d8d8d]">
-                          02 / 08
+                          02 / 09
                         </span>
                         <CopySectionLink
                           id={`${sectionId}-previews`}
@@ -16977,7 +16965,7 @@ export default function App() {
                         {productResourceAssetCountLabel(sectionCounts.demos)}
                       </span>
                       <span className="font-mono text-[10px] text-[#8d8d8d]">
-                        03 / 08
+                        03 / 09
                       </span>
                       <CopySectionLink
                         id={`${sectionId}-demos`}
@@ -17054,7 +17042,7 @@ export default function App() {
                       )}
                     </span>
                     <span className="font-mono text-[10px] text-[#8d8d8d]">
-                      04 / 08
+                      04 / 09
                     </span>
                     <CopySectionLink
                       id={`${sectionId}-sales-kits`}
@@ -17118,7 +17106,7 @@ export default function App() {
                       )}
                     </span>
                     <span className="font-mono text-[10px] text-[#8d8d8d]">
-                      05 / 08
+                      05 / 09
                     </span>
                     <CopySectionLink
                       id={`${sectionId}-environments`}
@@ -17214,7 +17202,7 @@ export default function App() {
                       )}
                     </span>
                     <span className="font-mono text-[10px] text-[#8d8d8d]">
-                      06 / 08
+                      06 / 09
                     </span>
                     <CopySectionLink
                       id={`${sectionId}-techzone-collections`}
@@ -17311,7 +17299,7 @@ export default function App() {
                       )}
                     </span>
                     <span className="font-mono text-[10px] text-[#8d8d8d]">
-                      07 / 08
+                      07 / 09
                     </span>
                     <CopySectionLink
                       id={`${sectionId}-youtube-playlists`}
@@ -17442,7 +17430,7 @@ export default function App() {
                         )}
                       </span>
                       <span className="font-mono text-[10px] text-[#8d8d8d]">
-                        08 / 08
+                        08 / 09
                       </span>
                       <CopySectionLink
                         id={`${sectionId}-ai-capabilities`}
@@ -17486,6 +17474,49 @@ export default function App() {
                   )}
                 </div>
               )}
+
+            {effectiveVisibleProductResourceSections.has("bite-sized") &&
+              biteSizedResourceDemos.length > 0 && (
+                <div
+                  id={`${sectionId}-bite-sized`}
+                  className="scroll-mt-28 border-t border-white/[0.06] px-5 py-5 sm:px-6"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      onClick={() => toggleProductResourceSection("bite-sized")}
+                      aria-expanded={!collapsedProductResourceSections.has("bite-sized")}
+                      aria-controls={`${`${sectionId}-bite-sized`}-content`}
+                      className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
+                    >
+                      <span>Bite-sized demos</span>
+                      <VideoVisibilityIcon
+                        visible={!collapsedProductResourceSections.has("bite-sized")}
+                      />
+                    </button>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] font-medium text-[#c6c6c6]">
+                        {productResourceAssetCountLabel(sectionCounts["bite-sized"])}
+                      </span>
+                      <span className="font-mono text-[10px] text-[#8d8d8d]">
+                        09 / 09
+                      </span>
+                      <CopySectionLink
+                        id={`${sectionId}-bite-sized`}
+                        label={`${label} bite-sized demos`}
+                      />
+                      <BackToCapabilityTopButton
+                        onBackToTop={collapseCapabilitySubsections}
+                      />
+                    </div>
+                  </div>
+                  {!collapsedProductResourceSections.has("bite-sized") && (
+                    <div id={`${`${sectionId}-bite-sized`}-content`} className="mt-3">
+                      <BiteSizedDemoGrid demos={biteSizedResourceDemos} />
+                    </div>
+                  )}
+                </div>
+              )}
           </div>
         </div>
       </section>
@@ -17506,6 +17537,9 @@ export default function App() {
         resources: portfolioResources.cp4ba,
       },
     ].filter((group) => selectedCapabilityPages.has(group.page))
+    const biteSizedResourceDemos = biteSizedDemosForCapabilities(
+      resourceGroups.map((group) => group.page),
+    )
     const sectionCounts: Record<ProductResourceSection, number> = {
       reference: resourceGroups.reduce(
         (total, group) => total + group.resources.references.length,
@@ -17547,6 +17581,7 @@ export default function App() {
         (total, group) => total + group.resources.youtubePlaylists.length,
         0,
       ),
+      "bite-sized": biteSizedResourceDemos.length,
     }
     const playlistEmbedUrls = resourceGroups.flatMap((group) =>
       group.resources.youtubePlaylists.map((playlist) => playlist.embedUrl),
@@ -17677,7 +17712,7 @@ export default function App() {
                           )}
                         </span>
                         <span className="font-mono text-[10px] text-[#8d8d8d]">
-                          01 / 08
+                          01 / 09
                         </span>
                         <CopySectionLink
                           id="portfolio-product-resources-reference"
@@ -17744,7 +17779,7 @@ export default function App() {
                           )}
                         </span>
                         <span className="font-mono text-[10px] text-[#8d8d8d]">
-                          02 / 08
+                          02 / 09
                         </span>
                         <CopySectionLink
                           id="portfolio-product-resources-previews"
@@ -17814,7 +17849,7 @@ export default function App() {
                       {productResourceAssetCountLabel(sectionCounts.demos)}
                     </span>
                     <span className="font-mono text-[10px] text-[#8d8d8d]">
-                      03 / 08
+                      03 / 09
                     </span>
                     <CopySectionLink
                       id="portfolio-product-resources-demos"
@@ -17893,7 +17928,7 @@ export default function App() {
                       )}
                     </span>
                     <span className="font-mono text-[10px] text-[#8d8d8d]">
-                      04 / 08
+                      04 / 09
                     </span>
                     <CopySectionLink
                       id="portfolio-product-resources-sales-kits"
@@ -17976,7 +18011,7 @@ export default function App() {
                       )}
                     </span>
                     <span className="font-mono text-[10px] text-[#8d8d8d]">
-                      05 / 08
+                      05 / 09
                     </span>
                     <CopySectionLink
                       id="portfolio-product-resources-environments"
@@ -18080,7 +18115,7 @@ export default function App() {
                       )}
                     </span>
                     <span className="font-mono text-[10px] text-[#8d8d8d]">
-                      06 / 08
+                      06 / 09
                     </span>
                     <CopySectionLink
                       id="portfolio-product-resources-techzone-collections"
@@ -18181,7 +18216,7 @@ export default function App() {
                       )}
                     </span>
                     <span className="font-mono text-[10px] text-[#8d8d8d]">
-                      07 / 08
+                      07 / 09
                     </span>
                     <CopySectionLink
                       id="portfolio-product-resources-youtube-playlists"
@@ -18316,7 +18351,7 @@ export default function App() {
                       )}
                     </span>
                     <span className="font-mono text-[10px] text-[#8d8d8d]">
-                      08 / 08
+                      08 / 09
                     </span>
                     <CopySectionLink
                       id="portfolio-product-resources-ai-capabilities"
@@ -18365,6 +18400,49 @@ export default function App() {
                 )}
               </div>
             )}
+
+            {effectiveVisibleProductResourceSections.has("bite-sized") &&
+              biteSizedResourceDemos.length > 0 && (
+                <div
+                  id={"portfolio-product-resources-bite-sized"}
+                  className="scroll-mt-28 border-t border-white/[0.06] px-5 py-5 sm:px-6"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      onClick={() => toggleProductResourceSection("bite-sized")}
+                      aria-expanded={!collapsedProductResourceSections.has("bite-sized")}
+                      aria-controls={`${"portfolio-product-resources-bite-sized"}-content`}
+                      className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#78a9ff] hover:text-white"
+                    >
+                      <span>Bite-sized demos</span>
+                      <VideoVisibilityIcon
+                        visible={!collapsedProductResourceSections.has("bite-sized")}
+                      />
+                    </button>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] font-medium text-[#c6c6c6]">
+                        {productResourceAssetCountLabel(sectionCounts["bite-sized"])}
+                      </span>
+                      <span className="font-mono text-[10px] text-[#8d8d8d]">
+                        09 / 09
+                      </span>
+                      <CopySectionLink
+                        id={"portfolio-product-resources-bite-sized"}
+                        label={"Product bite-sized demos"}
+                      />
+                      <BackToCapabilityTopButton
+                        onBackToTop={collapseCapabilitySubsections}
+                      />
+                    </div>
+                  </div>
+                  {!collapsedProductResourceSections.has("bite-sized") && (
+                    <div id={`${"portfolio-product-resources-bite-sized"}-content`} className="mt-3">
+                      <BiteSizedDemoGrid demos={biteSizedResourceDemos} />
+                    </div>
+                  )}
+                </div>
+              )}
           </div>
         </div>
       </section>
@@ -18543,6 +18621,17 @@ export default function App() {
               url: "url" in c ? c.url : undefined,
             }),
           ),
+        )
+      } else if (filter.id === "bite-sized") {
+        biteSizedDemosForCapabilities(groups.map((g) => g.page)).forEach((d) =>
+          baseRows.push({
+            section,
+            capability: "BA",
+            color: "#4589ff",
+            name: d.title,
+            detail: d.description,
+            url: d.url,
+          }),
         )
       }
     }
@@ -18986,7 +19075,6 @@ export default function App() {
         })),
         { id: "portfolio-product-resources", label: "Product resources" },
         ...resourceSubsections("portfolio-product-resources"),
-        { id: "capabilities-all-bite-sized-demos", label: "Bite-sized demos" },
       ]
     }
     if (selectedCapabilityPages.size !== 1) return []
@@ -19004,7 +19092,6 @@ export default function App() {
         { id: "cp4ba-value", label: "Business value" },
         { id: "cp4ba-product-resources", label: "Product resources" },
         ...resourceSubsections("cp4ba-product-resources"),
-        { id: "cp4ba-bite-sized-demos", label: "Bite-sized demos" },
       ]
     }
     return [
@@ -19014,7 +19101,6 @@ export default function App() {
       { id: `${page}-products`, label: "Products and solutions" },
       { id: `${page}-product-resources`, label: "Product resources" },
       ...resourceSubsections(`${page}-product-resources`),
-      { id: `${page}-bite-sized-demos`, label: "Bite-sized demos" },
     ]
   })()
   const navigateToCapabilityContent = (id: string) => {
@@ -19279,8 +19365,6 @@ export default function App() {
               ? "Badge"
               : currentPage === "yl"
                 ? "YL"
-                : currentPage === "bite-sized-demos"
-                  ? "Bite-Sized Demos"
                 : currentPage === "lets-create"
                   ? "Let's Create!"
                   : currentPage === "conference"
@@ -19522,7 +19606,6 @@ export default function App() {
                       ["badges", "Badge"],
                       ["yl", "YL"],
                       ["lets-create", "Let's Create!"],
-                      ["bite-sized-demos", "Bite-Sized Demos"],
                     ] as const).map(([page, label]) => {
                       const isActive =
                         page === "capabilities"
@@ -19675,8 +19758,6 @@ export default function App() {
                                       ? `${badgeEntries.length} Business Automation badges`
                                       : currentPage === "yl"
                                         ? "Learning plan courses by level"
-                                        : currentPage === "bite-sized-demos"
-                                          ? `${biteSizedDemos.length} bite-sized demos across ${biteSizedDemoCategories.length} categories`
                                         : currentPage === "lets-create"
                                           ? "Learn, demo, and build with Business Automation"
                                           : currentPage === "overview"
@@ -20351,8 +20432,6 @@ export default function App() {
           <VideosPage />
         ) : currentPage === "yl" ? (
           <YLPage />
-        ) : currentPage === "bite-sized-demos" ? (
-          <BiteSizedDemosPage />
         ) : currentPage === "lets-create" ? (
           <section
             id="lets-create-top"
@@ -20526,9 +20605,7 @@ export default function App() {
                         </div>
                         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
                           {letsCreateSections.map((sec, idx) => {
-                            const count = letsCreateAssets.filter(
-                              (a) => a.section === sec.id,
-                            ).length
+                            const count = letsCreateSectionCount(sec.id)
                             const isSecShown = effectiveLetsCreateSections.has(
                               sec.id,
                             )
@@ -20567,7 +20644,7 @@ export default function App() {
                                       {String(idx + 1).padStart(2, "0")}
                                     </span>
                                     <span className="rounded-full bg-white/5 px-2 py-0.5 text-[9px] font-medium text-[#c6c6c6]">
-                                      {count} {count === 1 ? "asset" : "assets"}
+                                      {count} {letsCreateSectionNoun(sec.id, count)}
                                     </span>
                                   </div>
                                   <h5 className="mt-1 text-sm font-semibold text-white group-hover:text-[#a6c8ff]">
@@ -20740,10 +20817,15 @@ export default function App() {
                                 </button>
                               )}
                               <span className="text-[10px] font-medium text-[#c6c6c6]">
-                                {sectionAssets.length}{" "}
-                                {sectionAssets.length === 1
-                                  ? "asset"
-                                  : "assets"}
+                                {section.id === "bite-sized-demos"
+                                  ? biteSizedDemos.length
+                                  : sectionAssets.length}{" "}
+                                {letsCreateSectionNoun(
+                                  section.id,
+                                  section.id === "bite-sized-demos"
+                                    ? biteSizedDemos.length
+                                    : sectionAssets.length,
+                                )}
                               </span>
                               <CopySectionLink
                                 id={sectionId}
@@ -20752,7 +20834,9 @@ export default function App() {
                             </div>
                           </div>
                           <div id={bodyId} hidden={isCollapsed} className="p-5">
-                            {section.id === "technical-accelerators" &&
+                            {section.id === "bite-sized-demos" ? (
+                              <BiteSizedDemosGroups />
+                            ) : section.id === "technical-accelerators" &&
                             technicalAcceleratorsView === "table" ? (
                               <TableView
                                 label="Technical Accelerators"
@@ -20916,14 +21000,6 @@ export default function App() {
                       )
                     })}
                   </div>
-
-                  <BiteSizedDemosSection
-                    id="lets-create-bite-sized-demos"
-                    title="Bite-Sized Demos"
-                    description="Short, focused demos across Business Automation, grouped by product area."
-                    demos={biteSizedDemos}
-                    onOpenPage={(page) => navigateToPage(page)}
-                  />
 
                   <section
                     id="lets-create-table-view"
@@ -21810,17 +21886,6 @@ export default function App() {
 
               {selectedCapabilityPages.size > 1 &&
                 renderCombinedPortfolioProductResources()}
-              {selectedCapabilityPages.size > 0 && (
-                <BiteSizedDemosSection
-                  id="capabilities-all-bite-sized-demos"
-                  title="Bite-sized demos"
-                  description="Short demos for the capabilities shown above."
-                  demos={biteSizedDemosForCapabilities([
-                    ...selectedCapabilityPages,
-                  ])}
-                  onOpenPage={(page) => navigateToPage(page)}
-                />
-              )}
             </section>
           </>
         ) : activeBusinessAutomationCapability ? (
@@ -22033,16 +22098,6 @@ export default function App() {
               {renderCapabilityProductResources(
                 activeBusinessAutomationCapability.page,
               )}
-
-              <BiteSizedDemosSection
-                id={`${activeBusinessAutomationCapability.page}-bite-sized-demos`}
-                title={`${activeBusinessAutomationCapability.title} bite-sized demos`}
-                description="Short demos for this capability."
-                demos={biteSizedDemosForCapabilities([
-                  activeBusinessAutomationCapability.page,
-                ])}
-                onOpenPage={(page) => navigateToPage(page)}
-              />
 
               <div className="mt-8 flex flex-col justify-between gap-4 rounded-xl border border-[#4589ff]/25 bg-[#0f62fe]/10 px-6 py-5 sm:flex-row sm:items-center">
                 <div>
@@ -22403,14 +22458,6 @@ export default function App() {
               </div>
 
               {renderCapabilityProductResources("cp4ba")}
-
-              <BiteSizedDemosSection
-                id="cp4ba-bite-sized-demos"
-                title="CP4BA bite-sized demos"
-                description="Short demos across the Cloud Pak for Business Automation platform."
-                demos={biteSizedDemosForCapabilities(["cp4ba"])}
-                onOpenPage={(page) => navigateToPage(page)}
-              />
             </section>
           </>
         ) : currentPage === "conference" ? (
