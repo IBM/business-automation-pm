@@ -9590,7 +9590,7 @@ function BiteSizedDemoGrid({
   demos: BiteSizedDemo[]
   // Gives each card its own anchor so site search can jump to it. Use it on one grid per page.
   cardAnchors?: boolean
-  // Product Resources variant: shows product tags and leaves out the "Link" format tag.
+  // Product Resources variant: also shows product tags.
   showProducts?: boolean
 }) {
   return (
@@ -9602,7 +9602,7 @@ function BiteSizedDemoGrid({
           className="flex scroll-mt-28 flex-col rounded-xl border border-white/[0.07] bg-[#161616] p-4"
         >
           <div className="flex flex-wrap items-center gap-1.5">
-            {!(showProducts && demo.format === "Link") && (
+            {demo.format !== "Link" && (
               <span
                 className={`${biteSizedTagClass} ${
                   demo.format === "Video"
@@ -15030,7 +15030,7 @@ function buildGlobalSearchEntries(): GlobalSearchEntry[] {
         pages: ["lets-create"],
         title: demo.title,
         subtitle: [
-          demo.format,
+          demo.format !== "Link" && demo.format,
           demo.audience && capitalize(demo.audience),
           demo.purpose && capitalize(demo.purpose),
         ]
