@@ -1985,7 +1985,7 @@ const technicalAcceleratorFolders: {
 
 // Add assets here. Each one is placed in a section and tagged with one capability
 // and the products it relates to; the filters on the page use those tags.
-// Products must match names in letsCreateProductsByCapability below.
+// Products appear in the Products filter automatically, so a new product name needs no other change.
 const letsCreateAssets: LetsCreateAsset[] = [
   {
     name: "Jam-in-a-Box for Business Automation (CP4BA 25.0.1)",
@@ -2141,8 +2141,15 @@ const letsCreateProductsByCapability = new Map<string, string[]>([
   ),
   ["cp4ba", ["IBM Cloud Pak for Business Automation"]],
 ])
+// Every product on the page: the capabilities' products, plus any product an asset or a bite-sized demo is tagged with.
 const letsCreateProductOptions = Array.from(
-  new Set([...letsCreateProductsByCapability.values()].flat()),
+  new Set([
+    ...letsCreateProductsByCapability.values(),
+    ...letsCreateAssets.map((asset) => asset.products),
+    ...biteSizedDemosData.demos.map(
+      (demo) => (demo as { products?: string[] }).products ?? [],
+    ),
+  ].flat()),
 )
   .sort((a, b) => a.localeCompare(b))
   .map((product) => ({ id: product, label: product }))
@@ -9553,6 +9560,25 @@ const letsCreateSectionNoun = (sectionId: LetsCreateSection, count: number) =>
       ? "asset"
       : "assets"
 
+// Whether a demo passes the Let's Create! Capabilities and Products filters. Same rule as the assets
+// (a capability or a product match is enough), with capabilities taken from the demo's categories.
+// Untouched filters (all selected, or none) show every demo.
+const biteSizedDemoMatchesLetsCreateFilters = (
+  demo: BiteSizedDemo,
+  capabilities: Set<string>,
+  products: Set<string>,
+) => {
+  const allCapabilities = capabilities.size === communityCapabilityOptions.length
+  const allProducts = products.size === letsCreateProductOptions.length
+  if ((allCapabilities && allProducts) || (capabilities.size === 0 && products.size === 0))
+    return true
+  return (
+    [...capabilities].some((capability) =>
+      biteSizedDemosForCapabilities([capability]).includes(demo),
+    ) || (demo.products ?? []).some((product) => products.has(product))
+  )
+}
+
 const biteSizedTagClass =
   "rounded-full border border-white/[0.1] bg-white/[0.03] px-2 py-0.5 text-[10px] font-medium text-[#c6c6c6]"
 
@@ -9876,29 +9902,41 @@ function BiteSizedDemosGroup({
 }
 
 // Body of the Bite-Sized Demos section on Let's Create!: every demo, then one group per product area.
-function BiteSizedDemosGroups() {
+function BiteSizedDemosGroups({ demos }: { demos: BiteSizedDemo[] }) {
+  if (demos.length === 0)
+    return (
+      <p className="text-sm text-[#8d8d8d]">
+        No bite-sized demos match the selected capabilities and products.
+      </p>
+    )
   return (
     <div className="grid gap-4">
       <BiteSizedDemosGroup
         id="lets-create-bite-sized-demos-all"
         title="All demos"
         description="Every bite-sized demo. A demo that spans several product areas also appears under each one below."
-        demos={biteSizedDemos}
+        demos={demos}
         cardAnchors
       />
-      {biteSizedDemoCategories.map((category) => (
-        <BiteSizedDemosGroup
-          key={category.id}
-          id={`lets-create-bite-sized-demos-category-${category.id}`}
-          title={category.label}
-          description={category.description}
-          demos={biteSizedDemos.filter((demo) =>
+      {biteSizedDemoCategories
+        .map((category) => ({
+          category,
+          categoryDemos: demos.filter((demo) =>
             demo.categories.includes(category.id),
-          )}
-          filterable={false}
-          defaultCollapsed
-        />
-      ))}
+          ),
+        }))
+        .filter(({ categoryDemos }) => categoryDemos.length > 0)
+        .map(({ category, categoryDemos }) => (
+          <BiteSizedDemosGroup
+            key={category.id}
+            id={`lets-create-bite-sized-demos-category-${category.id}`}
+            title={category.label}
+            description={category.description}
+            demos={categoryDemos}
+            filterable={false}
+            defaultCollapsed
+          />
+        ))}
     </div>
   )
 }
@@ -20482,6 +20520,13 @@ export default function App() {
                       letsCreateProducts.has(product),
                     )),
               )
+              const visibleBiteSizedDemos = biteSizedDemos.filter((demo) =>
+                biteSizedDemoMatchesLetsCreateFilters(
+                  demo,
+                  letsCreateCapabilities,
+                  letsCreateProducts,
+                ),
+              )
               const handleCapabilityChange = (next: Set<string>) => {
                 const added = [...next].filter(
                   (id) => !letsCreateCapabilities.has(id),
@@ -20851,12 +20896,12 @@ export default function App() {
                               )}
                               <span className="text-[10px] font-medium text-[#c6c6c6]">
                                 {section.id === "bite-sized-demos"
-                                  ? biteSizedDemos.length
+                                  ? visibleBiteSizedDemos.length
                                   : sectionAssets.length}{" "}
                                 {letsCreateSectionNoun(
                                   section.id,
                                   section.id === "bite-sized-demos"
-                                    ? biteSizedDemos.length
+                                    ? visibleBiteSizedDemos.length
                                     : sectionAssets.length,
                                 )}
                               </span>
@@ -20868,7 +20913,7 @@ export default function App() {
                           </div>
                           <div id={bodyId} hidden={isCollapsed} className="p-5">
                             {section.id === "bite-sized-demos" ? (
-                              <BiteSizedDemosGroups />
+                              <BiteSizedDemosGroups demos={visibleBiteSizedDemos} />
                             ) : section.id === "technical-accelerators" &&
                             technicalAcceleratorsView === "table" ? (
                               <TableView
