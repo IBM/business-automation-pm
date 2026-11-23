@@ -9925,7 +9925,7 @@ function BiteSizedDemosGroup({
               aria-label="Filter by format"
               className="mt-2 flex flex-wrap gap-2"
             >
-              {(["Video"] as const).map((format) => {
+              {(["Video", "Link"] as const).map((format) => {
                 const active = selectedFormat === format
                 return (
                   <button
