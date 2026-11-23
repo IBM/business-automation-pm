@@ -1,12 +1,57 @@
 {
   "categories": [
-    { "id": "ai", "label": "AI", "description": "Generative AI, agents, MCP, and Bob across Business Automation." },
-    { "id": "content", "label": "Content & Document Processing", "description": "Content Services, Content Cortex, CMOD, Datacap, and document processing." },
-    { "id": "decisions", "label": "Decisions", "description": "ODM and BAMOE decision services." },
-    { "id": "bai", "label": "Business Automation Insights", "description": "Operational intelligence and dashboards." },
-    { "id": "bwl-pm", "label": "Blueworks Live & Process Mining", "description": "Process discovery, modeling, and mining." },
-    { "id": "rpa", "label": "RPA", "description": "Robotic process automation." },
-    { "id": "baw", "label": "Workflow (BAW)", "description": "Business Automation Workflow and BAMOE BPMN." }
+    {
+      "id": "ai",
+      "label": "AI",
+      "description": "Generative AI, agents, MCP, and Bob across Business Automation.",
+      "capabilities": []
+    },
+    {
+      "id": "content",
+      "label": "Content & Document Processing",
+      "description": "Content Services, Content Cortex, CMOD, Datacap, and document processing.",
+      "capabilities": [
+        "content-services"
+      ]
+    },
+    {
+      "id": "decisions",
+      "label": "Decisions",
+      "description": "ODM and BAMOE decision services.",
+      "capabilities": [
+        "decision-intelligence"
+      ]
+    },
+    {
+      "id": "bai",
+      "label": "Business Automation Insights",
+      "description": "Operational intelligence and dashboards.",
+      "capabilities": []
+    },
+    {
+      "id": "bwl-pm",
+      "label": "Blueworks Live & Process Mining",
+      "description": "Process discovery, modeling, and mining.",
+      "capabilities": [
+        "process-automation"
+      ]
+    },
+    {
+      "id": "rpa",
+      "label": "RPA",
+      "description": "Robotic process automation.",
+      "capabilities": [
+        "process-automation"
+      ]
+    },
+    {
+      "id": "baw",
+      "label": "Workflow (BAW)",
+      "description": "Business Automation Workflow and BAMOE BPMN.",
+      "capabilities": [
+        "process-automation"
+      ]
+    }
   ],
   "demos": [
     {
@@ -16,7 +61,10 @@
       "format": "Link",
       "audience": "business",
       "purpose": "sales",
-      "categories": ["ai", "bwl-pm"],
+      "categories": [
+        "ai",
+        "bwl-pm"
+      ],
       "url": "https://ibm.box.com/s/krjdsk4yyo001akjqweslrkdgjii09xo"
     },
     {
@@ -26,7 +74,10 @@
       "format": "Link",
       "audience": "business",
       "purpose": "sales",
-      "categories": ["ai", "content"],
+      "categories": [
+        "ai",
+        "content"
+      ],
       "url": "https://ibm.box.com/s/fomvjxdk2jsrnehirexo9xdvof4v2pzj"
     },
     {
@@ -36,7 +87,9 @@
       "format": "Link",
       "audience": "business",
       "purpose": "sales",
-      "categories": ["ai"],
+      "categories": [
+        "ai"
+      ],
       "url": "https://ibm.box.com/s/ez6iifazwqqxay7wh8aiqg090vnzb7ro"
     },
     {
@@ -46,7 +99,10 @@
       "format": "Link",
       "audience": "technical",
       "purpose": "enablement",
-      "categories": ["ai", "baw"],
+      "categories": [
+        "ai",
+        "baw"
+      ],
       "url": "https://ibm.box.com/s/h4fic9rryo3eo4eqon2quymjtxw6xx4x"
     },
     {
@@ -56,7 +112,10 @@
       "format": "Link",
       "audience": "technical",
       "purpose": "enablement",
-      "categories": ["ai", "content"],
+      "categories": [
+        "ai",
+        "content"
+      ],
       "url": "https://ibm.box.com/s/jraecln4yr249mxhmycfzruo88j12ihi"
     },
     {
@@ -66,7 +125,9 @@
       "format": "Link",
       "audience": "technical",
       "purpose": "enablement",
-      "categories": ["ai"],
+      "categories": [
+        "ai"
+      ],
       "url": "https://ibm.box.com/s/njcwyb12algzjrir2nfnyjwdyq7rmd7f"
     },
     {
@@ -76,7 +137,9 @@
       "format": "Link",
       "audience": "business",
       "purpose": "sales",
-      "categories": ["ai"],
+      "categories": [
+        "ai"
+      ],
       "url": "https://ibm.box.com/s/ihxr9nx6e35pecl398q2woiu64tq8tzy"
     },
     {
@@ -86,7 +149,10 @@
       "format": "Link",
       "audience": "business",
       "purpose": "sales",
-      "categories": ["ai", "content"],
+      "categories": [
+        "ai",
+        "content"
+      ],
       "url": "https://ibm.box.com/s/klnr156seejx1ehn9kf7jc2lqqwnfit0"
     },
     {
@@ -96,7 +162,9 @@
       "format": "Link",
       "audience": "technical",
       "purpose": "enablement",
-      "categories": ["ai"],
+      "categories": [
+        "ai"
+      ],
       "url": "https://ibm.box.com/s/3je772vmrkrwa6kvridixz560l697abd"
     },
     {
@@ -106,7 +174,10 @@
       "format": "Link",
       "audience": "business",
       "purpose": "enablement",
-      "categories": ["ai", "content"],
+      "categories": [
+        "ai",
+        "content"
+      ],
       "url": "https://ibm.box.com/s/boatruocetyv62ddpm94tajsbm7qs12c"
     },
     {
@@ -114,7 +185,10 @@
       "title": "Datacap redaction with watsonx.ai",
       "description": "A Datacap redaction use case augmented with watsonx.ai for LLM based processing.",
       "format": "Video",
-      "categories": ["ai", "content"],
+      "categories": [
+        "ai",
+        "content"
+      ],
       "url": "https://ibm.box.com/s/7nr9xv35ld1o955qv66y2f5tw1qabzey"
     },
     {
@@ -124,7 +198,12 @@
       "format": "Video",
       "audience": "technical",
       "purpose": "learning",
-      "categories": ["ai", "content", "decisions", "baw"],
+      "categories": [
+        "ai",
+        "content",
+        "decisions",
+        "baw"
+      ],
       "url": "https://ibm.ent.box.com/s/5q5xbtkyp994dkiybv9k2o2hmi3v8t8b/file/1277028474846"
     },
     {
@@ -132,7 +211,11 @@
       "title": "Datacap redaction with BAW and watsonx.ai",
       "description": "A Datacap redaction use case that integrates to both BAW for the surrounding business workflow and watsonx.ai for LLM based processing.",
       "format": "Video",
-      "categories": ["ai", "content", "baw"],
+      "categories": [
+        "ai",
+        "content",
+        "baw"
+      ],
       "url": "https://ibm.box.com/s/7oi74aph5gogni0u5x3dmc1r9g9q7pyu"
     },
     {
@@ -140,7 +223,11 @@
       "title": "BAW and embedded Generative AI",
       "description": "A BAW use case for embedding a call to the new Generative AI component for document extraction.",
       "format": "Video",
-      "categories": ["ai", "content", "baw"],
+      "categories": [
+        "ai",
+        "content",
+        "baw"
+      ],
       "url": "https://ibm.box.com/s/ojrebvaolh5laxwv6hrapro6warjvb9u"
     },
     {
@@ -148,7 +235,10 @@
       "title": "Gen AI Task - Client Onboarding Demo",
       "description": "Video demo of BAW using generative AI during a client onboarding use case.",
       "format": "Video",
-      "categories": ["ai", "baw"],
+      "categories": [
+        "ai",
+        "baw"
+      ],
       "url": "https://ibm.seismic.com/Link/Content/DCQdDpG77VJb4GHBc2j673bXgmBP"
     },
     {
@@ -156,7 +246,10 @@
       "title": "Gen AI Task - Hiring Sample Demo",
       "description": "Video demo of BAW using a gen AI task during a hiring workflow use case.",
       "format": "Video",
-      "categories": ["ai", "baw"],
+      "categories": [
+        "ai",
+        "baw"
+      ],
       "url": "https://ibm.seismic.com/Link/Content/DCTFdPb4hGQhdG4MQ9BMpXQpppcj"
     },
     {
@@ -164,7 +257,9 @@
       "title": "CMOD and Content Navigator",
       "description": "Using Content Navigator (ICN) to access and review CMOD content.",
       "format": "Link",
-      "categories": ["content"],
+      "categories": [
+        "content"
+      ],
       "url": "https://ibm.box.com/s/u074fr471d9ua6cyxbw0e8b0vonhdkyx"
     },
     {
@@ -172,7 +267,9 @@
       "title": "Search Watermarks - IBM Content Services",
       "description": "No audio demo showcasing search watermarks capability.",
       "format": "Video",
-      "categories": ["content"],
+      "categories": [
+        "content"
+      ],
       "url": "https://ibm.ent.box.com/s/5q5xbtkyp994dkiybv9k2o2hmi3v8t8b/file/1354956935383"
     },
     {
@@ -182,7 +279,9 @@
       "format": "Video",
       "audience": "business",
       "purpose": "learning",
-      "categories": ["content"],
+      "categories": [
+        "content"
+      ],
       "url": "https://ibm.ent.box.com/s/5q5xbtkyp994dkiybv9k2o2hmi3v8t8b/file/995371259971"
     },
     {
@@ -190,7 +289,9 @@
       "title": "GraphQL Introduction",
       "description": "Demo introducing GraphQL interface.",
       "format": "Video",
-      "categories": ["content"],
+      "categories": [
+        "content"
+      ],
       "url": "https://ibm.ent.box.com/s/5q5xbtkyp994dkiybv9k2o2hmi3v8t8b/file/1354958943723"
     },
     {
@@ -198,7 +299,9 @@
       "title": "Salesforce User Demo",
       "description": "Bite sized demo with no audio showing Salesforce connection.",
       "format": "Video",
-      "categories": ["content"],
+      "categories": [
+        "content"
+      ],
       "url": "https://ibm.ent.box.com/s/5q5xbtkyp994dkiybv9k2o2hmi3v8t8b/file/1354955834348?sb=/details"
     },
     {
@@ -208,7 +311,9 @@
       "format": "Link",
       "audience": "technical",
       "purpose": "sales",
-      "categories": ["content"],
+      "categories": [
+        "content"
+      ],
       "url": "https://ibm.box.com/s/0kujkarimih44bt359iugpiwtg8r7pa7"
     },
     {
@@ -218,7 +323,10 @@
       "format": "Link",
       "audience": "technical",
       "purpose": "sales",
-      "categories": ["content", "rpa"],
+      "categories": [
+        "content",
+        "rpa"
+      ],
       "url": "https://ibm.box.com/s/6yzt435lyouxrf2bj3awiewxbq0jd3cp"
     },
     {
@@ -228,7 +336,14 @@
       "format": "Link",
       "audience": "business",
       "purpose": "sales",
-      "categories": ["content", "decisions", "bai", "bwl-pm", "rpa", "baw"],
+      "categories": [
+        "content",
+        "decisions",
+        "bai",
+        "bwl-pm",
+        "rpa",
+        "baw"
+      ],
       "url": "https://ibm.box.com/s/lp9yc75pui9ca311f9t21bva5juzw2gw"
     },
     {
@@ -236,7 +351,9 @@
       "title": "ODM with Bob mode, skills, and MCP",
       "description": "Use the latest Bob mode and skills with ODM, including ODM Rule Project & Decision Service extension, Rule Designer mode, Builder skills, and Management MCP server.",
       "format": "Link",
-      "categories": ["decisions"],
+      "categories": [
+        "decisions"
+      ],
       "url": "https://ibm.box.com/s/yrfwmwoc7c2gw5e63elly5ms9y92zvw2"
     },
     {
@@ -246,7 +363,9 @@
       "format": "Link",
       "audience": "technical",
       "purpose": "enablement",
-      "categories": ["decisions"],
+      "categories": [
+        "decisions"
+      ],
       "url": "https://ibm.box.com/s/iyi3fshec62rd67j0pmt3wv4z7clruqv"
     },
     {
@@ -256,7 +375,9 @@
       "format": "Link",
       "audience": "technical",
       "purpose": "sales",
-      "categories": ["decisions"],
+      "categories": [
+        "decisions"
+      ],
       "url": "https://ibm.box.com/s/9nlt0f3cghm1qc3tedh4b618dbs14s5s"
     },
     {
@@ -266,7 +387,9 @@
       "format": "Video",
       "audience": "business",
       "purpose": "sales",
-      "categories": ["bai"],
+      "categories": [
+        "bai"
+      ],
       "url": "https://ibm.ent.box.com/s/5q5xbtkyp994dkiybv9k2o2hmi3v8t8b/file/1066047017398"
     },
     {
@@ -276,7 +399,9 @@
       "format": "Link",
       "audience": "business",
       "purpose": "sales",
-      "categories": ["bwl-pm"],
+      "categories": [
+        "bwl-pm"
+      ],
       "url": "https://ibm.box.com/s/l4vqcsbwi9st9piz75ajeovudgni1ahi"
     },
     {
@@ -286,7 +411,9 @@
       "format": "Video",
       "audience": "business",
       "purpose": "sales",
-      "categories": ["bwl-pm"],
+      "categories": [
+        "bwl-pm"
+      ],
       "url": "https://ibm.box.com/s/i7rx2fpbob40t9s3w9vmhei7zkwuyo6o"
     },
     {
@@ -296,7 +423,10 @@
       "format": "Link",
       "audience": "technical",
       "purpose": "sales",
-      "categories": ["bwl-pm", "rpa"],
+      "categories": [
+        "bwl-pm",
+        "rpa"
+      ],
       "url": "https://ibm.box.com/s/hzdgnrks8j26tjsdp1fimj1cag09g6wu"
     },
     {
@@ -306,7 +436,9 @@
       "format": "Link",
       "audience": "technical",
       "purpose": "sales",
-      "categories": ["baw"],
+      "categories": [
+        "baw"
+      ],
       "url": "https://ibm.box.com/s/5p75av32cob90yvw5rouy829bdkt0wkl"
     },
     {
@@ -316,7 +448,9 @@
       "format": "Link",
       "audience": "technical",
       "purpose": "enablement",
-      "categories": ["baw"],
+      "categories": [
+        "baw"
+      ],
       "url": "https://ibm.box.com/s/raq5lbep362lmnhsf2754md7k6rgfymr"
     },
     {
@@ -326,7 +460,9 @@
       "format": "Link",
       "audience": "technical",
       "purpose": "learning",
-      "categories": ["baw"],
+      "categories": [
+        "baw"
+      ],
       "url": "https://ibm.box.com/s/qc2wz2ovhlo514rfjsu36mdupp2gkjvt"
     },
     {
@@ -336,7 +472,9 @@
       "format": "Link",
       "audience": "technical",
       "purpose": "enablement",
-      "categories": ["baw"],
+      "categories": [
+        "baw"
+      ],
       "url": "https://ibm.box.com/s/23jvxvwdajypuvky3lej4vevwb8yo3ka"
     },
     {
@@ -346,7 +484,9 @@
       "format": "Link",
       "audience": "technical",
       "purpose": "learning",
-      "categories": ["baw"],
+      "categories": [
+        "baw"
+      ],
       "url": "https://ibm.box.com/s/5dn1mvakxzxjyb7baokinl0fiqd5qt6l"
     },
     {
@@ -356,7 +496,9 @@
       "format": "Video",
       "audience": "technical",
       "purpose": "enablement",
-      "categories": ["baw"],
+      "categories": [
+        "baw"
+      ],
       "url": "https://ibm.box.com/s/2pamhhf1qcnp55khfg9blluogodvek89"
     },
     {
@@ -366,7 +508,9 @@
       "format": "Video",
       "audience": "technical",
       "purpose": "enablement",
-      "categories": ["baw"],
+      "categories": [
+        "baw"
+      ],
       "url": "https://ibm.box.com/s/yljvo7zbitudyuu2ppd9ddaft8uh8qgc"
     }
   ]

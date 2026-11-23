@@ -9508,15 +9508,58 @@ interface BiteSizedDemo {
   url: string
 }
 
-const biteSizedDemoCategories = biteSizedDemosData.categories
+interface BiteSizedDemoCategory {
+  id: string
+  label: string
+  description: string
+  // Product capability pages this category belongs to.
+  capabilities: string[]
+}
+
+const biteSizedDemoCategories =
+  biteSizedDemosData.categories as BiteSizedDemoCategory[]
 const biteSizedDemos = biteSizedDemosData.demos as BiteSizedDemo[]
 const biteSizedDemoCategoryLabel = (id: string) =>
   biteSizedDemoCategories.find((category) => category.id === id)?.label ?? id
 const biteSizedDemoAnchor = (id: string) => `bite-sized-demos-${id}`
 const capitalize = (value: string) =>
   `${value.charAt(0).toUpperCase()}${value.slice(1)}`
+// Demos for the selected Product capabilities. CP4BA is the whole platform, so it shows every demo.
+const biteSizedDemosForCapabilities = (pages: string[]) =>
+  pages.includes("cp4ba")
+    ? biteSizedDemos
+    : biteSizedDemos.filter((demo) =>
+        demo.categories.some((categoryId) =>
+          biteSizedDemoCategories
+            .find((category) => category.id === categoryId)
+            ?.capabilities.some((page) => pages.includes(page)),
+        ),
+      )
 
-function BiteSizedDemosPage() {
+function BiteSizedDemosSection({
+  id,
+  title,
+  description,
+  demos,
+  eyebrow = "Bite-Sized Demos",
+  filterable = true,
+  defaultCollapsed = false,
+  cardAnchors = false,
+  onOpenPage,
+}: {
+  id: string
+  title: string
+  description?: string
+  demos: BiteSizedDemo[]
+  eyebrow?: string
+  filterable?: boolean
+  defaultCollapsed?: boolean
+  // Gives each card its own anchor so site search can jump to it. Use it on one section per page.
+  cardAnchors?: boolean
+  // When set, shows a button that opens the full Bite-Sized Demos page.
+  onOpenPage?: (page: Page) => void
+}) {
+  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed)
   const [query, setQuery] = useState("")
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
     () => new Set(),
@@ -9524,8 +9567,24 @@ function BiteSizedDemosPage() {
   const [selectedFormat, setSelectedFormat] = useState<
     BiteSizedDemo["format"] | null
   >(null)
+  useEffect(() => {
+    const expandFromHash = () => {
+      const hash = window.location.hash
+      if (
+        hash === `#${id}` ||
+        (cardAnchors &&
+          biteSizedDemos.some(
+            (demo) => hash === `#${biteSizedDemoAnchor(demo.id)}`,
+          ))
+      )
+        setIsCollapsed(false)
+    }
+    expandFromHash()
+    window.addEventListener("hashchange", expandFromHash)
+    return () => window.removeEventListener("hashchange", expandFromHash)
+  }, [id, cardAnchors])
   const tokens = query.toLowerCase().split(/\s+/).filter(Boolean)
-  const visibleDemos = biteSizedDemos.filter(
+  const visibleDemos = demos.filter(
     (demo) =>
       (selectedCategories.size === 0 ||
         demo.categories.some((category) => selectedCategories.has(category))) &&
@@ -9543,13 +9602,14 @@ function BiteSizedDemosPage() {
           .includes(token),
       ),
   )
-  const countFor = (id: string) =>
-    biteSizedDemos.filter((demo) => demo.categories.includes(id)).length
-  const toggleCategory = (id: string) =>
+  const sectionCategories = biteSizedDemoCategories.filter((category) =>
+    demos.some((demo) => demo.categories.includes(category.id)),
+  )
+  const toggleCategory = (categoryId: string) =>
     setSelectedCategories((current) => {
       const next = new Set(current)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
+      if (next.has(categoryId)) next.delete(categoryId)
+      else next.add(categoryId)
       return next
     })
   const pillClass = (active: boolean) =>
@@ -9566,13 +9626,232 @@ function BiteSizedDemosPage() {
     "rounded-full border border-white/[0.1] bg-white/[0.03] px-2 py-0.5 text-[10px] font-medium text-[#c6c6c6]"
   const isFiltered =
     selectedCategories.size > 0 || selectedFormat !== null || tokens.length > 0
+  const bodyId = `${id}-body`
+  return (
+    <article
+      id={id}
+      aria-labelledby={`${id}-heading`}
+      className="mt-6 scroll-mt-28 overflow-hidden rounded-xl border border-white/[0.07] bg-[#262626]"
+    >
+      <div
+        className={`flex items-start justify-between gap-4 px-5 py-4 ${
+          isCollapsed ? "" : "border-b border-white/[0.06]"
+        }`}
+      >
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#78a9ff]">
+            {eyebrow}
+          </p>
+          <h3
+            id={`${id}-heading`}
+            className="mt-1 text-base font-semibold text-white"
+          >
+            <button
+              type="button"
+              onClick={() => setIsCollapsed((collapsed) => !collapsed)}
+              aria-expanded={!isCollapsed}
+              aria-controls={bodyId}
+              title={`${isCollapsed ? "Expand" : "Collapse"} ${title}`}
+              className="inline-flex items-center gap-3 rounded-md text-left transition-colors hover:text-[#a6c8ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+            >
+              {title}
+              <span className="text-xs font-medium text-[#c6c6c6]">
+                {demos.length} {demos.length === 1 ? "demo" : "demos"}
+              </span>
+              <span className="text-[#78a9ff]">
+                <VideoVisibilityIcon visible={!isCollapsed} />
+              </span>
+            </button>
+          </h3>
+          {!isCollapsed && description && (
+            <p className="mt-1 max-w-3xl text-xs leading-relaxed text-[#c6c6c6]">
+              {description}
+            </p>
+          )}
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {onOpenPage && (
+            <button
+              type="button"
+              onClick={() => onOpenPage("bite-sized-demos")}
+              className={letsCreateControlClass}
+            >
+              Open full page
+            </button>
+          )}
+          <CopySectionLink id={id} label={title} />
+        </div>
+      </div>
+      <div id={bodyId} hidden={isCollapsed} className="p-5">
+        {filterable && (
+          <div className="mb-5 rounded-lg border border-white/[0.08] bg-[#161616] p-4">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <label
+                htmlFor={`${id}-search`}
+                className="text-sm font-semibold text-white"
+              >
+                Search
+              </label>
+              <span
+                aria-live="polite"
+                className="text-xs font-medium text-[#c6c6c6]"
+              >
+                {visibleDemos.length} of {demos.length} demos
+              </span>
+              {isFiltered && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("")
+                    setSelectedCategories(new Set())
+                    setSelectedFormat(null)
+                  }}
+                  className={`${letsCreateControlClass} ml-auto`}
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
+            <div className="relative mt-3">
+              <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8d8d8d]" />
+              <input
+                id={`${id}-search`}
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search title, description, category"
+                className="h-9 w-full rounded-md border border-white/[0.1] bg-[#262626] pl-9 pr-3 text-sm text-white placeholder:text-[#8d8d8d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
+              />
+            </div>
+            <div
+              role="group"
+              aria-label="Filter by category"
+              className="mt-3 flex flex-wrap gap-2"
+            >
+              {sectionCategories.map((category) => {
+                const active = selectedCategories.has(category.id)
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => toggleCategory(category.id)}
+                    aria-pressed={active}
+                    title={category.description}
+                    className={pillClass(active)}
+                  >
+                    {category.label}
+                    <span className={countClass(active)}>
+                      {
+                        demos.filter((demo) =>
+                          demo.categories.includes(category.id),
+                        ).length
+                      }
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+            <div
+              role="group"
+              aria-label="Filter by format"
+              className="mt-2 flex flex-wrap gap-2"
+            >
+              {(["Video", "Link"] as const).map((format) => {
+                const active = selectedFormat === format
+                return (
+                  <button
+                    key={format}
+                    type="button"
+                    onClick={() => setSelectedFormat(active ? null : format)}
+                    aria-pressed={active}
+                    className={pillClass(active)}
+                  >
+                    {format === "Link" ? "Link or package" : "Video"}
+                    <span className={countClass(active)}>
+                      {demos.filter((demo) => demo.format === format).length}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+        {visibleDemos.length === 0 ? (
+          <p className="text-sm text-[#c6c6c6]">
+            {demos.length === 0
+              ? "No bite-sized demos have been added for this area yet."
+              : "No bite-sized demos match the current search or filters."}
+          </p>
+        ) : (
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3">
+            {visibleDemos.map((demo) => (
+              <div
+                key={demo.id}
+                id={cardAnchors ? biteSizedDemoAnchor(demo.id) : undefined}
+                className="flex scroll-mt-28 flex-col rounded-xl border border-white/[0.07] bg-[#161616] p-4"
+              >
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span
+                    className={`${tagClass} ${
+                      demo.format === "Video"
+                        ? "border-[#4589ff]/50 text-[#a6c8ff]"
+                        : ""
+                    }`}
+                  >
+                    {demo.format}
+                  </span>
+                  {demo.audience && (
+                    <span className={tagClass}>{capitalize(demo.audience)}</span>
+                  )}
+                  {demo.purpose && (
+                    <span className={tagClass}>{capitalize(demo.purpose)}</span>
+                  )}
+                </div>
+                <h4 className="mt-3 text-sm font-semibold text-white">
+                  {demo.title}
+                </h4>
+                <p className="mt-1.5 text-xs leading-relaxed text-[#c6c6c6]">
+                  {demo.description}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {demo.categories.map((category) => (
+                    <span
+                      key={category}
+                      className="rounded-full bg-[#0f62fe]/15 px-2 py-0.5 text-[10px] font-medium text-[#a6c8ff]"
+                    >
+                      {biteSizedDemoCategoryLabel(category)}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-auto pt-4">
+                  <a
+                    href={demo.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`Open ${demo.title}`}
+                    className={`${letsCreateControlClass} w-fit gap-1.5`}
+                  >
+                    {demo.format === "Video" ? "Watch" : "Open"}
+                    <ExternalLinkIcon />
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </article>
+  )
+}
+
+function BiteSizedDemosPage() {
   return (
     <section
       id="bite-sized-demos-top"
       aria-labelledby="bite-sized-demos-heading"
       className="scroll-mt-28"
     >
-      <div className="mb-6 flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0f62fe]">
             IBM Data &amp; AI: Business Automation
@@ -9584,163 +9863,36 @@ function BiteSizedDemosPage() {
             Bite-Sized Demos
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#c6c6c6]">
-            Short, focused demos for Business Automation, organized by product
-            area. A demo that spans several areas appears under each one. IBM
-            internal.
+            Short, focused demos for Business Automation: every demo in one
+            list, then grouped by product area. A demo that spans several areas
+            appears under each one. IBM internal.
           </p>
         </div>
-        <CopySectionLink id="bite-sized-demos-top" label="Bite-Sized Demos page" />
+        <CopySectionLink
+          id="bite-sized-demos-top"
+          label="Bite-Sized Demos page"
+        />
       </div>
-
-      <div className="mb-6 rounded-xl border border-[#4589ff]/30 bg-[#1c1c1c] p-4 sm:p-5">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <label
-            htmlFor="bite-sized-demos-search"
-            className="text-base font-semibold text-white"
-          >
-            Search
-          </label>
-          <span
-            aria-live="polite"
-            className="text-xs font-medium text-[#c6c6c6]"
-          >
-            {visibleDemos.length} of {biteSizedDemos.length} demos
-          </span>
-          {isFiltered && (
-            <button
-              type="button"
-              onClick={() => {
-                setQuery("")
-                setSelectedCategories(new Set())
-                setSelectedFormat(null)
-              }}
-              className={`${letsCreateControlClass} ml-auto`}
-            >
-              Clear filters
-            </button>
+      <BiteSizedDemosSection
+        id="bite-sized-demos-all"
+        title="All demos"
+        description="Every bite-sized demo. Search, or filter by category and format."
+        demos={biteSizedDemos}
+        cardAnchors
+      />
+      {biteSizedDemoCategories.map((category) => (
+        <BiteSizedDemosSection
+          key={category.id}
+          id={`bite-sized-demos-category-${category.id}`}
+          title={category.label}
+          description={category.description}
+          demos={biteSizedDemos.filter((demo) =>
+            demo.categories.includes(category.id),
           )}
-        </div>
-        <div className="relative mt-3">
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8d8d8d]" />
-          <input
-            id="bite-sized-demos-search"
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search title, description, category"
-            className="h-9 w-full rounded-md border border-white/[0.1] bg-[#262626] pl-9 pr-3 text-sm text-white placeholder:text-[#8d8d8d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff]"
-          />
-        </div>
-        <div
-          role="group"
-          aria-label="Filter by category"
-          className="mt-3 flex flex-wrap gap-2"
-        >
-          {biteSizedDemoCategories.map((category) => {
-            const active = selectedCategories.has(category.id)
-            return (
-              <button
-                key={category.id}
-                type="button"
-                onClick={() => toggleCategory(category.id)}
-                aria-pressed={active}
-                title={category.description}
-                className={pillClass(active)}
-              >
-                {category.label}
-                <span className={countClass(active)}>
-                  {countFor(category.id)}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-        <div
-          role="group"
-          aria-label="Filter by format"
-          className="mt-2 flex flex-wrap gap-2"
-        >
-          {(["Video", "Link"] as const).map((format) => {
-            const active = selectedFormat === format
-            return (
-              <button
-                key={format}
-                type="button"
-                onClick={() => setSelectedFormat(active ? null : format)}
-                aria-pressed={active}
-                className={pillClass(active)}
-              >
-                {format === "Link" ? "Link or package" : "Video"}
-                <span className={countClass(active)}>
-                  {biteSizedDemos.filter((demo) => demo.format === format).length}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      {visibleDemos.length === 0 ? (
-        <p className="text-sm text-[#c6c6c6]">
-          No bite-sized demos match the current search or filters.
-        </p>
-      ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3">
-          {visibleDemos.map((demo) => (
-            <article
-              key={demo.id}
-              id={biteSizedDemoAnchor(demo.id)}
-              className="flex scroll-mt-28 flex-col rounded-xl border border-white/[0.07] bg-[#262626] p-4"
-            >
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span
-                  className={`${tagClass} ${
-                    demo.format === "Video"
-                      ? "border-[#4589ff]/50 text-[#a6c8ff]"
-                      : ""
-                  }`}
-                >
-                  {demo.format}
-                </span>
-                {demo.audience && (
-                  <span className={tagClass}>{capitalize(demo.audience)}</span>
-                )}
-                {demo.purpose && (
-                  <span className={tagClass}>{capitalize(demo.purpose)}</span>
-                )}
-              </div>
-              <h3 className="mt-3 text-sm font-semibold text-white">
-                {demo.title}
-              </h3>
-              <p className="mt-1.5 text-xs leading-relaxed text-[#c6c6c6]">
-                {demo.description}
-              </p>
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {demo.categories.map((category) => (
-                  <span
-                    key={category}
-                    className="rounded-full bg-[#0f62fe]/15 px-2 py-0.5 text-[10px] font-medium text-[#a6c8ff]"
-                  >
-                    {biteSizedDemoCategoryLabel(category)}
-                  </span>
-                ))}
-              </div>
-              <div className="mt-auto pt-4">
-                <a
-                  href={demo.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={`Open ${demo.title}`}
-                  className={`${letsCreateControlClass} w-fit gap-1.5`}
-                >
-                  {demo.format === "Video" ? "Watch" : "Open"}
-                  <ExternalLinkIcon />
-                </a>
-              </div>
-            </article>
-          ))}
-        </div>
-      )}
+          filterable={false}
+          defaultCollapsed
+        />
+      ))}
     </section>
   )
 }
@@ -18834,6 +18986,7 @@ export default function App() {
         })),
         { id: "portfolio-product-resources", label: "Product resources" },
         ...resourceSubsections("portfolio-product-resources"),
+        { id: "capabilities-all-bite-sized-demos", label: "Bite-sized demos" },
       ]
     }
     if (selectedCapabilityPages.size !== 1) return []
@@ -18851,6 +19004,7 @@ export default function App() {
         { id: "cp4ba-value", label: "Business value" },
         { id: "cp4ba-product-resources", label: "Product resources" },
         ...resourceSubsections("cp4ba-product-resources"),
+        { id: "cp4ba-bite-sized-demos", label: "Bite-sized demos" },
       ]
     }
     return [
@@ -18860,6 +19014,7 @@ export default function App() {
       { id: `${page}-products`, label: "Products and solutions" },
       { id: `${page}-product-resources`, label: "Product resources" },
       ...resourceSubsections(`${page}-product-resources`),
+      { id: `${page}-bite-sized-demos`, label: "Bite-sized demos" },
     ]
   })()
   const navigateToCapabilityContent = (id: string) => {
@@ -20762,6 +20917,14 @@ export default function App() {
                     })}
                   </div>
 
+                  <BiteSizedDemosSection
+                    id="lets-create-bite-sized-demos"
+                    title="Bite-Sized Demos"
+                    description="Short, focused demos across Business Automation, grouped by product area."
+                    demos={biteSizedDemos}
+                    onOpenPage={(page) => navigateToPage(page)}
+                  />
+
                   <section
                     id="lets-create-table-view"
                     aria-labelledby="lets-create-table-view-heading"
@@ -21647,6 +21810,17 @@ export default function App() {
 
               {selectedCapabilityPages.size > 1 &&
                 renderCombinedPortfolioProductResources()}
+              {selectedCapabilityPages.size > 0 && (
+                <BiteSizedDemosSection
+                  id="capabilities-all-bite-sized-demos"
+                  title="Bite-sized demos"
+                  description="Short demos for the capabilities shown above."
+                  demos={biteSizedDemosForCapabilities([
+                    ...selectedCapabilityPages,
+                  ])}
+                  onOpenPage={(page) => navigateToPage(page)}
+                />
+              )}
             </section>
           </>
         ) : activeBusinessAutomationCapability ? (
@@ -21859,6 +22033,16 @@ export default function App() {
               {renderCapabilityProductResources(
                 activeBusinessAutomationCapability.page,
               )}
+
+              <BiteSizedDemosSection
+                id={`${activeBusinessAutomationCapability.page}-bite-sized-demos`}
+                title={`${activeBusinessAutomationCapability.title} bite-sized demos`}
+                description="Short demos for this capability."
+                demos={biteSizedDemosForCapabilities([
+                  activeBusinessAutomationCapability.page,
+                ])}
+                onOpenPage={(page) => navigateToPage(page)}
+              />
 
               <div className="mt-8 flex flex-col justify-between gap-4 rounded-xl border border-[#4589ff]/25 bg-[#0f62fe]/10 px-6 py-5 sm:flex-row sm:items-center">
                 <div>
@@ -22219,6 +22403,14 @@ export default function App() {
               </div>
 
               {renderCapabilityProductResources("cp4ba")}
+
+              <BiteSizedDemosSection
+                id="cp4ba-bite-sized-demos"
+                title="CP4BA bite-sized demos"
+                description="Short demos across the Cloud Pak for Business Automation platform."
+                demos={biteSizedDemosForCapabilities(["cp4ba"])}
+                onOpenPage={(page) => navigateToPage(page)}
+              />
             </section>
           </>
         ) : currentPage === "conference" ? (
