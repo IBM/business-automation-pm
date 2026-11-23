@@ -9693,6 +9693,9 @@ function BiteSizedDemosGroup({
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
     () => new Set(),
   )
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
+    () => new Set(),
+  )
   const [selectedFormat, setSelectedFormat] = useState<
     BiteSizedDemo["format"] | null
   >(null)
@@ -9717,6 +9720,10 @@ function BiteSizedDemosGroup({
     (demo) =>
       (selectedCategories.size === 0 ||
         demo.categories.some((category) => selectedCategories.has(category))) &&
+      (selectedProducts.size === 0 ||
+        (demo.products ?? []).some((product) =>
+          selectedProducts.has(product),
+        )) &&
       (selectedFormat === null || demo.format === selectedFormat) &&
       tokens.every((token) =>
         [
@@ -9739,18 +9746,41 @@ function BiteSizedDemosGroup({
       else next.add(categoryId)
       return next
     })
+  // Products offered as filters: those on the demos in this group, plus any still selected.
+  const productOptions = Array.from(
+    new Set([
+      ...demos.flatMap((demo) => demo.products ?? []),
+      ...selectedProducts,
+    ]),
+  ).sort((a, b) => a.localeCompare(b))
+  const toggleProduct = (product: string) =>
+    setSelectedProducts((current) => {
+      const next = new Set(current)
+      if (next.has(product)) next.delete(product)
+      else next.add(product)
+      return next
+    })
   const pillClass = (active: boolean) =>
     `inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#78a9ff] ${
       active
         ? "border-[#78a9ff]/70 bg-[#0f62fe]/20 text-white"
         : "border-white/[0.1] bg-white/[0.03] text-[#a8a8a8] hover:border-[#4589ff]/45 hover:text-white"
     }`
+  const productPillClass = (active: boolean) =>
+    `inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb784] ${
+      active
+        ? "border-[#ffb784]/70 bg-[#ff832b]/20 text-white"
+        : "border-[#ff832b]/30 bg-[#ff832b]/[0.06] text-[#ffb784] hover:border-[#ff832b]/60 hover:text-white"
+    }`
   const countClass = (active: boolean) =>
     `rounded-full px-1.5 py-0.5 font-mono text-[9px] ${
       active ? "bg-white/10 text-white" : "bg-black/20 text-[#a8a8a8]"
     }`
   const isFiltered =
-    selectedCategories.size > 0 || selectedFormat !== null || tokens.length > 0
+    selectedCategories.size > 0 ||
+    selectedProducts.size > 0 ||
+    selectedFormat !== null ||
+    tokens.length > 0
   const bodyId = `${id}-body`
   return (
     <div
@@ -9815,6 +9845,7 @@ function BiteSizedDemosGroup({
                   onClick={() => {
                     setQuery("")
                     setSelectedCategories(new Set())
+                    setSelectedProducts(new Set())
                     setSelectedFormat(null)
                   }}
                   className={`${letsCreateControlClass} ml-auto`}
@@ -9855,6 +9886,33 @@ function BiteSizedDemosGroup({
                       {
                         demos.filter((demo) =>
                           demo.categories.includes(category.id),
+                        ).length
+                      }
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+            <div
+              role="group"
+              aria-label="Filter by product"
+              className="mt-2 flex flex-wrap gap-2"
+            >
+              {productOptions.map((product) => {
+                const active = selectedProducts.has(product)
+                return (
+                  <button
+                    key={product}
+                    type="button"
+                    onClick={() => toggleProduct(product)}
+                    aria-pressed={active}
+                    className={productPillClass(active)}
+                  >
+                    {product}
+                    <span className={countClass(active)}>
+                      {
+                        demos.filter((demo) =>
+                          (demo.products ?? []).includes(product),
                         ).length
                       }
                     </span>
